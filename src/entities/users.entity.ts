@@ -1,5 +1,4 @@
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -10,11 +9,11 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
-import { Cities } from './cities.entity';
+import { CityEntity } from './cities.entity';
 
 @Unique(['socialAccountUid'])
 @Entity()
-export class Users extends BaseEntity {
+export class UserEntity {
   @PrimaryGeneratedColumn({
     type: 'int',
   })
@@ -91,11 +90,10 @@ export class Users extends BaseEntity {
   })
   deletedAt: Date; // 데이터는 삭제하지 않고, 탈퇴 한 날짜만 입력
 
-
-  @ManyToOne(() => Cities)
+  @ManyToOne(() => CityEntity)
   @JoinColumn({
     name: 'cityId',
-    referencedColumnName: 'id'
+    referencedColumnName: 'id',
   })
-  city: Cities;
+  city: CityEntity;
 }

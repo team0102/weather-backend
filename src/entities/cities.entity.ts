@@ -1,14 +1,15 @@
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { UserEntity } from './users.entity';
 
 @Entity()
-export class Cities extends BaseEntity{
+export class CityEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -30,5 +31,8 @@ export class Cities extends BaseEntity{
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   updatedAt: Date;
+
+  @OneToMany(() => UserEntity, (user) => user.city)
+  user: UserEntity[];
 
 }
