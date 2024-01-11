@@ -15,6 +15,7 @@ import { FeedCommentEntity } from './feedComments.entity';
 import { FeedTagEntity } from './feedTags.entity';
 import { FeedLikeEntity } from './feedLikes.entity';
 import { BookmarkEntity } from './bookmarks.entity';
+import { WeatherConditionEntity } from './weatherCondition.entity';
 
 @Entity({
   name: 'feeds',
@@ -67,13 +68,12 @@ export class FeedEntity {
   })
   user: UserEntity;
 
-  // 날씨 연결 관계
-  //   @ManyToOne(() => weatherConditionEntity)
-  //   @JoinColumn({
-  //     name: 'weatherCondition',
-  //     referencedColumnName: 'id',
-  //   })
-  //   weatherCondition: weatherConditionEntity
+  @ManyToOne(() => WeatherConditionEntity)
+  @JoinColumn({
+    name: 'weatherConditionId',
+    referencedColumnName: 'id',
+  })
+  weatherCondition: WeatherConditionEntity;
 
   @OneToMany(() => FeedImageEntity, (feedImage) => feedImage.feed)
   feedImage: FeedImageEntity[];
@@ -89,5 +89,4 @@ export class FeedEntity {
 
   @OneToMany(() => BookmarkEntity, (bookmark) => bookmark.feed)
   bookmark: BookmarkEntity[];
-
 }

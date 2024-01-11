@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { WeatherEntity } from './weather.entity';
+import { FeedEntity } from './feeds.entity';
 
 @Entity({
   name: 'weatherCondition',
@@ -42,4 +43,7 @@ export class WeatherConditionEntity {
 
   @OneToMany(() => WeatherEntity, (weather) => weather.weatherCondition)
   weather: WeatherEntity[];
+
+  @OneToMany(() => FeedEntity, (feed) => feed.weatherCondition)
+  feed: FeedEntity[];
 }
