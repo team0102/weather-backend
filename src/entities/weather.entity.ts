@@ -4,10 +4,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { WeatherConditionEntity } from './weatherCondition.entity';
+import { ClothEntity } from './clothes.entity';
 
 @Entity({
   name: 'weather',
@@ -46,4 +48,7 @@ export class WeatherEntity {
     referencedColumnName: 'id',
   })
   weatherCondition: WeatherConditionEntity;
+
+  @OneToMany(() => ClothEntity, (clothes) => clothes.weatherId)
+  clothes: ClothEntity[];
 }
