@@ -1,32 +1,29 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
-  OneToMany,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { WeatherEntity } from './weather.entity';
 import { FeedEntity } from './feeds.entity';
 
 @Entity({
-  name: 'weatherCondition',
+  name: 'feed_images',
 })
-export class WeatherConditionEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column({
-    type: 'varchar',
-    length: 100,
+export class FeedImageEntity {
+  @PrimaryGeneratedColumn({
+    type: 'int',
   })
-  condition: string;
+  id: number;
 
   @Column({
     type: 'varchar',
     length: 2000,
   })
-  image: string;
+  imageUrl: string;
 
   @CreateDateColumn({
     type: 'timestamp',
@@ -41,9 +38,16 @@ export class WeatherConditionEntity {
   })
   updatedAt: Date;
 
-  @OneToMany(() => WeatherEntity, (weather) => weather.weatherCondition)
-  weather: WeatherEntity[];
+  @DeleteDateColumn({
+    type: 'timestamp',
+    default: null,
+  })
+  deletedAt: Date; // 데이터는 삭제하지 않고, 삭제한 날짜만 입력
 
-  @OneToMany(() => FeedEntity, (feed) => feed.weatherCondition)
-  feed: FeedEntity[];
+  @ManyToOne(() => FeedEntity)
+  @JoinColumn({
+    name: 'feedId',
+    referencedColumnName: 'id',
+  })
+  feed: FeedEntity;
 }

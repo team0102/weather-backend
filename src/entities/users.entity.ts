@@ -14,8 +14,12 @@ import { CityEntity } from './cities.entity';
 import { SocialAccountProviderEntity } from './socialAccountProviders.entity';
 import { UserFollowEntity } from './userFollows.entity';
 import { UserBlockEntity } from './userBlocks.entity';
+import { FeedEntity } from './feeds.entity';
+import { FeedCommentEntity } from './feedComments.entity';
+import { FeedLikeEntity } from './feedLikes.entity';
+import { BookmarkEntity } from './bookmarks.entity';
 
-@Unique(['socialAccountUid'])
+@Unique(['nickname'])
 @Entity({
   name: 'users',
 })
@@ -115,4 +119,18 @@ export class UserEntity {
 
   @OneToMany(() => UserBlockEntity, (userBlocker) => userBlocker.blockUser)
   userBlocker: UserBlockEntity[];
+
+  @OneToMany(() => FeedEntity, (feed) => feed.user)
+  feed: FeedEntity[];
+
+  @OneToMany(() => FeedCommentEntity, (feedComment) => feedComment.user)
+  fefeedCommented: FeedCommentEntity[];
+
+  @OneToMany(() => FeedLikeEntity, (feedLike) => feedLike.user)
+  feedLike: FeedLikeEntity[];
+
+  @OneToMany(() => BookmarkEntity, (bookmark) => bookmark.user)
+  bookmark: BookmarkEntity[];
+
+
 }
