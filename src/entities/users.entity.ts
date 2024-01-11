@@ -5,11 +5,15 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { CityEntity } from './cities.entity';
+import { SocialAccountProviderEntity } from './socialAccountProviders.entity';
+import { UserFollowEntity } from './userFollows.entity';
+import { UserBlockEntity } from './userBlocks.entity';
 
 @Unique(['socialAccountUid'])
 @Entity({
@@ -45,12 +49,6 @@ export class UserEntity {
     nullable: true,
   })
   locationInformationAgree: number; // 위치정보 동의 여부, 0:동의안함, 1:사용중에만 동의, 2: 항상 동의
-
-  @Column({
-    type: 'int',
-    nullable: true,
-  })
-  socialAccountProviderId: number; // 소셜로그인시, *** social_account_provider 연결
 
   @Column({
     type: 'varchar',
@@ -98,4 +96,23 @@ export class UserEntity {
     referencedColumnName: 'id',
   })
   city: CityEntity;
+
+  @ManyToOne(() => SocialAccountProviderEntity)
+  @JoinColumn({
+    name: 'socialAccountProviderId',
+    referencedColumnName: 'id',
+  })
+  SocialAccountProvider: SocialAccountProviderEntity;
+
+  @OneToMany(() => UserFollowEntity, (userFollow) => userFollow.user)
+  userFollow: UserFollowEntity[];
+
+  @OneToMany(() => UserFollowEntity, (userFollower) => userFollower.followUser)
+  userFollower: UserFollowEntity[];
+
+  @OneToMany(() => UserBlockEntity, (userBlock) => userBlock.user)
+  userBlock: UserBlockEntity[];
+
+  @OneToMany(() => UserBlockEntity, (userBlocker) => userBlocker.blockUser)
+  userBlocker: UserBlockEntity[];
 }
