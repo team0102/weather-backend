@@ -1,16 +1,20 @@
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
+import { Cities } from './cities.entity';
 
-@Unique(['email'])
+@Unique(['socialAccountUid'])
 @Entity()
-export class User {
+export class Users extends BaseEntity {
   @PrimaryGeneratedColumn({
     type: 'int',
   })
@@ -40,13 +44,6 @@ export class User {
     nullable: true,
   })
   locationInformationAgree: number; // 위치정보 동의 여부, 0:동의안함, 1:사용중에만 동의, 2: 항상 동의
-
-  @Column({
-    type: 'int',
-    default: 0,
-    nullable: true,
-  })
-  cityId: number; // 대도시단위(서울, 부산 등), *** cities 연결 !!!주 활동지!!!
 
   @Column({
     type: 'int',
@@ -93,4 +90,12 @@ export class User {
     default: null,
   })
   deletedAt: Date; // 데이터는 삭제하지 않고, 탈퇴 한 날짜만 입력
+
+
+  @ManyToOne(() => Cities)
+  @JoinColumn({
+    name: 'cityId',
+    referencedColumnName: 'id'
+  })
+  city: Cities;
 }
