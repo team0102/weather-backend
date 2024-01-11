@@ -12,7 +12,9 @@ import {
 import { CityEntity } from './cities.entity';
 
 @Unique(['socialAccountUid'])
-@Entity()
+@Entity({
+  name: 'users',
+})
 export class UserEntity {
   @PrimaryGeneratedColumn({
     type: 'int',

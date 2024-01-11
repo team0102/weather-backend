@@ -8,7 +8,9 @@ import {
 } from 'typeorm';
 import { UserEntity } from './users.entity';
 
-@Entity()
+@Entity({
+  name: 'cities',
+})
 export class CityEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -34,5 +36,4 @@ export class CityEntity {
 
   @OneToMany(() => UserEntity, (user) => user.city)
   user: UserEntity[];
-
 }
