@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeORMConfig } from './config/typeORM.config';
 import { ConfigModule } from '@nestjs/config';
+import { FeedModule } from './feed/feed.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { ConfigModule } from '@nestjs/config';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    FeedModule,
   ],
   controllers: [AppController],
   providers: [AppService],
