@@ -11,14 +11,19 @@ export class TagRepository {
   ) {}
 
   async createTag(tag: string, newDate: Date) {
-
     const savedTag = await this.tagRepository.save({
-        content: tag, 
-        createdAt: newDate,
-        updatedAt: newDate,
-      });
-      console.log("savedTag result : ", savedTag);
-      return savedTag;
-    }
+      content: tag,
+      createdAt: newDate,
+      updatedAt: newDate,
+    });
+    console.log('savedTag result : ', savedTag);
+    return savedTag;
   }
 
+  async findTagByContent(tag: string) {
+    const foundTag = await this.tagRepository.findOne({
+      where: { content: tag },
+    });
+    return foundTag;
+  }
+}
