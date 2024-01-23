@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FeedTagEntity } from 'src/entities/feedTags.entity';
 import { FeedEntity } from 'src/entities/feeds.entity';
 import { TagEntity } from 'src/entities/tags.entity';
-import { Repository } from 'typeorm';
+import { Repository, EntityManager, getManager, QueryRunner } from 'typeorm';
 
 @Injectable()
 export class feedTagRepository {
@@ -16,15 +16,16 @@ export class feedTagRepository {
     private readonly feedTagRepository: Repository<FeedTagEntity>,
   ) {}
 
-  async createFeedTags(feedId: number, tagIds: number[], newDate: Date) {
+  async createFeedTags(feedId: number, tagIds: number[], newDate: Date, queryRunner: QueryRunner) {
     const savedFeedTags = await Promise.all(
       tagIds.map(async (tagId) => {
-        const savedFeedTag = await this.feedTagRepository.save({
-          feedId: feedId,
-          tagId: tagId,
-          createdAt: newDate,
-          updatedAt: newDate,
-        });
+        const feedTag = new FeedTagEntity();
+        feedTag.feed.id = feedId;
+        feedTag.tag.id = tagId;
+        feedTag.createdAt = newDate;
+        feedTag.updatedAt = newDate;
+  
+        const savedFeedTag = await queryRunner.manager.save(feedTag);
         return savedFeedTag;
       }),
     );

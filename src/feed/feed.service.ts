@@ -40,13 +40,15 @@ export class FeedService {
           savedTagIds.push(foundTag.id);
         }
       }
-      const savedTag = await this.feedTagRepository.createFeedTags(
+      const savedFeedTag = await this.feedTagRepository.createFeedTags(
         savedFeedId,
         savedTagIds,
         newDate,
+        queryRunner, 
       );
+      // 같은 트랜잭션을 사용하도록 queryRunner를 전달
       await queryRunner.commitTransaction();
-      return { savedFeed, savedTag };
+      return { savedFeed, savedFeedTag };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error(error.message);

@@ -84,7 +84,7 @@ export class FeedEntity {
   @OneToMany(() => FeedLikeEntity, (feedLike) => feedLike.feed)
   feedLike: FeedLikeEntity[];
 
-  @OneToMany(() => FeedTagEntity, (feedTag) => feedTag.feed)
+  @OneToMany(() => FeedTagEntity, (feedTag) => feedTag.feed, { cascade: ['insert'] })
   feedTag: FeedTagEntity[];
 
   @OneToMany(() => BookmarkEntity, (bookmark) => bookmark.feed)
