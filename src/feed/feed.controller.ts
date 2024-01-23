@@ -8,9 +8,8 @@ export class FeedController {
 
     @Post()
     create(@Body() feedData: CreateFeedDTO) {
-        console.log('feedData : ', feedData)
         return this.feedService.createFeed(feedData);
     }
-    
+
 }
 

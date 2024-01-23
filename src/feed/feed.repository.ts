@@ -13,8 +13,6 @@ export class FeedRepository {
     private readonly feedRepository: Repository<FeedEntity>,
     @InjectRepository(FeedImageEntity)
     private readonly feedImageRepository: Repository<FeedImageEntity>,
-    @InjectRepository(FeedTagEntity)
-    private readonly feedTagRepository: Repository<FeedTagEntity>,
   ) {}
 
   async createFeed(feedData: CreateFeedDTO, newDate: Date) {
@@ -25,7 +23,6 @@ export class FeedRepository {
       lowTemperature,
       content,
       image,
-      tag,
     } = feedData;
  
     //피드 저장
@@ -47,54 +44,13 @@ export class FeedRepository {
       feed: savedFeed, // 피드 이미지에 저장된 피드 엔티티 연결
     });
 
-    // 태그 저장 및 연결
-    const savedFeedTags = await Promise.all(
-      tag.map(async (tagValue) => {
-        const savedFeedTag = await this.feedTagRepository.save({
-          name: tagValue,
-          createdAt: newDate,
-          updatedAt: newDate,
-        });
-
-        // 피드 태그에 피드 엔티티와 태그 엔티티 연결
-        await this.feedTagRepository.save({
-          feed: savedFeed,
-          tag: savedFeedTag,
-        });
-      }),
-    );
-
     // 결과 반환
     const result = {
       feed: savedFeed,
       feedImage: savedFeedImage,
-      feedTags: savedFeedTags,
     };
 
-    // const result = await this.feedRepository.query(
-    //   `INSERT INTO feeds (
-    //         userId,
-    //         content,
-    //         lowTemperature,
-    //         highTemperature,
-    //         weatherConditionid,
-    //         createdAt,
-    //         updatedAt
-    //     ) VALUES (
-    //         ?, ?, ?, ?, ?, ?, ?
-    //     )`,
-    //   [
-    //     userId,
-    //     content,
-    //     lowTemperature,
-    //     highTemperature,
-    //     weatherConditionId,
-    //     newDate,
-    //     newDate
-    //   ],
-    // );
-
-    console.log('result : ', result);
+    console.log('createFeed result : ', result);
     return result;
   }
 }
