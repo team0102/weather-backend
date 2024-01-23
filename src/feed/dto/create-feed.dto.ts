@@ -1,16 +1,26 @@
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
+
 export class CreateFeedDTO {
-   
-    readonly userId: number;
+  @IsNumber()
+  readonly userId: number;
 
-    readonly weatherConditionId: number;
+  @IsNumber()
+  readonly weatherConditionId: number;
 
-    readonly highTemperature: number;
+  @IsNumber()
+  readonly highTemperature: number;
 
-    readonly lowTemperature: number;
+  @IsNumber()
+  readonly lowTemperature: number;
 
-    readonly image: string;
+  @IsString()
+  readonly image: string;
 
-    readonly content: string;
+  @IsString()
+  readonly content: string;
 
-    readonly tag: string[];
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true }) // 각 요소가 문자열인 배열임을 나타냄
+  readonly tag: string[];
 }
