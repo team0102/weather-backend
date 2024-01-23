@@ -8,6 +8,7 @@ import { FeedTagEntity } from 'src/entities/feedTags.entity';
 
 @Injectable()
 export class FeedRepository {
+  [x: string]: any;
   constructor(
     @InjectRepository(FeedEntity)
     private readonly feedRepository: Repository<FeedEntity>,
