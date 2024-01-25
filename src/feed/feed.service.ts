@@ -27,9 +27,7 @@ export class FeedService {
       let savedTagIds: number[] = [];
       // Iterate through tags
       for (const tagValue of tag) {
-        // Check if tag already exists
         const foundTag = await this.tagRepository.findTagByContent(tagValue);
-        // If tag does not exist, create and save it
         if (!foundTag) {
           const savedTag = await this.tagRepository.createTag(
             tagValue,
@@ -44,7 +42,7 @@ export class FeedService {
         savedFeedId,
         savedTagIds,
         newDate,
-        queryRunner, 
+        queryRunner,
       );
       // 같은 트랜잭션을 사용하도록 queryRunner를 전달
       await queryRunner.commitTransaction();
@@ -52,7 +50,7 @@ export class FeedService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error(error.message);
-      throw new Error('Fail to crate feed');
+      throw new Error('Fail to create feed');
     } finally {
       await queryRunner.release();
     }
