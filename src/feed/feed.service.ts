@@ -14,6 +14,16 @@ export class FeedService {
     private readonly dataSource: DataSource,
   ) {}
 
+  async getFeedList(userId: number): Promise<any[]> {
+    try {
+      const feedList = await this.feedRepository.getFeedListWithDetails(userId);
+      return feedList;
+    } catch(error) {
+      console.log(error.message)
+      throw new Error('Fail to get feedList') 
+    }
+  }
+
   //해시태그 추출
   extractTagsFromContent(content: string): string[] {
     const tagRegex = /#(\S+)/g; //모든 문자
