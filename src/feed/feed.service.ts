@@ -14,9 +14,17 @@ export class FeedService {
     private readonly dataSource: DataSource,
   ) {}
 
+  //해시태그 추출
+  extractTagsFromContent(content: string): string[] {
+    const tagRegex = /#(\S+)/g; //모든 문자
+    const matches = content.match(tagRegex);
+    return matches ? matches.map(match => match.slice(1)) : [];
+  }
+
   async createFeed(feedData: CreateFeedDTO) {
     const newDate = new Date();
-    const { tag } = feedData;
+    const { content } = feedData;
+    const tags = this.extractTagsFromContent(content);
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -26,7 +34,7 @@ export class FeedService {
       // Array to store tag IDs
       let savedTagIds: number[] = [];
       // Iterate through tags
-      for (const tagValue of tag) {
+      for (const tagValue of tags) {
         const foundTag = await this.tagRepository.findTagByContent(tagValue);
         if (!foundTag) {
           const savedTag = await this.tagRepository.createTag(
