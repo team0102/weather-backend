@@ -8,28 +8,34 @@ import { Repository, QueryRunner } from 'typeorm';
 @Injectable()
 export class feedTagRepository {
   constructor(
-    // @InjectRepository(FeedEntity)
-    // private readonly feedRepository: Repository<FeedEntity>,
-    // @InjectRepository(TagEntity)
-    // private readonly tagRepository: Repository<TagEntity>,
     @InjectRepository(FeedTagEntity)
     private readonly feedTagRepository: Repository<FeedTagEntity>,
   ) {}
 
-  async createFeedTags(feedId: number, tagIds: number[], newDate: Date, queryRunner: QueryRunner) {
-    const savedFeedTags = await Promise.all(
-      tagIds.map(async (tagId) => {
-        const feedTag = new FeedTagEntity();
-        feedTag.feed = { id: feedId } as FeedEntity;
-        feedTag.tag = { id: tagId } as TagEntity;
-        feedTag.createdAt = newDate;
-        feedTag.updatedAt = newDate;
-  
-        const savedFeedTag = await queryRunner.manager.save(feedTag);
-        return savedFeedTag;
-      }),
-    );
-    console.log('createFeedTag result : ', savedFeedTags);
-    return savedFeedTags;
+  async createFeedTags(
+    feedId: number,
+    tagIds: number[],
+    newDate: Date,
+    queryRunner: QueryRunner,
+  ) {
+    try {
+      const savedFeedTags = await Promise.all(
+        tagIds.map(async (tagId) => {
+          const feedTag = new FeedTagEntity();
+          feedTag.feed = { id: feedId } as FeedEntity;
+          feedTag.tag = { id: tagId } as TagEntity;
+          feedTag.createdAt = newDate;
+          feedTag.updatedAt = newDate;
+
+          const savedFeedTag = await queryRunner.manager.save(feedTag);
+          return savedFeedTag;
+        }),
+      );
+      console.log('createFeedTag result : ', savedFeedTags);
+      return savedFeedTags;
+    } catch (error) {
+      console.log(error.message);
+      throw new Error(error.message);
+    }
   }
 }

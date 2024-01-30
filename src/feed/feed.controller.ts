@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { FeedService } from './feed.service';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 
@@ -7,7 +7,7 @@ export class FeedController {
   constructor(private readonly feedService: FeedService) {}
 
   @Get()
-  async getFeedList(@Body() userId: number) {
+  async getFeedList(@Query('userId') userId: number) {
   try{
     const feedDatas = await this.feedService.getFeedList(userId);
     return { statusCode: 200, message: 'Successed to get feedList', data: feedDatas}
