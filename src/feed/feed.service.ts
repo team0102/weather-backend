@@ -2,15 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { FeedRepository } from './feed.repository';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 import { TagRepository } from './tag.repository';
-import { feedTagRepository } from './feedTag.repository';
+import { FeedTagRepository } from './feedTag.repository';
 import { DataSource } from 'typeorm';
+import { CreateCommentDTO } from './dto/create-comment.dto';
+import { FeedCommentRepository } from './feedComment.repository';
 
 @Injectable()
 export class FeedService {
   constructor(
     private readonly feedRepository: FeedRepository,
     private readonly tagRepository: TagRepository,
-    private readonly feedTagRepository: feedTagRepository,
+    private readonly feedTagRepository: FeedTagRepository,
+    private readonly feedCommentRepository: FeedCommentRepository,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -18,9 +21,9 @@ export class FeedService {
     try {
       const feedList = await this.feedRepository.getFeedListWithDetails(userId);
       return feedList;
-    } catch(error) {
-      console.log(error.message)
-      throw new Error('Fail to get feedList') 
+    } catch (error) {
+      console.log(error.message);
+      throw new Error('Fail to get feedList');
     }
   }
 
@@ -28,7 +31,7 @@ export class FeedService {
   extractTagsFromContent(content: string): string[] {
     const tagRegex = /#(\S+)/g; //모든 문자
     const matches = content.match(tagRegex);
-    return matches ? matches.map(match => match.slice(1)) : [];
+    return matches ? matches.map((match) => match.slice(1)) : [];
   }
 
   async createFeed(feedData: CreateFeedDTO) {
@@ -71,6 +74,18 @@ export class FeedService {
       throw new Error('Fail to create feed');
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  async createComment(feedId: number, commentData: CreateCommentDTO) {
+    try {
+      const newDate = new Date();
+      const findFeed = await this.feedRepository.findFeedById(feedId);
+      if (!findFeed) throw new Error('Feed does not exist');
+      await this.feedCommentRepository.createComment(feedId, commentData, newDate);
+    } catch (error) {
+      console.log(error.message);
+      throw new Error(error.message);
     }
   }
 }

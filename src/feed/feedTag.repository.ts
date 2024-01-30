@@ -6,7 +6,7 @@ import { TagEntity } from 'src/entities/tags.entity';
 import { Repository, QueryRunner } from 'typeorm';
 
 @Injectable()
-export class feedTagRepository {
+export class FeedTagRepository {
   constructor(
     @InjectRepository(FeedTagEntity)
     private readonly feedTagRepository: Repository<FeedTagEntity>,

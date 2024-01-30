@@ -12,7 +12,8 @@ import { TagEntity } from 'src/entities/tags.entity';
 import { UserEntity } from 'src/entities/users.entity';
 import { WeatherConditionEntity } from 'src/entities/weatherCondition.entity';
 import { TagRepository } from './tag.repository';
-import { feedTagRepository } from './feedTag.repository';
+import { FeedTagRepository } from './feedTag.repository';
+import { FeedCommentRepository } from './feedComment.repository';
 
 @Module({
   imports: [
@@ -28,7 +29,13 @@ import { feedTagRepository } from './feedTag.repository';
     ]),
   ],
   controllers: [FeedController],
-  providers: [FeedService, FeedRepository, TagRepository, feedTagRepository],
+  providers: [
+    FeedService,
+    FeedRepository,
+    TagRepository,
+    FeedTagRepository,
+    FeedCommentRepository,
+  ],
   exports: [TypeOrmModule],
 })
 export class FeedModule {}

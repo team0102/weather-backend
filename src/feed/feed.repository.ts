@@ -4,6 +4,7 @@ import { FeedEntity } from '../entities/feeds.entity';
 import { Repository } from 'typeorm';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 import { FeedImageEntity } from 'src/entities/feedImages.entity';
+import { FeedCommentEntity } from 'src/entities/feedComments.entity';
 
 @Injectable()
 export class FeedRepository {
@@ -12,6 +13,8 @@ export class FeedRepository {
     private readonly feedRepository: Repository<FeedEntity>,
     @InjectRepository(FeedImageEntity)
     private readonly feedImageRepository: Repository<FeedImageEntity>,
+    @InjectRepository(FeedCommentEntity)
+    private readonly feedCommentRepository: Repository<FeedCommentEntity>,
     // @InjectRepository(UserEntity)
     // private readonly userRepository: Repository<UserEntity>,
     // @InjectRepository(WeatherConditionEntity)
@@ -96,6 +99,17 @@ export class FeedRepository {
         feedImage: savedFeedImage,
       };
       console.log('createFeed result : ', result);
+      return result;
+    } catch (error) {
+      console.log(error.message);
+      throw new Error(error.message);
+    }
+  }
+
+  async findFeedById(feedId: number) {
+    try {
+      const result = await this.feedRepository.findOneBy({ id: feedId });
+      console.log(result)
       return result;
     } catch (error) {
       console.log(error.message);
