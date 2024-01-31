@@ -20,19 +20,11 @@ import { AuthModule } from './auth/auth.module';
     }),
     JwtModule.register({
       global: true,
-      secret: process.env.JWT_ACCESS_TOKEN_SECRET_KEY, // 실행은 되나, 확인 필요
+      secret: process.env.JWT_ACCESS_TOKEN_SECRET_KEY,
       signOptions: { expiresIn: '12h' },
     }),
     UserModule,
     AuthModule,
   ],
-  // controllers: [AppController, UserController],
-  // providers: [AppService, UserService, JwtModule],
-
-  // controllers: [],
-  // providers: [],
-  // ],
-  // controllers: [AppController, UserController],
-  // providers: [AppService, UserService],
 })
 export class AppModule {}
