@@ -11,9 +11,9 @@ export class ClothesService {
     private readonly weatherRepository: Repository<WeatherEntity>,
   ) {}
 
-  async getClothesSetIdByTemperature(T1H: number): Promise<ClothSetEntity[]> {
+  async getClothesSetIdByTemperature(temperature: number): Promise<ClothSetEntity[]> {
     const [weather] = await this.weatherRepository.find({
-      where: { temperature: T1H },
+      where: { temperature },
       relations: [
         'clothes.clothesSetId',
         'clothes.clothesSetId.clothesTopId',
