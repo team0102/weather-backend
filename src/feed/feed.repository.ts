@@ -4,7 +4,7 @@ import { FeedEntity } from '../entities/feeds.entity';
 import { Repository } from 'typeorm';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 import { FeedImageEntity } from 'src/entities/feedImages.entity';
-import { FeedCommentEntity } from 'src/entities/feedComments.entity';
+import { UserBlockEntity } from 'src/entities/userBlocks.entity';
 
 @Injectable()
 export class FeedRepository {
@@ -13,59 +13,17 @@ export class FeedRepository {
     private readonly feedRepository: Repository<FeedEntity>,
     @InjectRepository(FeedImageEntity)
     private readonly feedImageRepository: Repository<FeedImageEntity>,
-    @InjectRepository(FeedCommentEntity)
-    private readonly feedCommentRepository: Repository<FeedCommentEntity>,
-    // @InjectRepository(UserEntity)
-    // private readonly userRepository: Repository<UserEntity>,
+    // @InjectRepository(UserBlockEntity)
+    // private readonly userBlockRepository: Repository<UserBlockEntity>,
+    // @InjectRepository(FeedCommentEntity)
+    // private readonly feedCommentRepository: Repository<FeedCommentEntity>,
     // @InjectRepository(WeatherConditionEntity)
     // private readonly weatherConditionRepository: Repository<WeatherConditionEntity>,
   ) {}
 
-  async getFeedListWithDetails(loginUser: number): Promise<any[]> {
+  async getFeedListWithDetails(): Promise<any[]> {
     try {
-      const feedList = await this.feedRepository.query(
-        `
-      SELECT 
-        f.id                   as feedId,
-        u.id                   as authorId,
-        u.nickName,
-        u.profileImage,
-        f.updatedAt,
-        f.lowTemperature,
-        f.highTemperature,
-        fi.imageUrl,
-        f.content,
-        GROUP_CONCAT(DISTINCT t.content) as feedTags,
-        w.condition as weatherCondition,
-        w.image as weatherConditionImage,
-        CASE WHEN f.userId = ? THEN 1 ELSE 0 END as isAuthor,
-        (SELECT COUNT(*) FROM feed_likes WHERE feedId = f.id) as likeCount,
-        (SELECT COUNT(*) FROM feed_comments WHERE feedId = f.id) as commentCount,
-        (SELECT COUNT(*) FROM feed_likes WHERE feedId = f.id AND userId = ?) as isLiked,
-        (SELECT COUNT(*) FROM bookmarks WHERE feedId = f.id AND userId = ?) as isBookmarked
-      FROM feeds f
-      LEFT JOIN users u ON f.userId = u.id
-      LEFT JOIN weatherCondition w ON f.weatherConditionId = w.id
-      LEFT JOIN feed_images fi ON f.id = fi.feedId
-      LEFT JOIN feed_tags ft ON f.id = ft.feedId
-      LEFT JOIN tags t ON ft.tagId = t.id
-      LEFT JOIN userBlocks ub ON f.userId = ub.blockUserId AND ub.userId = ?
-      WHERE f.deletedAt IS NULL AND ub.id IS NULL
-      GROUP BY f.id, u.id, fi.imageurl
-      ORDER BY f.createdAt DESC
-    `,
-        [loginUser, loginUser, loginUser, loginUser],
-      );
-      return feedList;
-    } catch (error) {
-      console.log(error.message);
-      throw new Error(error.message);
-    }
-  }
-
-  async getFeedWithDetailsById(feedId: number) {
-    try {
-      const [ feed ] = await this.feedRepository.find({
+      const feedList = await this.feedRepository.find({
         relations: {
           user: true,
           feedComment: true,
@@ -75,7 +33,27 @@ export class FeedRepository {
             tag: true,
           },
         },
-        where: {id : feedId}
+      });
+      return feedList;
+    } catch (error) {
+      console.log(error.message);
+      throw new Error(error.message);
+    }
+  }
+
+  async getFeedWithDetailsById(feedId: number) {
+    try {
+      const [feed] = await this.feedRepository.find({
+        relations: {
+          user: true,
+          feedComment: true,
+          feedLike: true,
+          bookmark: true,
+          feedTag: {
+            tag: true,
+          },
+        },
+        where: { id: feedId },
       });
       return feed;
     } catch (error) {

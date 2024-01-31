@@ -19,8 +19,27 @@ export class FeedService {
 
   async getFeedList(userId: number): Promise<any[]> {
     try {
-      const feedList = await this.feedRepository.getFeedListWithDetails(userId);
-      return feedList;
+      const feedList = await this.feedRepository.getFeedListWithDetails();
+      const processedFeedList = await Promise.all(
+        feedList.map(async (feed) => {
+          const isAuthor = feed.userId === userId;
+          const likeCount = feed.feedLike.length;
+          const commentCount = feed.feedComment.length;
+          const isLiked = feed.feedLike.some((like) => like.userId === userId);
+          const isBookmarked = feed.bookmark.some(
+            (bookmark) => bookmark.userId === userId,
+          );
+          return {
+            ...feed,
+            isAuthor,
+            likeCount,
+            commentCount,
+            isLiked,
+            isBookmarked,
+          };
+        }),
+      );
+      return processedFeedList;
     } catch (error) {
       console.log(error.message);
       throw new Error('Fail to get feedList');
@@ -31,21 +50,23 @@ export class FeedService {
     try {
       const feedDetails =
         await this.feedRepository.getFeedWithDetailsById(feedId);
-      console.log('feedDetails : ', feedDetails);
-
       const isAuthor = feedDetails.user.id === userId;
       const likeCount = feedDetails.feedLike.length;
       const commentCount = feedDetails.feedComment.length;
-      const isLiked = feedDetails.feedLike.some((like) => like.user.id === userId);
-      const isBookmarked = feedDetails.bookmark.some((bookmark) => bookmark.user.id === userId);
-      
+      const isLiked = feedDetails.feedLike.some(
+        (like) => like.user.id === userId,
+      );
+      const isBookmarked = feedDetails.bookmark.some(
+        (bookmark) => bookmark.user.id === userId,
+      );
+
       const processedFeedDetails = {
         ...feedDetails,
         isAuthor,
         likeCount,
         commentCount,
         isLiked,
-        isBookmarked
+        isBookmarked,
       };
       return processedFeedDetails;
     } catch (error) {
