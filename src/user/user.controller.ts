@@ -24,6 +24,7 @@ import {
   userFollowDto,
 } from './dto/user.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { verifyToken } from 'src/utils/verifyToken';
 
 // 회원가입 상세, 로그아웃, 회원탈퇴, 회원 정보 수정, 닉네임 중복 체크(O), 유저 팔로우(목록, 생성(o), 삭제), 유저 차단(목록, 생성, 삭제)
 
@@ -42,13 +43,13 @@ export class UserController {
     return await this.userService.getCheckNicknameOverlap(nickname);
   }
 
-  // 유저 팔로우(생성)
+  // 유저 팔로우(생성) : O
   @Post('/follow/:followUserId')
   async createUserFollow(
     @Headers('authorization') token: string,
     @Param('followUserId') followUserId: number,
   ): Promise<void> {
-    const decodedToken = this.verifyToken(token);
+    const decodedToken = verifyToken(token);
     const userFollowDto: userFollowDto = {
       userId: Number(decodedToken.aud),
       followUserId: Number(followUserId),
@@ -81,11 +82,11 @@ export class UserController {
   }
 
   // -----------------------------------------------------------------
-  verifyToken(token: string): { aud: number } {
-    const decodedToken = this.JwtService.verify(token);
+  // verifyToken(token: string): { aud: number } {
+  //   const decodedToken = this.JwtService.verify(token);
 
-    return decodedToken;
-  }
+  //   return decodedToken;
+  // }
 
   // ------------------------------------------------------------
 
