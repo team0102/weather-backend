@@ -57,27 +57,25 @@ export class UserController {
     return await this.userService.createUserFollow(userFollowDto);
   }
 
-  // 유저 팔로우(삭제)
+  // 유저 팔로우(삭제)_ing
   @Delete('/follow/:followUserId')
   async deleteUserFollow(
     @Headers('authorization') token: string,
     @Param('followUserId') followUserId: number,
   ): Promise<void> {}
 
-  // 유저 팔로우(목록)
+  // 유저 팔로우(목록)_ing
   @Get('/users/follow')
   async userFollowList(
     @Headers('authorization') token: string,
     @Body() body,
   ): Promise<void> {}
 
-  // 테스트용 로그인 api-----------------------------------------------
+  // 테스트용 로그인 -----------------------------------------------
 
   @Post('/login')
   @HttpCode(200)
-  // async login(@Body() body: Partial<loginDto>): Promise<loginDto> {
   async login(@Req() req: Request): Promise<loginDto> {
-    // const { socialAccountUid } = body.user;
     const { socialAccountUid } = req.body;
     return await this.userService.login(socialAccountUid);
   }

@@ -37,6 +37,7 @@ export class UserService {
       : 'USER_EXIST';
   }
 
+  // 유저 팔로우(생성)
   async createUserFollow(userFollowDto: userFollowDto): Promise<void> {
     const { userId, followUserId } = userFollowDto;
     if (!userId || !followUserId) throw new NotFoundException('KEY_ERROR');
