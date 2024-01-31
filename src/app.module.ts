@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeORMConfig } from './config/typeORM.config';
 import { ConfigModule } from '@nestjs/config';
+import { ClothesModule } from './clothes/clothes.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { ConfigModule } from '@nestjs/config';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ClothesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
