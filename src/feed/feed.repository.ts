@@ -26,8 +26,8 @@ export class FeedRepository {
       const feedList = await this.feedRepository.query(
         `
       SELECT 
-        f.id as feedId,
-        u.id as authorId,
+        f.id                   as feedId,
+        u.id                   as authorId,
         u.nickName,
         u.profileImage,
         f.updatedAt,
@@ -35,7 +35,7 @@ export class FeedRepository {
         f.highTemperature,
         fi.imageUrl,
         f.content,
-        GROUP_CONCAT(DISTINCT t.content) AS feedTags,
+        GROUP_CONCAT(DISTINCT t.content) as feedTags,
         w.condition as weatherCondition,
         w.image as weatherConditionImage,
         CASE WHEN f.userId = ? THEN 1 ELSE 0 END as isAuthor,
@@ -57,6 +57,27 @@ export class FeedRepository {
         [loginUser, loginUser, loginUser, loginUser],
       );
       return feedList;
+    } catch (error) {
+      console.log(error.message);
+      throw new Error(error.message);
+    }
+  }
+
+  async getFeedWithDetailsById(feedId: number) {
+    try {
+      const [ feed ] = await this.feedRepository.find({
+        relations: {
+          user: true,
+          feedComment: true,
+          feedLike: true,
+          bookmark: true,
+          feedTag: {
+            tag: true,
+          },
+        },
+        where: {id : feedId}
+      });
+      return feed;
     } catch (error) {
       console.log(error.message);
       throw new Error(error.message);

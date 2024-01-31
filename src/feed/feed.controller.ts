@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { FeedService } from './feed.service';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 import { CreateCommentDTO } from './dto/create-comment.dto';
@@ -22,6 +30,24 @@ export class FeedController {
     }
   }
 
+  @Get('/:feedId')
+  async getFeedDetails(
+    @Param('feedId', ParseIntPipe) feedId: number,
+    @Body() userId: number,
+  ) {
+    try {
+      const feedData = await this.feedService.getFeedDetails(feedId, userId);
+      return {
+        statusCode: 200,
+        message: 'Successed to get feedDetails',
+        data: feedData,
+      };
+    } catch (error) {
+      console.log(error.message);
+      return { statusCode: error.code || 500, message: error.message };
+    }
+  }
+
   @Post()
   async createFeed(@Body() feedData: CreateFeedDTO) {
     try {
@@ -38,7 +64,6 @@ export class FeedController {
     @Param('feedId', ParseIntPipe) feedId: number,
     @Body() commentData: CreateCommentDTO,
   ) {
-    console.log(feedId, typeof(feedId))
     try {
       await this.feedService.createComment(feedId, commentData);
       return { statusCode: 201, message: 'Comment created successfully' };

@@ -27,6 +27,33 @@ export class FeedService {
     }
   }
 
+  async getFeedDetails(feedId: number, userId: number) {
+    try {
+      const feedDetails =
+        await this.feedRepository.getFeedWithDetailsById(feedId);
+      console.log('feedDetails : ', feedDetails);
+
+      const isAuthor = feedDetails.user.id === userId;
+      const likeCount = feedDetails.feedLike.length;
+      const commentCount = feedDetails.feedComment.length;
+      const isLiked = feedDetails.feedLike.some((like) => like.user.id === userId);
+      const isBookmarked = feedDetails.bookmark.some((bookmark) => bookmark.user.id === userId);
+      
+      const processedFeedDetails = {
+        ...feedDetails,
+        isAuthor,
+        likeCount,
+        commentCount,
+        isLiked,
+        isBookmarked
+      };
+      return processedFeedDetails;
+    } catch (error) {
+      console.log(error.message);
+      throw new Error('Fail to get feedDetails');
+    }
+  }
+
   //해시태그 추출
   extractTagsFromContent(content: string): string[] {
     const tagRegex = /#(\S+)/g; //모든 문자
@@ -82,7 +109,11 @@ export class FeedService {
       const newDate = new Date();
       const findFeed = await this.feedRepository.findFeedById(feedId);
       if (!findFeed) throw new Error('Feed does not exist');
-      await this.feedCommentRepository.createComment(feedId, commentData, newDate);
+      await this.feedCommentRepository.createComment(
+        feedId,
+        commentData,
+        newDate,
+      );
     } catch (error) {
       console.log(error.message);
       throw new Error(error.message);
