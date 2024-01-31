@@ -109,7 +109,6 @@ export class FeedRepository {
   async findFeedById(feedId: number) {
     try {
       const result = await this.feedRepository.findOneBy({ id: feedId });
-      console.log(result)
       return result;
     } catch (error) {
       console.log(error.message);
