@@ -11,15 +11,11 @@ export class ClothesRepository {
   ) {}
 
   async getClothesSetIdByWeatherId(weatherId: number): Promise<ClothEntity[]> {
-    try {
-      const cloth = this.clothesRepository.find({
-        where: { weatherId: { id: weatherId } },
-        relations: { clothesSetId: true },
-      });
+    const cloth = await this.clothesRepository.find({
+      where: { weatherId: { id: weatherId } },
+      relations: { clothesSetId: true },
+    });
 
-      return cloth;
-    } catch (error) {
-      throw new Error(error.message);
-    }
+    return cloth;
   }
 }

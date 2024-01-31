@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ClothesRepository } from './clothes.repository';
 
 @Injectable()
@@ -10,9 +10,11 @@ export class ClothesService {
       const clothesSetId =
         await this.clothesRepository.getClothesSetIdByWeatherId(weatherId);
 
-      return clothesSetId;
+      if (!clothesSetId || clothesSetId.length === 0) {
+        throw new NotFoundException('cloth not found');
+      }
     } catch (error) {
-      throw new Error('Fail to get feedList');
+      throw new Error(error.message);
     }
   }
 }

@@ -7,8 +7,20 @@ export class ClothesController {
 
   @Get('/:weatherId')
   async getClothes(@Param('weatherId') weatherId: number) {
-    const cloth = await this.clothesService.getClothesSetIdByWeatherId(weatherId);
+    try {
+      const cloth =
+        await this.clothesService.getClothesSetIdByWeatherId(weatherId);
 
-    return cloth;
+      return {
+        statusCode: 200,
+        message: 'Success',
+        data: cloth,
+      };
+    } catch (error) {
+      return {
+        statusCode: error.code || 500,
+        message: error.message,
+      };
+    }
   }
 }
