@@ -28,17 +28,21 @@ export class UserFollowEntity {
   })
   updatedAt: Date;
 
-  @ManyToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity, {
+    cascade: true,
+  })
   @JoinColumn({
     name: 'userId',
     referencedColumnName: 'id',
   })
-  user: UserEntity;
+  user: UserEntity | number;
 
-  @ManyToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity, {
+    cascade: true,
+  })
   @JoinColumn({
     name: 'followUserId',
     referencedColumnName: 'id',
   })
-  followUser: UserEntity;
+  followUser: UserEntity | number;
 }

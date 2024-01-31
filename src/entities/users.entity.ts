@@ -32,18 +32,21 @@ export class UserEntity {
   @Column({
     type: 'varchar',
     length: 100,
+    nullable: true,
   })
   nickname: string; // 첫 로그인시 작성
 
   @Column({
     type: 'varchar',
     length: 100,
+    // nullable: true, // check
   })
   email: string; // 소셜로그인으로 정보 삽입
 
   @Column({
     type: 'tinyint',
     default: 0,
+    // nullable: true,
   })
   gender: number; // 성별, 0: 공용, 1: 남성, 2: 여성 / 비회원: 0만, 회원: 0~2 모두 다
 
@@ -106,7 +109,7 @@ export class UserEntity {
     name: 'socialAccountProviderId',
     referencedColumnName: 'id',
   })
-  SocialAccountProvider: SocialAccountProviderEntity;
+  SocialAccountProvider: SocialAccountProviderEntity | number;
 
   @OneToMany(() => UserFollowEntity, (userFollow) => userFollow.user)
   userFollow: UserFollowEntity[];
@@ -131,6 +134,4 @@ export class UserEntity {
 
   @OneToMany(() => BookmarkEntity, (bookmark) => bookmark.user)
   bookmark: BookmarkEntity[];
-
-
 }
