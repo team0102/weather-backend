@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeORMConfig } from './config/typeORM.config';
 import { ConfigModule } from '@nestjs/config';
+import { UserController } from './user/user.controller';
+import { UserService } from './user/user.service';
+import { UserModule } from './user/user.module';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthModule } from './auth/auth.module';
 import { FeedModule } from './feed/feed.module';
 
 @Module({
@@ -13,9 +16,14 @@ import { FeedModule } from './feed/feed.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_ACCESS_TOKEN_SECRET_KEY,
+      signOptions: { expiresIn: '12h' },
+    }),
+    UserModule,
+    AuthModule,
     FeedModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
