@@ -1,26 +1,18 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
+import { WeatherDto } from './dto/get-temperature.dto';
+import { ClothSetEntity } from 'src/entities/clothesSet.entity';
 import { ClothesService } from './clothes.service';
 
 @Controller('clothes')
 export class ClothesController {
   constructor(private readonly clothesService: ClothesService) {}
 
-  @Get('/:weatherId')
-  async getClothes(@Param('weatherId') weatherId: number) {
-    try {
-      const cloth =
-        await this.clothesService.getClothesSetIdByWeatherId(weatherId);
-
-      return {
-        statusCode: 200,
-        message: 'Success',
-        data: cloth,
-      };
-    } catch (error) {
-      return {
-        statusCode: error.code || 500,
-        message: error.message,
-      };
-    }
+  @Get()
+  async getClothesSetIdByWeather(
+    @Query() weatherDto: WeatherDto,
+  ): Promise<ClothSetEntity[]> {
+    const { T1H } = weatherDto;
+    
+    return this.clothesService.getClothesSetIdByTemperature(T1H);
   }
 }
