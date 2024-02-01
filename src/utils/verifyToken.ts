@@ -1,11 +1,13 @@
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-export function verifyToken(token: string): { aud: number } {
-  // JwtService의 인스턴스를 생성
-  const jwtService = new JwtService();
+@Injectable()
+export class TokenService {
+  constructor(private readonly jwtService: JwtService) {}
 
-  // verify 메서드를 사용해 토큰 검증
-  const decodedToken = jwtService.verify(token);
+  verifyToken(token: string): { aud: number } {
+    const decodedToken = this.jwtService.verify(token);
 
-  return decodedToken;
+    return decodedToken;
+  }
 }
