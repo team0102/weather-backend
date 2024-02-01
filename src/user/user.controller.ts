@@ -28,7 +28,7 @@ import { TokenService } from 'src/utils/verifyToken';
 
 // 회원가입 상세, 로그아웃, 회원탈퇴, 회원 정보 수정, 닉네임 중복 체크(O), 유저 팔로우(목록, 생성(o), 삭제), 유저 차단(목록, 생성, 삭제)
 
-@Controller('/user')
+@Controller('/users')
 export class UserController {
   constructor(
     private readonly userService: UserService,
