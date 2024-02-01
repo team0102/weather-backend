@@ -4,7 +4,6 @@ import { FeedEntity } from '../entities/feeds.entity';
 import { Repository } from 'typeorm';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 import { FeedImageEntity } from 'src/entities/feedImages.entity';
-import { UserBlockEntity } from 'src/entities/userBlocks.entity';
 
 @Injectable()
 export class FeedRepository {
@@ -13,12 +12,6 @@ export class FeedRepository {
     private readonly feedRepository: Repository<FeedEntity>,
     @InjectRepository(FeedImageEntity)
     private readonly feedImageRepository: Repository<FeedImageEntity>,
-    // @InjectRepository(UserBlockEntity)
-    // private readonly userBlockRepository: Repository<UserBlockEntity>,
-    // @InjectRepository(FeedCommentEntity)
-    // private readonly feedCommentRepository: Repository<FeedCommentEntity>,
-    // @InjectRepository(WeatherConditionEntity)
-    // private readonly weatherConditionRepository: Repository<WeatherConditionEntity>,
   ) {}
 
   async getFeedListWithDetails(): Promise<any[]> {
@@ -62,10 +55,9 @@ export class FeedRepository {
     }
   }
 
-  async createFeed(feedData: CreateFeedDTO, newDate: Date) {
+  async createFeed(userId: number, feedData: CreateFeedDTO, newDate: Date) {
     try {
       const {
-        userId,
         weatherConditionId,
         highTemperature,
         lowTemperature,

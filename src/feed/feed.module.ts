@@ -9,28 +9,26 @@ import { FeedEntity } from 'src/entities/feeds.entity';
 import { FeedCommentEntity } from 'src/entities/feedComments.entity';
 import { FeedLikeEntity } from 'src/entities/feedLikes.entity';
 import { TagEntity } from 'src/entities/tags.entity';
-import { UserEntity } from 'src/entities/users.entity';
-import { WeatherConditionEntity } from 'src/entities/weatherCondition.entity';
 import { TagRepository } from './tag.repository';
 import { FeedTagRepository } from './feedTag.repository';
 import { FeedCommentRepository } from './feedComment.repository';
+import { TokenService } from 'src/utils/verifyToken';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      //forRoot 와이 차이점은?
       FeedEntity,
       FeedImageEntity,
       FeedTagEntity,
       FeedCommentEntity,
       FeedLikeEntity,
       TagEntity,
-      //WeatherConditionEntity
     ]),
   ],
   controllers: [FeedController],
   providers: [
     FeedService,
+    TokenService,
     FeedRepository,
     TagRepository,
     FeedTagRepository,

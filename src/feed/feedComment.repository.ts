@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { CreateCommentDTO } from './dto/create-comment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FeedEntity } from 'src/entities/feeds.entity';
 import { Repository } from 'typeorm';
@@ -15,12 +14,12 @@ export class FeedCommentRepository {
   ) {}
 
   async createComment(
+    userId: number,
     feedId: number,
-    commentData: CreateCommentDTO,
+    content: string,
     newDate: Date,
   ) {
     try {
-      const { userId, content } = commentData;
       const savedComment = await this.feedCommentRepository.save({
         user: { id: userId },
         content: content,

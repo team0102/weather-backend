@@ -4,7 +4,6 @@ import { CreateFeedDTO } from './dto/create-feed.dto';
 import { TagRepository } from './tag.repository';
 import { FeedTagRepository } from './feedTag.repository';
 import { DataSource } from 'typeorm';
-import { CreateCommentDTO } from './dto/create-comment.dto';
 import { FeedCommentRepository } from './feedComment.repository';
 
 @Injectable()
@@ -46,7 +45,7 @@ export class FeedService {
     }
   }
 
-  async getFeedDetails(feedId: number, userId: number) {
+  async getFeedDetails(userId: number, feedId: number) {
     try {
       const feedDetails =
         await this.feedRepository.getFeedWithDetailsById(feedId);
@@ -82,7 +81,7 @@ export class FeedService {
     return matches ? matches.map((match) => match.slice(1)) : [];
   }
 
-  async createFeed(feedData: CreateFeedDTO) {
+  async createFeed(loginUserId: number, feedData: CreateFeedDTO) {
     const newDate = new Date();
     const { content } = feedData;
     const tags = this.extractTagsFromContent(content);
@@ -90,7 +89,7 @@ export class FeedService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const savedFeed = await this.feedRepository.createFeed(feedData, newDate);
+      const savedFeed = await this.feedRepository.createFeed(loginUserId, feedData, newDate);
       const savedFeedId = savedFeed.feed.id;
       // Array to store tag IDs
       let savedTagIds: number[] = [];
@@ -125,14 +124,15 @@ export class FeedService {
     }
   }
 
-  async createComment(feedId: number, commentData: CreateCommentDTO) {
+  async createComment(loginUserId: number, feedId: number, content: string) {
     try {
       const newDate = new Date();
       const findFeed = await this.feedRepository.findFeedById(feedId);
       if (!findFeed) throw new Error('Feed does not exist');
       await this.feedCommentRepository.createComment(
+        loginUserId,
         feedId,
-        commentData,
+        content,
         newDate,
       );
     } catch (error) {
