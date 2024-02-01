@@ -11,9 +11,13 @@ export class ClothesService {
     private readonly weatherRepository: Repository<WeatherEntity>,
   ) {}
 
-  async getClothesSetIdByTemperature(temperature: number): Promise<ClothSetEntity[]> {
+  async getClothesSetIdByTemperature(
+    perceivedTemperature: number,
+  ): Promise<ClothSetEntity[]> {
     const [weather] = await this.weatherRepository.find({
-      where: { temperature },
+      where: {
+        temperature: perceivedTemperature,
+      },
       relations: [
         'clothes.clothesSetId',
         'clothes.clothesSetId.clothesTopId',
@@ -23,8 +27,6 @@ export class ClothesService {
       ],
     });
 
-    console.log('weather : ', weather);
-
     if (!weather) {
       throw new NotFoundException('weather not found');
     }
@@ -32,8 +34,6 @@ export class ClothesService {
     const clothesSetId = weather.clothes.map((cloth) =>
       cloth ? cloth.clothesSetId : null,
     );
-    console.log('clothesSetId : ', clothesSetId);
-    console.log('배열 확인 : ', weather.clothes);
 
     if (!clothesSetId || clothesSetId.length === 0) {
       throw new NotFoundException('cloth not found');
