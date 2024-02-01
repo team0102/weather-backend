@@ -10,9 +10,9 @@ import {
 import * as qs from 'qs';
 
 import {
-  getCheckNicknameOverlapDto,
-  loginDto,
-  userFollowDto,
+  GetCheckNicknameOverlapDto,
+  LoginDto,
+  UserFollowDto,
 } from './dto/user.dto';
 import { UserRepository } from './user.repository';
 import { UserFollowRepository } from './userFollow.repository';
@@ -38,7 +38,7 @@ export class UserService {
   }
 
   // 유저 팔로우(생성)
-  async createUserFollow(userFollowDto: userFollowDto): Promise<void> {
+  async createUserFollow(userFollowDto: UserFollowDto): Promise<void> {
     const { userId, followUserId } = userFollowDto;
     if (!userId || !followUserId) throw new NotFoundException('KEY_ERROR');
 
@@ -53,7 +53,7 @@ export class UserService {
     const checkFollowOverlap =
       await this.userFollowRepository.checkFollowOverlap(userFollowDto);
     if (checkFollowOverlap !== 0)
-      throw new BadRequestException('ALREADY_FOLLOW_USER');
+      throw new BadRequestException('ALREADY_FOLLOWING');
 
     const userFollow = new UserFollowEntity();
     userFollow.user = userId;
@@ -62,9 +62,35 @@ export class UserService {
     return await this.userFollowRepository.createUserFollow(userFollow);
   }
 
+  // 유저 팔로우(삭제)
+  async deleteUserFollow(userFollowDto: UserFollowDto): Promise<void> {
+    const { userId, followUserId } = userFollowDto;
+    if (!userId || !followUserId) throw new NotFoundException('KEY_ERROR');
+
+    if (userId === followUserId)
+      throw new BadRequestException('SAME_ID_REQUESTED');
+
+    const user = await this.userRepository.findOneById(userId);
+    if (!user) throw new NotFoundException('USER_NOT_FOUND');
+    const followUser = await this.userRepository.findOneById(followUserId);
+    if (!followUser) throw new NotFoundException('FOLLOW_USER_NOT_FOUND');
+
+    const checkFollowOverlap =
+      await this.userFollowRepository.checkFollowOverlap(userFollowDto);
+    if (checkFollowOverlap !== 1)
+      throw new BadRequestException('NOT_FOLLOWING');
+
+    const followRelation =
+      await this.userFollowRepository.findFollowRelationByUserIdAndFollowUserId(
+        userFollowDto,
+      );
+
+    return await this.userFollowRepository.deleteUserFollow(followRelation);
+  }
+
   // 테스트용 로그인 -----------------------------------------------
 
-  async login(socialAccountUid: string): Promise<loginDto | null> {
+  async login(socialAccountUid: string): Promise<LoginDto | null> {
     if (!socialAccountUid)
       throw new BadRequestException('socialAccountUid_required');
 

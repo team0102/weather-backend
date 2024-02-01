@@ -18,16 +18,16 @@ import { UserEntity } from 'src/entities/users.entity';
 //   password: string;
 // };
 
-export type getCheckNicknameOverlapDto = {
+export type GetCheckNicknameOverlapDto = {
   nickname?: string;
 };
 
-export type userFollowDto = {
+export type UserFollowDto = {
   userId: number;
   followUserId: number;
 };
 
-export type loginDto = {
+export type LoginDto = {
   token: string;
   user: UserInfo;
 };
