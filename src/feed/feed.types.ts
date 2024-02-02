@@ -68,16 +68,3 @@ export type FeedDatail = {
   isBookmarked: boolean;
 };
 
-export type CommentItem = {
-  id: number;
-  content: string;
-  feed: {
-    id: number;
-    deletedAt: Date;
-  };
-  author: {
-    id: number;
-    nickname: string;
-    profileImage: string | null;
-  };
-};

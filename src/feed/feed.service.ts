@@ -122,7 +122,7 @@ export class FeedService {
   async createFeed(
     loginUserId: number,
     feedData: CreateFeedDTO,
-  ): Promise<boolean> {
+  ): Promise<void> {
     const { content } = feedData;
     const tags = this.extractTagsFromContent(content);
     const queryRunner = this.dataSource.createQueryRunner();
@@ -141,7 +141,6 @@ export class FeedService {
         queryRunner,
       );
       await queryRunner.commitTransaction();
-      return true;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error(error.message);
@@ -217,16 +216,14 @@ export class FeedService {
   //   }
   // }
 
-  async createComment(loginUserId: number, feedId: number, content: string) {
+  async createComment(loginUserId: number, feedId: number, content: string): Promise<void> {
     try {
-      const newDate = new Date();
       const existingFeed = await this.feedRepository.findFeedById(feedId);
       if (!existingFeed) throw new Error('Feed does not exist');
       await this.feedCommentRepository.createComment(
         loginUserId,
         feedId,
         content,
-        newDate,
       );
     } catch (error) {
       console.log(error.message);

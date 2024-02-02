@@ -17,14 +17,11 @@ export class FeedCommentRepository {
     userId: number,
     feedId: number,
     content: string,
-    newDate: Date,
-  ) {
+  ):Promise<FeedCommentEntity> {
     try {
       const savedComment = await this.feedCommentRepository.save({
         user: { id: userId },
         content: content,
-        createdAt: newDate,
-        updatedAt: newDate,
         feed: { id: feedId },
       });
       console.log('createComment result : ', savedComment);
