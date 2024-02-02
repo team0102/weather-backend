@@ -13,7 +13,11 @@ import { FeedService } from './feed.service';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 import { TokenService } from 'src/utils/verifyToken';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
-import { ApiResponse, FeedDetailResponse, FeedListResponse, } from './feed.types';
+import {
+  ApiResponse,
+  FeedDetailResponse,
+  FeedListResponse,
+} from './feed.types';
 
 @Controller('feeds')
 export class FeedController {
@@ -24,10 +28,13 @@ export class FeedController {
 
   @Get()
   async getFeedList(
-    @Headers('Authorization') token: string,
+    @Headers('Authorization') token: string | undefined,
   ): Promise<FeedListResponse> {
     try {
-      const loginUserId = this.tokenService.audienceFromToken(token);
+      let loginUserId: number | null = null;
+      if (token) {
+        loginUserId = this.tokenService.audienceFromToken(token);
+      }
       const feedDatas = await this.feedService.getFeedList(loginUserId);
       return {
         statusCode: 200,
@@ -44,7 +51,7 @@ export class FeedController {
   async getFeedDetails(
     @Headers('Authorization') token: string,
     @Param('feedId', ParseIntPipe) feedId: number,
-  ):Promise<FeedDetailResponse> {
+  ): Promise<FeedDetailResponse> {
     try {
       const loginUserId = this.tokenService.audienceFromToken(token);
       const feedData = await this.feedService.getFeedDetails(

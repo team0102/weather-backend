@@ -18,12 +18,12 @@ export class FeedService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async getFeedList(userId: number): Promise<FeedListItem[]> {
+  async getFeedList(userId: number | null): Promise<FeedListItem[]> {
     try {
       const feedList = await this.feedRepository.getFeedListWithDetails();
       const processedFeedList = await Promise.all(
         feedList.map(async (feed) => {
-          const isAuthor = feed.user.id === userId;
+          const isAuthor = userId !== null && feed.user.id === userId;
           const likeCount = feed.feedLike.length;
           const commentCount = feed.feedComment.length;
           const isLiked = feed.feedLike.some((like) => like.user.id === userId);
@@ -67,7 +67,8 @@ export class FeedService {
 
   async getFeedDetails(userId: number, feedId: number): Promise<FeedDatail> {
     try {
-      const feedDetails = await this.feedRepository.getFeedWithDetailsById(feedId);
+      const feedDetails =
+        await this.feedRepository.getFeedWithDetailsById(feedId);
       const isAuthor = feedDetails.user.id === userId;
       const likeCount = feedDetails.feedLike.length;
       const commentCount = feedDetails.feedComment.length;

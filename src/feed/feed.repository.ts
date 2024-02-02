@@ -62,12 +62,12 @@ export class FeedRepository {
     }
   }
 
-  async createFeed(userId: number, feedData: CreateFeedDTO): Promise<FeedEntity> {
+  async createFeed(
+    userId: number,
+    feedData: CreateFeedDTO,
+  ): Promise<FeedEntity> {
     try {
-      const {
-        weatherConditionId,
-        imageUrl,
-      } = feedData;
+      const { weatherConditionId, imageUrl } = feedData;
       //피드 저장 및 연결
       const savedFeed = await this.feedRepository.save({
         user: { id: userId },
@@ -130,7 +130,7 @@ export class FeedRepository {
   //   }
   // }
 
-  async findFeedById(feedId: number):Promise<FeedEntity> {
+  async findFeedById(feedId: number): Promise<FeedEntity> {
     try {
       const result = await this.feedRepository.findOneBy({ id: feedId });
       return result;

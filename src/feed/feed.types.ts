@@ -7,7 +7,7 @@ export type FeedListResponse = {
   statusCode: number;
   message: string;
   data?: FeedListItem[];
-}
+};
 
 export type FeedListItem = {
   id: number;
@@ -31,19 +31,28 @@ export type FeedListItem = {
 };
 
 export type FeedDetailResponse = {
-    statusCode: number;
-    message: string;
-    data?: FeedListItem;
-
-}
+  statusCode: number;
+  message: string;
+  data?: FeedListItem;
+};
 
 export type FeedDatail = {
+  id: number;
+  content: string;
+  imageUrl: string;
+  weatherConditionId: number;
+  lowTemperature: number;
+  highTemperature: number;
+  createdAt: Date;
+  updatedAt: Date;
+  author: {
+    id: number;
+    nickname: string;
+    profileImage: string | null;
+  };
+  comment: Array<{
     id: number;
     content: string;
-    imageUrl: string;
-    weatherConditionId: number;
-    lowTemperature: number;
-    highTemperature: number;
     createdAt: Date;
     updatedAt: Date;
     author: {
@@ -51,36 +60,24 @@ export type FeedDatail = {
       nickname: string;
       profileImage: string | null;
     };
-    comment: Array<{
-        id: number;
-        content: string;
-        createdAt: Date;
-        updatedAt: Date;
-        author: {
-            id: number;
-            nickname: string;
-            profileImage: string | null;
-        }
-    }>;
-    isAuthor: boolean;
-    likeCount: number;
-    commentCount: number;
-    isLiked: boolean;
-    isBookmarked: boolean;
-}
-
+  }>;
+  isAuthor: boolean;
+  likeCount: number;
+  commentCount: number;
+  isLiked: boolean;
+  isBookmarked: boolean;
+};
 
 export type CommentItem = {
+  id: number;
+  content: string;
+  feed: {
     id: number;
-    content: string;
-    feed: {
-        id: number;
-        deletedAt: Date;
-    }
-    author: {
-        id: number;
-        nickname: string;
-        profileImage: string | null;
-    };
-
-}
+    deletedAt: Date;
+  };
+  author: {
+    id: number;
+    nickname: string;
+    profileImage: string | null;
+  };
+};
