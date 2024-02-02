@@ -7,10 +7,13 @@ import {
   Post,
   Headers,
   Query,
+  Put,
 } from '@nestjs/common';
 import { FeedService } from './feed.service';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 import { TokenService } from 'src/utils/verifyToken';
+import { UpdateFeedDTO } from './dto/update-feed.dto';
+import { CreateResponse } from './feed.types';
 
 @Controller('feeds')
 export class FeedController {
@@ -42,7 +45,10 @@ export class FeedController {
   ) {
     try {
       const loginUserId = this.tokenService.audienceFromToken(token);
-      const feedData = await this.feedService.getFeedDetails(loginUserId, feedId);
+      const feedData = await this.feedService.getFeedDetails(
+        loginUserId,
+        feedId,
+      );
       return {
         statusCode: 200,
         message: 'Successed to get feedDetails',
@@ -58,7 +64,7 @@ export class FeedController {
   async createFeed(
     @Headers('Authorization') token: string,
     @Body() feedData: CreateFeedDTO,
-  ) {
+  ): Promise<CreateResponse> {
     try {
       const loginUserId = this.tokenService.audienceFromToken(token);
       await this.feedService.createFeed(loginUserId, feedData);
@@ -69,12 +75,27 @@ export class FeedController {
     }
   }
 
+  // @Put(/:feedId)
+  // async updateFeed(
+  //   @Headers('Authorization') token: string,
+  //   @Body() feedData: UpdateFeedDTO,
+  // ) {
+  //   try{
+  //     const loginUserId = this.tokenService.audienceFromToken(token);
+  //     await this.feedService.updateFeed(loginUserId, feedData);
+  //     return { statusCode: 201, message: 'Feed created successfully' };
+  //   } catch(error) {
+  //     console.log(error)
+  //     return { statusCode: error.code || 500, message: error.message };
+  //   }
+  // }
+
   @Post('/:feedId/comment')
   async createComment(
     @Headers('Authorization') token: string,
     @Param('feedId', ParseIntPipe) feedId: number,
     @Body() content: string,
-  ) {
+  ): Promise<CreateResponse> {
     try {
       const loginUserId = this.tokenService.audienceFromToken(token);
       await this.feedService.createComment(loginUserId, feedId, content);

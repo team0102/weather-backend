@@ -14,13 +14,13 @@ export class CreateFeedDTO {
   readonly lowTemperature: number;
 
   @IsString()
-  readonly image: string;
+  readonly imageUrl: string;
 
   @IsString()
   readonly content: string;
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true }) // 각 요소가 문자열인 배열임을 나타냄
+  @IsString({ each: true })
   readonly tag: string[];
 }

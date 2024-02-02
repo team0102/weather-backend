@@ -15,22 +15,19 @@ export class FeedTagRepository {
   async createFeedTags(
     feedId: number,
     tagIds: number[],
-    newDate: Date,
     queryRunner: QueryRunner,
   ) {
     try {
+      await queryRunner.startTransaction();
       const savedFeedTags = await Promise.all(
         tagIds.map(async (tagId) => {
-          const feedTag = new FeedTagEntity();
-          feedTag.feed = { id: feedId } as FeedEntity;
-          feedTag.tag = { id: tagId } as TagEntity;
-          feedTag.createdAt = newDate;
-          feedTag.updatedAt = newDate;
-
-          const savedFeedTag = await queryRunner.manager.save(feedTag);
-          return savedFeedTag;
+          return this.feedTagRepository.save({
+            feed: { id: feedId },
+            tag: { id: tagId},
+          })
         }),
       );
+      await queryRunner.commitTransaction();
       console.log('createFeedTag result : ', savedFeedTags);
       return savedFeedTags;
     } catch (error) {

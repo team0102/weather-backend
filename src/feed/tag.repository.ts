@@ -10,12 +10,10 @@ export class TagRepository {
     private readonly tagRepository: Repository<TagEntity>,
   ) {}
 
-  async createTag(tag: string, newDate: Date) {
+  async createTag(tag: string) {
     try {
       const savedTag = await this.tagRepository.save({
         content: tag,
-        createdAt: newDate,
-        updatedAt: newDate,
       });
       console.log('savedTag result : ', savedTag);
       return savedTag;

@@ -3,8 +3,9 @@ import { FeedRepository } from './feed.repository';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 import { TagRepository } from './tag.repository';
 import { FeedTagRepository } from './feedTag.repository';
-import { DataSource } from 'typeorm';
+import { DataSource, QueryRunner } from 'typeorm';
 import { FeedCommentRepository } from './feedComment.repository';
+import { UpdateFeedDTO } from './dto/update-feed.dto';
 
 @Injectable()
 export class FeedService {
@@ -74,47 +75,26 @@ export class FeedService {
     }
   }
 
-  //해시태그 추출
-  extractTagsFromContent(content: string): string[] {
-    const tagRegex = /#(\S+)/g; //모든 문자
-    const matches = content.match(tagRegex);
-    return matches ? matches.map((match) => match.slice(1)) : [];
-  }
-
-  async createFeed(loginUserId: number, feedData: CreateFeedDTO) {
-    const newDate = new Date();
+  async createFeed(loginUserId: number, feedData: CreateFeedDTO): Promise<boolean> {
     const { content } = feedData;
     const tags = this.extractTagsFromContent(content);
     const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
     try {
-      const savedFeed = await this.feedRepository.createFeed(loginUserId, feedData, newDate);
-      const savedFeedId = savedFeed.feed.id;
-      // Array to store tag IDs
-      let savedTagIds: number[] = [];
-      // Iterate through tags
-      for (const tagValue of tags) {
-        const foundTag = await this.tagRepository.findTagByContent(tagValue);
-        if (!foundTag) {
-          const savedTag = await this.tagRepository.createTag(
-            tagValue,
-            newDate,
-          );
-          savedTagIds.push(savedTag.id);
-        } else {
-          savedTagIds.push(foundTag.id);
-        }
-      }
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      const savedFeed = await this.feedRepository.createFeed(
+        loginUserId,
+        feedData,
+      );
+      const savedFeedId = savedFeed.id;
+      const savedTagIds = await this.saveTagsAndGetIds(tags);
       const savedFeedTag = await this.feedTagRepository.createFeedTags(
         savedFeedId,
         savedTagIds,
-        newDate,
         queryRunner,
       );
-      // 같은 트랜잭션을 사용하도록 queryRunner를 전달
       await queryRunner.commitTransaction();
-      return { savedFeed, savedFeedTag };
+      return true;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error(error.message);
@@ -124,11 +104,79 @@ export class FeedService {
     }
   }
 
+  private async saveTagsAndGetIds(
+    tags: string[],
+  ): Promise<number[]> {
+    const savedTagIds: number[] = [];
+    for (const tagValue of tags) {
+      const foundTag = await this.tagRepository.findTagByContent(tagValue);
+      if (!foundTag) {
+        const savedTag = await this.tagRepository.createTag(tagValue);
+        savedTagIds.push(savedTag.id);
+      } else {
+        savedTagIds.push(foundTag.id);
+      }
+    }
+    return savedTagIds;
+  }
+
+  //해시태그 추출
+  extractTagsFromContent(content: string): string[] {
+    const tagRegex = /#(\S+)/g; //모든 문자
+    const matches = content.match(tagRegex);
+    return matches ? matches.map((match) => match.slice(1)) : [];
+  }
+
+  //=====================update Feed===========================================
+  // async updateFeed(
+  //   loginUserId: number,
+  //   feedId: number,
+  //   feedData: UpdateFeedDTO,
+  // ) {
+  //   const newDate = new Date();
+  //   const { content } = feedData;
+  //   const tags = this.extractTagsFromContent(content);
+  //   const queryRunner = this.dataSource.createQueryRunner();
+  //   await queryRunner.connect();
+  //   await queryRunner.startTransaction();
+  //   try {
+  //     // 기존 피드 정보 가져오기
+  //     const existingFeed = await this.feedRepository.findFeedById(feedId);
+  //     if (!existingFeed) throw new Error('Feed does not exist');
+  //     if (existingFeed.user.id !== loginUserId) throw new Error('Invalid user');
+  //     // 새로운 태그 생성 또는 기존 태그 가져오기
+  //     let savedTagIds: number[] = [];
+  //     for (const tagValue of tags) {
+  //       const foundTag = await this.tagRepository.findTagByContent(tagValue);
+  //       if (!foundTag) {
+  //         const savedTag = await this.tagRepository.createTag(
+  //           tagValue,
+  //           newDate,
+  //         );
+  //         savedTagIds.push(savedTag.id);
+  //       } else {
+  //         savedTagIds.push(foundTag.id);
+  //       }
+  //     }
+  //     // 기존 태그와 비교하여 feedTag 추가 및 삭제 ********* 작성중 *****************
+
+  //     //기존 피드가 가지고 있던 FeedTag 엔터티들의 배열
+  //     const existingFeedTagIds = existingFeed.feedTag.map(feedTag => feedTag.id);
+  //     //존재하지 않은 태그들 tagsToAdd 배열에 저장
+  //     const tagsToAdd = savedTagIds.filter(tagId => !existingFeedTagIds.includes(tagId));
+  //     //savedTagIds 배열에 존재하지 않는 태그들 tagsToDelete 배열에 저장
+  //     const tagsToDelete = existingFeedTagIds.filter(feedTagId => !savedTagIds.includes(feedTagId));
+  //   } catch (error) {
+  //     console.log(error.message);
+  //     throw new Error(error.message);
+  //   }
+  // }
+
   async createComment(loginUserId: number, feedId: number, content: string) {
     try {
       const newDate = new Date();
-      const findFeed = await this.feedRepository.findFeedById(feedId);
-      if (!findFeed) throw new Error('Feed does not exist');
+      const existingFeed = await this.feedRepository.findFeedById(feedId);
+      if (!existingFeed) throw new Error('Feed does not exist');
       await this.feedCommentRepository.createComment(
         loginUserId,
         feedId,
