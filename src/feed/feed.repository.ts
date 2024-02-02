@@ -23,6 +23,7 @@ export class FeedRepository {
           feedImage: true,
           feedComment: true,
           feedLike: true,
+          weatherCondition: true,
           bookmark: true,
           feedTag: {
             tag: true,
@@ -42,8 +43,11 @@ export class FeedRepository {
         relations: {
           user: true,
           feedImage: true,
-          feedComment: true,
+          feedComment: {
+            user: true,
+          },
           feedLike: true,
+          weatherCondition: true,
           bookmark: true,
           feedTag: {
             tag: true,
@@ -126,7 +130,7 @@ export class FeedRepository {
   //   }
   // }
 
-  async findFeedById(feedId: number) {
+  async findFeedById(feedId: number):Promise<FeedEntity> {
     try {
       const result = await this.feedRepository.findOneBy({ id: feedId });
       return result;

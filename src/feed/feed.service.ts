@@ -3,10 +3,10 @@ import { FeedRepository } from './feed.repository';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 import { TagRepository } from './tag.repository';
 import { FeedTagRepository } from './feedTag.repository';
-import { DataSource, QueryRunner } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { FeedCommentRepository } from './feedComment.repository';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
-import { FeedItem } from './feed.types';
+import { FeedDatail, FeedListItem } from './feed.types';
 
 @Injectable()
 export class FeedService {
@@ -18,7 +18,7 @@ export class FeedService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async getFeedList(userId: number): Promise<FeedItem[]> {
+  async getFeedList(userId: number): Promise<FeedListItem[]> {
     try {
       const feedList = await this.feedRepository.getFeedListWithDetails();
       const processedFeedList = await Promise.all(
@@ -46,6 +46,7 @@ export class FeedService {
             content,
             lowTemperature,
             highTemperature,
+            weatherConditionId: feed.weatherCondition.id,
             createdAt,
             updatedAt,
             author: { id, nickname, profileImage },
@@ -64,11 +65,9 @@ export class FeedService {
     }
   }
 
-  async getFeedDetails(userId: number, feedId: number): Promise<FeedItem> {
+  async getFeedDetails(userId: number, feedId: number): Promise<FeedDatail> {
     try {
-      const feedDetails =
-        await this.feedRepository.getFeedWithDetailsById(feedId);
-
+      const feedDetails = await this.feedRepository.getFeedWithDetailsById(feedId);
       const isAuthor = feedDetails.user.id === userId;
       const likeCount = feedDetails.feedLike.length;
       const commentCount = feedDetails.feedComment.length;
@@ -83,17 +82,29 @@ export class FeedService {
         feedDetails.feedImage.length > 0
           ? feedDetails.feedImage[0].imageUrl
           : null;
-      const { content, lowTemperature, highTemperature, createdAt, updatedAt } =
-        feedDetails;
+      const comment = feedDetails.feedComment.map((comment) => ({
+        id: comment.id,
+        content: comment.content,
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+        author: {
+          id: comment.user.id,
+          nickname: comment.user.nickname,
+          profileImage: comment.user.profileImage,
+        },
+      }));
+
       const processedFeed = {
         id: feedDetails.id,
         imageUrl,
-        content,
-        lowTemperature,
-        highTemperature,
-        createdAt,
-        updatedAt,
+        content: feedDetails.content,
+        weatherConditionId: feedDetails.weatherCondition.id,
+        lowTemperature: feedDetails.lowTemperature,
+        highTemperature: feedDetails.highTemperature,
+        createdAt: feedDetails.createdAt,
+        updatedAt: feedDetails.updatedAt,
         author: { id, nickname, profileImage },
+        comment,
         isAuthor,
         likeCount,
         commentCount,
