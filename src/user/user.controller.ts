@@ -79,7 +79,7 @@ export class UserController {
 
   //  - 팔로잉 목록 : O / 내가 팔로우 한 = 내 id가 userId에 있고, followUserId를 찾아 출력
   @Get('/following')
-  async userFollowingList(
+  async getUserFollowingList(
     @Headers('authorization') token: string,
   ): Promise<UserFollowEntity[] | null> {
     const decodedToken = this.tokenService.verifyToken(token);
@@ -91,7 +91,7 @@ export class UserController {
 
   //  - 팔로워 목록 : O / 나를 팔로우 한 = 내 id가 followUserId에 있고, userId를 찾아 출력
   @Get('/follower')
-  async userFollowerList(
+  async getUserFollowerList(
     @Headers('authorization') token: string,
   ): Promise<UserFollowEntity[] | null> {
     const decodedToken = this.tokenService.verifyToken(token);
