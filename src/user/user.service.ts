@@ -88,6 +88,92 @@ export class UserService {
     return await this.userFollowRepository.deleteUserFollow(followRelation);
   }
 
+  // 유저 팔로우(목록)_ing
+  //  - 팔로워 목록 : 나를 팔로우 한
+  async followerList(followUserId: number): Promise<UserFollowEntity[] | null> {
+    const followerList = // 나를 팔로우 한(= userId)
+      await this.userFollowRepository.findFollowerList(followUserId);
+
+    const followingListByCurrentUser = // = 내가 팔로우 한(=followUserId)
+      await this.userFollowRepository.findFollowingList(followUserId);
+
+    // isFollowingBack : 맞팔로우 여부(내가 팔로우 한 유저가 나를 팔로우 했는지)
+    //  - 로그인 한 유저(=나) 기준, 나를 팔로우 한 유저의 목록과 내가 팔로우 한 유저의 목록을 대조 / 서로의 목록에 ID가 있으면 true, 없으면 false
+    //  - followUser, user가 number 혹은 UserEntity 중 어떤 타입인지 확실히 하지 않았다. >> followUser, user를 타입으로 확인하고 일치하도록 구성
+
+    followerList.forEach((follower) => {
+      const followUserId =
+        typeof follower.user === 'number' ? follower.user : follower.user.id;
+
+      follower.isFollowingBack = followingListByCurrentUser.some(
+        (following) => {
+          const followingUserId =
+            typeof following.followUser === 'number'
+              ? following.followUser
+              : following.followUser.id;
+
+          return followUserId === followingUserId;
+        },
+      );
+    });
+
+    return followerList;
+  }
+
+  //  - 팔로잉 목록 : 내가 팔로우 한 = followUserId 출력(내 id가 userId에 있고)
+  async followingList(userId: number): Promise<UserFollowEntity[] | null> {
+    const followingList =
+      await this.userFollowRepository.findFollowingList(userId);
+
+    return followingList;
+  }
+
+  // 원본-------------
+
+  // async followerList(userId: number): Promise<UserFollowEntity[] | null> {
+  //   const followerList =
+  //     await this.userFollowRepository.findFollowerList(userId);
+
+  //   const followingListByCurrentUser =
+  //     await this.userFollowRepository.findFollowingList(userId);
+
+  //   // isFollowingBack : 맞팔로우 여부(나를 팔로우 한 유저를 나도 팔로우 했는지)
+  //   //  - 로그인 한 유저(=나) 기준, 나를 팔로우 한 유저의 목록과 내가 팔로우 한 유저의 목록을 대조해 일치하는 ID가 있으면 true, 없으면 false
+  //   //  - followUser, user가 number 혹은 UserEntity 중 어떤 타입인지 확실히 하지 않았다. >> followUser, user를 타입으로 확인하고 일치하도록 구성
+
+  //   followerList.forEach((follower) => {
+  //     const followUserId =
+  //       typeof follower.followUser === 'number'
+  //         ? follower.followUser
+  //         : follower.followUser.id;
+
+  //     follower.isFollowingBack = followingListByCurrentUser.some(
+  //       (following) => {
+  //         const followingUserId =
+  //           typeof following.user === 'number'
+  //             ? following.user
+  //             : following.user.id;
+
+  //         return followingUserId === followUserId;
+  //       },
+  //     );
+  //   });
+
+  //   return followerList;
+  // }
+
+  // //  - 팔로잉 목록 : 내가 팔로우 한
+  // async followingList(
+  //   followUserId: number,
+  // ): Promise<UserFollowEntity[] | null> {
+  //   const followingList =
+  //     await this.userFollowRepository.findFollowingList(followUserId);
+
+  //   return followingList;
+  // }
+
+  // 원본-------------
+
   // 테스트용 로그인 -----------------------------------------------
 
   async login(socialAccountUid: string): Promise<LoginDto | null> {
