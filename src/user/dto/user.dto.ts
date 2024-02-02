@@ -1,23 +1,3 @@
-// export type LoginResponseDto = {
-//   token: string;
-//   user: UserInfo;
-// };
-
-import { UserEntity } from 'src/entities/users.entity';
-
-// export type UserInfo = {
-//   id: number;
-//   name: string;
-//   email: string;
-//   phoneNumber: string;
-// };
-
-// export type SignUpRequestDto = {
-//   name?: string;
-//   email: string;
-//   password: string;
-// };
-
 export type GetCheckNicknameOverlapDto = {
   nickname?: string;
 };

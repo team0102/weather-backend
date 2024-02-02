@@ -1,4 +1,5 @@
 import {
+  Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
@@ -14,6 +15,12 @@ import { UserEntity } from './users.entity';
 export class UserFollowEntity {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({
+    type: 'boolean',
+    default: false,
+  })
+  isFollowingBack: boolean; // 맞팔로우 여부(내가 팔로우 한 유저가 나를 팔로우 했는지)
 
   @CreateDateColumn({
     type: 'timestamp',
