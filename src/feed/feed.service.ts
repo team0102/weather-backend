@@ -29,8 +29,17 @@ export class FeedService {
           const isBookmarked = feed.bookmark.some(
             (bookmark) => bookmark.userId === userId,
           );
+      const { id, nickname, profileImage } = feed.user;
+      const { content, imageUrl, lowTemperature, highTemperature, createdAt, updatedAt } = feed;
           return {
-            ...feed,
+            id: feed.id,
+            imageUrl,
+            content,
+            lowTemperature,
+            highTemperature,
+            createdAt,
+            updatedAt,
+            author: { id, nickname, profileImage },
             isAuthor,
             likeCount,
             commentCount,
@@ -50,6 +59,7 @@ export class FeedService {
     try {
       const feedDetails =
         await this.feedRepository.getFeedWithDetailsById(feedId);
+
       const isAuthor = feedDetails.user.id === userId;
       const likeCount = feedDetails.feedLike.length;
       const commentCount = feedDetails.feedComment.length;
@@ -68,6 +78,7 @@ export class FeedService {
         isLiked,
         isBookmarked,
       };
+      
       return processedFeedDetails;
     } catch (error) {
       console.log(error.message);
