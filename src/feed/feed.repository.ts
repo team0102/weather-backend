@@ -15,11 +15,12 @@ export class FeedRepository {
     private readonly feedImageRepository: Repository<FeedImageEntity>,
   ) {}
 
-  async getFeedListWithDetails(): Promise<any[]> {
+  async getFeedListWithDetails(): Promise<FeedEntity[]> {
     try {
       const feedList = await this.feedRepository.find({
         relations: {
           user: true,
+          feedImage: true,
           feedComment: true,
           feedLike: true,
           bookmark: true,

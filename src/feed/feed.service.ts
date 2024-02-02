@@ -6,6 +6,7 @@ import { FeedTagRepository } from './feedTag.repository';
 import { DataSource, QueryRunner } from 'typeorm';
 import { FeedCommentRepository } from './feedComment.repository';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
+import { FeedItem } from './feed.types';
 
 @Injectable()
 export class FeedService {
@@ -17,20 +18,21 @@ export class FeedService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async getFeedList(userId: number): Promise<any[]> {
+  async getFeedList(userId: number): Promise<FeedItem[]> {
     try {
       const feedList = await this.feedRepository.getFeedListWithDetails();
       const processedFeedList = await Promise.all(
         feedList.map(async (feed) => {
-          const isAuthor = feed.userId === userId;
+          const isAuthor = feed.user.id === userId;
           const likeCount = feed.feedLike.length;
           const commentCount = feed.feedComment.length;
-          const isLiked = feed.feedLike.some((like) => like.userId === userId);
+          const isLiked = feed.feedLike.some((like) => like.user.id === userId);
           const isBookmarked = feed.bookmark.some(
-            (bookmark) => bookmark.userId === userId,
+            (bookmark) => bookmark.user.id === userId,
           );
       const { id, nickname, profileImage } = feed.user;
-      const { content, imageUrl, lowTemperature, highTemperature, createdAt, updatedAt } = feed;
+      const imageUrl = feed.feedImage.length > 0 ? feed.feedImage[0].imageUrl : null;
+      const { content, lowTemperature, highTemperature, createdAt, updatedAt } = feed;
           return {
             id: feed.id,
             imageUrl,
@@ -78,7 +80,6 @@ export class FeedService {
         isLiked,
         isBookmarked,
       };
-      
       return processedFeedDetails;
     } catch (error) {
       console.log(error.message);

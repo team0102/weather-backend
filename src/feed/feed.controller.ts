@@ -13,7 +13,7 @@ import { FeedService } from './feed.service';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 import { TokenService } from 'src/utils/verifyToken';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
-import { CreateResponse } from './feed.types';
+import { ApiResponse, FeedList } from './feed.types';
 
 @Controller('feeds')
 export class FeedController {
@@ -23,7 +23,9 @@ export class FeedController {
   ) {}
 
   @Get()
-  async getFeedList(@Headers('Authorization') token: string) {
+  async getFeedList(
+    @Headers('Authorization') token: string,
+  ): Promise<FeedList> {
     try {
       const loginUserId = this.tokenService.audienceFromToken(token);
       const feedDatas = await this.feedService.getFeedList(loginUserId);
@@ -64,7 +66,7 @@ export class FeedController {
   async createFeed(
     @Headers('Authorization') token: string,
     @Body() feedData: CreateFeedDTO,
-  ): Promise<CreateResponse> {
+  ): Promise<ApiResponse> {
     try {
       const loginUserId = this.tokenService.audienceFromToken(token);
       await this.feedService.createFeed(loginUserId, feedData);
@@ -95,7 +97,7 @@ export class FeedController {
     @Headers('Authorization') token: string,
     @Param('feedId', ParseIntPipe) feedId: number,
     @Body() content: string,
-  ): Promise<CreateResponse> {
+  ): Promise<ApiResponse> {
     try {
       const loginUserId = this.tokenService.audienceFromToken(token);
       await this.feedService.createComment(loginUserId, feedId, content);
