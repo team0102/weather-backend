@@ -36,11 +36,12 @@ export class FeedRepository {
     }
   }
 
-  async getFeedWithDetailsById(feedId: number) {
+  async getFeedWithDetailsById(feedId: number): Promise<FeedEntity> {
     try {
       const [feed] = await this.feedRepository.find({
         relations: {
           user: true,
+          feedImage: true,
           feedComment: true,
           feedLike: true,
           bookmark: true,

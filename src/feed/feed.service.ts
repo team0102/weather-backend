@@ -30,9 +30,16 @@ export class FeedService {
           const isBookmarked = feed.bookmark.some(
             (bookmark) => bookmark.user.id === userId,
           );
-      const { id, nickname, profileImage } = feed.user;
-      const imageUrl = feed.feedImage.length > 0 ? feed.feedImage[0].imageUrl : null;
-      const { content, lowTemperature, highTemperature, createdAt, updatedAt } = feed;
+          const { id, nickname, profileImage } = feed.user;
+          const imageUrl =
+            feed.feedImage.length > 0 ? feed.feedImage[0].imageUrl : null;
+          const {
+            content,
+            lowTemperature,
+            highTemperature,
+            createdAt,
+            updatedAt,
+          } = feed;
           return {
             id: feed.id,
             imageUrl,
@@ -57,7 +64,7 @@ export class FeedService {
     }
   }
 
-  async getFeedDetails(userId: number, feedId: number) {
+  async getFeedDetails(userId: number, feedId: number): Promise<FeedItem> {
     try {
       const feedDetails =
         await this.feedRepository.getFeedWithDetailsById(feedId);
@@ -71,23 +78,39 @@ export class FeedService {
       const isBookmarked = feedDetails.bookmark.some(
         (bookmark) => bookmark.user.id === userId,
       );
-
-      const processedFeedDetails = {
-        ...feedDetails,
+      const { id, nickname, profileImage } = feedDetails.user;
+      const imageUrl =
+        feedDetails.feedImage.length > 0
+          ? feedDetails.feedImage[0].imageUrl
+          : null;
+      const { content, lowTemperature, highTemperature, createdAt, updatedAt } =
+        feedDetails;
+      const processedFeed = {
+        id: feedDetails.id,
+        imageUrl,
+        content,
+        lowTemperature,
+        highTemperature,
+        createdAt,
+        updatedAt,
+        author: { id, nickname, profileImage },
         isAuthor,
         likeCount,
         commentCount,
         isLiked,
         isBookmarked,
       };
-      return processedFeedDetails;
+      return processedFeed;
     } catch (error) {
       console.log(error.message);
       throw new Error('Fail to get feedDetails');
     }
   }
 
-  async createFeed(loginUserId: number, feedData: CreateFeedDTO): Promise<boolean> {
+  async createFeed(
+    loginUserId: number,
+    feedData: CreateFeedDTO,
+  ): Promise<boolean> {
     const { content } = feedData;
     const tags = this.extractTagsFromContent(content);
     const queryRunner = this.dataSource.createQueryRunner();
@@ -116,9 +139,7 @@ export class FeedService {
     }
   }
 
-  private async saveTagsAndGetIds(
-    tags: string[],
-  ): Promise<number[]> {
+  private async saveTagsAndGetIds(tags: string[]): Promise<number[]> {
     const savedTagIds: number[] = [];
     for (const tagValue of tags) {
       const foundTag = await this.tagRepository.findTagByContent(tagValue);

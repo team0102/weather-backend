@@ -9,6 +9,12 @@ export type FeedList = {
   data?: FeedItem[];
 }
 
+export type Feed = {
+  statusCode: number;
+  message: string;
+  data?: FeedItem;
+}
+
 export type FeedItem = {
   id: number;
   content: string;
