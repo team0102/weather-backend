@@ -88,6 +88,7 @@ export class FeedService {
         content: comment.content,
         createdAt: comment.createdAt,
         updatedAt: comment.updatedAt,
+        deletedAt: comment.deletedAt,
         author: {
           id: comment.user.id,
           nickname: comment.user.nickname,

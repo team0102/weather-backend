@@ -29,6 +29,7 @@ export class FeedRepository {
             tag: true,
           },
         },
+        order: { createdAt: 'DESC' }, 
       });
       return feedList;
     } catch (error) {
