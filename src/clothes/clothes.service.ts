@@ -1,44 +1,41 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { WeatherEntity } from 'src/entities/weather.entity';
 import { Repository } from 'typeorm';
 import { ClothSetEntity } from 'src/entities/clothesSet.entity';
+import { ClothEntity } from 'src/entities/clothes.entity';
 
 @Injectable()
 export class ClothesService {
   constructor(
-    @InjectRepository(WeatherEntity)
-    private readonly weatherRepository: Repository<WeatherEntity>,
+    @InjectRepository(ClothEntity)
+    private readonly clothesEntity: Repository<ClothEntity>,
   ) {}
 
   async getClothesSetIdByTemperature(
     perceivedTemperature: number,
   ): Promise<ClothSetEntity[]> {
-    const [weather] = await this.weatherRepository.find({
-      where: {
-        temperature: perceivedTemperature,
-      },
-      relations: [
-        'clothes.clothesSetId',
-        'clothes.clothesSetId.clothesTopId',
-        'clothes.clothesSetId.clothesBottomId',
-        'clothes.clothesSetId.clothesCoatId',
-        'clothes.clothesSetId.clothesAccessoryId',
-      ],
-    });
+    const clothEntities = await this.clothesEntity
+      .createQueryBuilder('cloth')
+      .where(
+        ':perceivedTemperature BETWEEN cloth.lowPerceivedTemperature AND cloth.highPerceivedTemperature',
+        { perceivedTemperature },
+      )
+      .leftJoinAndSelect('cloth.clothesSetId', 'clothSet')
+      .leftJoinAndSelect('clothSet.clothesTopId', 'clothesTop')
+      .leftJoinAndSelect('clothSet.clothesBottomId', 'clothesBottom')
+      .leftJoinAndSelect('clothSet.clothesCoatId', 'clothesCoat')
+      .leftJoinAndSelect('clothSet.clothesAccessoryId', 'clothesAccessory')
+      .getMany();
 
-    if (!weather) {
-      throw new NotFoundException('weather not found');
+    if (!clothEntities || clothEntities.length === 0) {
+      throw new NotFoundException('주어진 온도에 해당하는 옷 세트가 없습니다');
     }
 
-    const clothesSetId = weather.clothes.map((cloth) =>
-      cloth ? cloth.clothesSetId : null,
+    // Extract and return ClothSetEntity array
+    const clothSets: ClothSetEntity[] = clothEntities.map(
+      (cloth) => cloth.clothesSetId,
     );
 
-    if (!clothesSetId || clothesSetId.length === 0) {
-      throw new NotFoundException('cloth not found');
-    }
-
-    return clothesSetId;
+    return clothSets;
   }
 }

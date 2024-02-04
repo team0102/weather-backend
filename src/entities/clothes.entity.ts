@@ -1,4 +1,5 @@
 import {
+  Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
@@ -8,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ClothSetEntity } from './clothesSet.entity';
-import { WeatherEntity } from './weather.entity';
+// import { WeatherEntity } from './weather.entity';
 
 @Entity({
   name: 'clothes',
@@ -17,12 +18,22 @@ export class ClothEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => WeatherEntity)
-  @JoinColumn({
-    name: 'weatherId',
-    referencedColumnName: 'id',
+  // @ManyToOne(() => WeatherEntity)
+  // @JoinColumn({
+  //   name: 'weatherId',
+  //   referencedColumnName: 'id',
+  // })
+  // weatherId: WeatherEntity;
+
+  @Column({
+    type: 'integer',
   })
-  weatherId: WeatherEntity;
+  lowPerceivedTemperature: number;
+
+  @Column({
+    type: 'integer',
+  })
+  highPerceivedTemperature: number;
 
   @OneToOne(() => ClothSetEntity)
   @JoinColumn({
