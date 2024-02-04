@@ -9,21 +9,21 @@ import { UserFollowDto } from './dto/user.dto';
 export class UserFollowRepository {
   constructor(
     @InjectRepository(UserFollowEntity)
-    private readonly userFollowRepository: Repository<UserFollowEntity>,
+    private readonly userFollowTypeormRepository: Repository<UserFollowEntity>,
   ) {}
 
   // follow관계 존재 여부 확인(개수)
   async checkFollowOverlap(userFollowDto): Promise<number> {
     const { userId, followUserId } = userFollowDto;
 
-    return await this.userFollowRepository.countBy({
+    return await this.userFollowTypeormRepository.countBy({
       user: { id: userId },
       followUser: { id: followUserId },
     });
   }
 
   async createUserFollow(userFollowDto: UserFollowEntity): Promise<void> {
-    await this.userFollowRepository.save(userFollowDto);
+    await this.userFollowTypeormRepository.save(userFollowDto);
   }
 
   async findFollowRelationByUserIdAndFollowUserId(
@@ -31,7 +31,7 @@ export class UserFollowRepository {
   ): Promise<UserFollowEntity[] | null> {
     const { userId, followUserId } = userFollowDto;
 
-    return await this.userFollowRepository.find({
+    return await this.userFollowTypeormRepository.find({
       select: {
         user: { id: true },
         followUser: { id: true },
@@ -48,6 +48,46 @@ export class UserFollowRepository {
   }
 
   async deleteUserFollow(followRelation: UserFollowEntity[]): Promise<void> {
-    await this.userFollowRepository.remove(followRelation);
+    await this.userFollowTypeormRepository.remove(followRelation);
+  }
+
+  async findFollowingList(userId: number): Promise<UserFollowEntity[] | null> {
+    return this.userFollowTypeormRepository.find({
+      relations: {
+        followUser: true,
+      },
+      select: {
+        id: true,
+        followUser: {
+          id: true,
+          profileImage: true,
+          nickname: true,
+          createdAt: true,
+        },
+      },
+      where: {
+        user: { id: userId },
+      },
+    });
+  }
+
+  async findFollowerList(
+    followUserId: number,
+  ): Promise<UserFollowEntity[] | null> {
+    return this.userFollowTypeormRepository.find({
+      relations: { user: true },
+      select: {
+        id: true,
+        user: {
+          id: true,
+          profileImage: true,
+          nickname: true,
+          createdAt: true,
+        },
+      },
+      where: {
+        followUser: { id: followUserId },
+      },
+    });
   }
 }

@@ -25,8 +25,11 @@ import {
 } from './dto/user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { TokenService } from 'src/utils/verifyToken';
+import { UserFollowEntity } from 'src/entities/userFollows.entity';
 
-// 회원가입 상세, 로그아웃, 회원탈퇴, 회원 정보 수정, 닉네임 중복 체크(O), 유저 팔로우(목록, 생성(o), 삭제), 유저 차단(목록, 생성, 삭제)
+// 회원가입 : 회원가입 상세, 로그아웃, 회원탈퇴, 회원 정보 수정, 닉네임 중복 체크(O),
+// 유저 팔로우 : 목록(O), 생성(O), 삭제(O)
+// 유저 차단 : 목록, 생성, 삭제
 
 @Controller('/users')
 export class UserController {
@@ -36,7 +39,7 @@ export class UserController {
     private readonly tokenService: TokenService,
   ) {}
 
-  // 닉네임 중복 체크
+  // 닉네임 중복 체크 : O
   @Get('/check/:nickname')
   async getCheckNicknameOverlap(
     @Param('nickname') nickname: string,
@@ -74,12 +77,29 @@ export class UserController {
     return await this.userService.deleteUserFollow(userFollowDto);
   }
 
-  // 유저 팔로우(목록)_ing
-  @Get('/follow')
-  async userFollowList(
+  //  - 팔로잉 목록 : O / 내가 팔로우 한 = 내 id가 userId에 있고, followUserId를 찾아 출력
+  @Get('/following')
+  async getUserFollowingList(
     @Headers('authorization') token: string,
-    @Body() body,
-  ): Promise<void> {}
+  ): Promise<UserFollowEntity[] | null> {
+    const decodedToken = this.tokenService.verifyToken(token);
+
+    const userId = decodedToken.aud;
+
+    return await this.userService.followingList(userId);
+  }
+
+  //  - 팔로워 목록 : O / 나를 팔로우 한 = 내 id가 followUserId에 있고, userId를 찾아 출력
+  @Get('/follower')
+  async getUserFollowerList(
+    @Headers('authorization') token: string,
+  ): Promise<UserFollowEntity[] | null> {
+    const decodedToken = this.tokenService.verifyToken(token);
+
+    const followUserId = decodedToken.aud;
+
+    return await this.userService.followerList(followUserId);
+  }
 
   // 테스트용 로그인 -----------------------------------------------
 
@@ -87,6 +107,7 @@ export class UserController {
   @HttpCode(200)
   async login(@Req() req: Request): Promise<LoginDto> {
     const { socialAccountUid } = req.body;
+
     return await this.userService.login(socialAccountUid);
   }
 
