@@ -75,7 +75,7 @@ export class FeedEntity {
   })
   weatherCondition: WeatherConditionEntity;
 
-  @OneToMany(() => FeedImageEntity, (feedImage) => feedImage.feed)
+  @OneToMany(() => FeedImageEntity, (feedImage) => feedImage.feed, { cascade: ['insert'] })
   feedImage: FeedImageEntity[];
 
   @OneToMany(() => FeedCommentEntity, (feedComment) => feedComment.feed)
@@ -84,7 +84,7 @@ export class FeedEntity {
   @OneToMany(() => FeedLikeEntity, (feedLike) => feedLike.feed)
   feedLike: FeedLikeEntity[];
 
-  @OneToMany(() => FeedTagEntity, (feedTag) => feedTag.feed)
+  @OneToMany(() => FeedTagEntity, (feedTag) => feedTag.feed, { cascade: ['insert'] })
   feedTag: FeedTagEntity[];
 
   @OneToMany(() => BookmarkEntity, (bookmark) => bookmark.feed)

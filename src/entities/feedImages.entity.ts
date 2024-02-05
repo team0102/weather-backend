@@ -44,7 +44,7 @@ export class FeedImageEntity {
   })
   deletedAt: Date; // 데이터는 삭제하지 않고, 삭제한 날짜만 입력
 
-  @ManyToOne(() => FeedEntity)
+  @ManyToOne(() => FeedEntity, { cascade: true})
   @JoinColumn({
     name: 'feedId',
     referencedColumnName: 'id',

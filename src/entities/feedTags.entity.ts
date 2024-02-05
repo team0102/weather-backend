@@ -31,14 +31,14 @@ import { TagEntity } from './tags.entity';
     })
     updatedAt: Date;
     
-    @ManyToOne(() => FeedEntity)
+    @ManyToOne(() => FeedEntity, { cascade: true})
     @JoinColumn({
       name: 'feedId',
       referencedColumnName: 'id',
     })
     feed: FeedEntity;
 
-    @ManyToOne(() => TagEntity)
+    @ManyToOne(() => TagEntity, { cascade: true})
     @JoinColumn({
       name: 'tagId',
       referencedColumnName: 'id',
