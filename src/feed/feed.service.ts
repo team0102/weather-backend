@@ -148,7 +148,7 @@ export class FeedService {
       await queryRunner.commitTransaction();
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      console.error(error.message);
+      console.error(error);
       throw new Error('Fail to create feed');
     } finally {
       await queryRunner.release();

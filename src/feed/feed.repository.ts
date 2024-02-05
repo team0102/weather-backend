@@ -59,7 +59,7 @@ export class FeedRepository {
       });
       return feed;
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
       throw new Error(error.message);
     }
   }
@@ -154,7 +154,7 @@ export class FeedRepository {
       console.log('repo result : ', result)
       return result;
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
       throw new Error(error.message);
     }
   }
