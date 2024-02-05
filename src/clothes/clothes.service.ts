@@ -31,7 +31,6 @@ export class ClothesService {
       throw new NotFoundException('주어진 온도에 해당하는 옷 세트가 없습니다');
     }
 
-    // Extract and return ClothSetEntity array
     const clothSets: ClothSetEntity[] = clothEntities.map(
       (cloth) => cloth.clothesSetId,
     );

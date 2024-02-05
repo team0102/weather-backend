@@ -9,7 +9,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ClothSetEntity } from './clothesSet.entity';
-// import { WeatherEntity } from './weather.entity';
 
 @Entity({
   name: 'clothes',
@@ -17,13 +16,6 @@ import { ClothSetEntity } from './clothesSet.entity';
 export class ClothEntity {
   @PrimaryGeneratedColumn()
   id: number;
-
-  // @ManyToOne(() => WeatherEntity)
-  // @JoinColumn({
-  //   name: 'weatherId',
-  //   referencedColumnName: 'id',
-  // })
-  // weatherId: WeatherEntity;
 
   @Column({
     type: 'integer',
