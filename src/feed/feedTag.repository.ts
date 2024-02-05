@@ -31,7 +31,7 @@ export class FeedTagRepository {
       console.log('createFeedTag result : ', savedFeedTags);
       return savedFeedTags;
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
       throw new Error(error.message);
     }
   }

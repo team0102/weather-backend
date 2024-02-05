@@ -30,11 +30,11 @@ export class FeedRepository {
           },
         },
         order: { createdAt: 'DESC' },
-        where: { deletedAt: null} 
+        where: { deletedAt: null },
       });
       return feedList;
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
       throw new Error(error.message);
     }
   }
@@ -59,7 +59,7 @@ export class FeedRepository {
       });
       return feed;
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
       throw new Error(error.message);
     }
   }
@@ -84,7 +84,20 @@ export class FeedRepository {
       console.log('createFeed savedFeed : ', savedFeed, savedFeedImage);
       return savedFeed;
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
+      throw new Error(error.message);
+    }
+  }
+
+  async deletedFeed(feedId: number, newDate: Date): Promise<void> {
+    try {
+      const result = await this.feedRepository.save({
+        id: feedId,
+        deletedAt: newDate,
+      });
+      console.log('delete feed result : ', result);
+    } catch (error) {
+      console.log(error);
       throw new Error(error.message);
     }
   }
@@ -134,10 +147,14 @@ export class FeedRepository {
 
   async findFeedById(feedId: number): Promise<FeedEntity> {
     try {
-      const result = await this.feedRepository.findOneBy({ id: feedId });
+      const result = await this.feedRepository.findOne({
+        where: { id: feedId },
+        relations: ['user',]
+      });
+      console.log('repo result : ', result)
       return result;
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
       throw new Error(error.message);
     }
   }
