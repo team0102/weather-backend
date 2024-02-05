@@ -69,6 +69,7 @@ export class FeedService {
     try {
       const feedDetails =
         await this.feedRepository.getFeedWithDetailsById(feedId);
+      if (!feedDetails || feedDetails.deletedAt) throw new Error('Feed does not exist');
       const isAuthor = feedDetails.user.id === userId;
       const likeCount = feedDetails.feedLike.length;
       const commentCount = feedDetails.feedComment.length;
@@ -217,7 +218,11 @@ export class FeedService {
   //   }
   // }
 
-  async createComment(loginUserId: number, feedId: number, content: string): Promise<void> {
+  async createComment(
+    loginUserId: number,
+    feedId: number,
+    content: string,
+  ): Promise<void> {
     try {
       const existingFeed = await this.feedRepository.findFeedById(feedId);
       if (!existingFeed) throw new Error('Feed does not exist');
