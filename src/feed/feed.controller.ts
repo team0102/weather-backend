@@ -8,6 +8,7 @@ import {
   Headers,
   Query,
   Put,
+  Delete,
 } from '@nestjs/common';
 import { FeedService } from './feed.service';
 import { CreateFeedDTO } from './dto/create-feed.dto';
@@ -18,6 +19,8 @@ import {
   FeedDetailResponse,
   FeedListResponse,
 } from './feed.types';
+import { TransformationType } from 'class-transformer';
+import { errorMonitor } from 'stream';
 
 @Controller('feeds')
 export class FeedController {
@@ -42,7 +45,7 @@ export class FeedController {
         data: feedDatas,
       };
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
       return { statusCode: error.code || 500, message: error.message };
     }
   }
@@ -64,7 +67,7 @@ export class FeedController {
         data: feedData,
       };
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
       return { statusCode: error.code || 500, message: error.message };
     }
   }
@@ -79,9 +82,24 @@ export class FeedController {
       await this.feedService.createFeed(loginUserId, feedData);
       return { statusCode: 201, message: 'Feed created successfully' };
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
       return { statusCode: error.code || 500, message: error.message };
     }
+  }
+
+  @Delete('/:feedId')
+  async deleteFeed(
+    @Headers('Authorization') token: string,
+    @Param('feedId', ParseIntPipe) feedId: number,
+  ): Promise<ApiResponse> {
+   try{
+    const loginUserId = this.tokenService.audienceFromToken(token);
+    await this.feedService.deleteFeed(loginUserId, feedId);
+    return {statusCode: 200, message: 'Feed deledted successfully'}
+   }catch(error) {
+    console.log(errorMonitor)
+    return { statusCode: error.code || 500, message: error.message };
+   }
   }
 
   // @Put(/:feedId)

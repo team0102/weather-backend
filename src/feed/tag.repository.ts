@@ -18,7 +18,7 @@ export class TagRepository {
       console.log('savedTag result : ', savedTag);
       return savedTag;
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
       throw new Error(error.message);
     }
   }
@@ -30,7 +30,7 @@ export class TagRepository {
       });
       return foundTag;
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
       throw new Error(error.message);
     }
   }
