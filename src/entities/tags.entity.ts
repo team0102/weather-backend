@@ -36,7 +36,7 @@ import { FeedTagEntity } from './feedTags.entity';
     })
     updatedAt: Date;
 
-    @OneToMany(() => FeedTagEntity, (feedTag) => feedTag.tag)
-    feedTag: FeedTagEntity[]
+    // @OneToMany(() => FeedTagEntity, (feedTag) => feedTag.tag, { cascade: ['insert']})
+    // feedTag: FeedTagEntity[]
   }
   

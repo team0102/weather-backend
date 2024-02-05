@@ -10,4 +10,10 @@ export class TokenService {
 
     return decodedToken;
   }
+
+  audienceFromToken(token: string): number {
+    const decodedToken = this.jwtService.verify(token);
+    const loginUserId = decodedToken.aud;
+    return loginUserId;
+  }
 }

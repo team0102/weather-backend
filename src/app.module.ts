@@ -2,10 +2,12 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeORMConfig } from './config/typeORM.config';
 import { ConfigModule } from '@nestjs/config';
+
 import { JwtModule } from '@nestjs/jwt';
 
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { FeedModule } from './feed/feed.module';
 import { ClothesModule } from './clothes/clothes.module';
 
 @Module({
@@ -22,6 +24,7 @@ import { ClothesModule } from './clothes/clothes.module';
     }),
     UserModule,
     AuthModule,
+    FeedModule,
     ClothesModule,
   ],
 })
