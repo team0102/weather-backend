@@ -27,7 +27,7 @@ export class FeedCommentRepository {
       console.log('createComment result : ', savedComment);
       return savedComment;
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
       throw new Error(error.message);
     }
   }

@@ -7,6 +7,8 @@ import { DataSource } from 'typeorm';
 import { FeedCommentRepository } from './feedComment.repository';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
 import { FeedDatail, FeedListItem } from './feed.types';
+import { TransformationType } from 'class-transformer';
+import { throwError } from 'rxjs';
 
 @Injectable()
 export class FeedService {
@@ -60,7 +62,7 @@ export class FeedService {
       );
       return processedFeedList;
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
       throw new Error('Fail to get feedList');
     }
   }
@@ -69,7 +71,8 @@ export class FeedService {
     try {
       const feedDetails =
         await this.feedRepository.getFeedWithDetailsById(feedId);
-      if (!feedDetails || feedDetails.deletedAt) throw new Error('Feed does not exist');
+      if (!feedDetails || feedDetails.deletedAt)
+        throw new Error('Feed does not exist');
       const isAuthor = feedDetails.user.id === userId;
       const likeCount = feedDetails.feedLike.length;
       const commentCount = feedDetails.feedComment.length;
@@ -116,7 +119,7 @@ export class FeedService {
       };
       return processedFeed;
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
       throw new Error('Fail to get feedDetails');
     }
   }
@@ -171,6 +174,22 @@ export class FeedService {
     const tagRegex = /#(\S+)/g; //모든 문자
     const matches = content.match(tagRegex);
     return matches ? matches.map((match) => match.slice(1)) : [];
+  }
+
+  async deleteFeed(loginUserId: number, feedId: number): Promise<void> {
+    try {
+      const newDate = new Date();
+      const findFeed = await this.feedRepository.findFeedById(feedId);
+      if (!findFeed || findFeed.deletedAt)
+        throw new Error('Feed does not exist');
+      console.log('findFeed:', findFeed);
+      if (!findFeed.user || findFeed.user.id !== loginUserId)
+        throw new Error('Invalid User');
+      await this.feedRepository.deletedFeed(feedId, newDate);
+    } catch (error) {
+      console.log(error);
+      throw new Error(error.message);
+    }
   }
 
   //=====================update Feed===========================================
@@ -232,7 +251,7 @@ export class FeedService {
         content,
       );
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
       throw new Error(error.message);
     }
   }
