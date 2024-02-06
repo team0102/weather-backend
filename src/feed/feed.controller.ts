@@ -6,7 +6,6 @@ import {
   ParseIntPipe,
   Post,
   Headers,
-  Query,
   Put,
   Delete,
 } from '@nestjs/common';
@@ -19,8 +18,6 @@ import {
   FeedDetailResponse,
   FeedListResponse,
 } from './feed.types';
-import { TransformationType } from 'class-transformer';
-import { errorMonitor } from 'stream';
 
 @Controller('feeds')
 export class FeedController {
@@ -92,30 +89,38 @@ export class FeedController {
     @Headers('Authorization') token: string,
     @Param('feedId', ParseIntPipe) feedId: number,
   ): Promise<ApiResponse> {
-   try{
-    const loginUserId = this.tokenService.audienceFromToken(token);
-    await this.feedService.deleteFeed(loginUserId, feedId);
-    return {statusCode: 200, message: 'Feed deledted successfully'}
-   }catch(error) {
-    console.log(errorMonitor)
-    return { statusCode: error.code || 500, message: error.message };
-   }
+    try {
+      const loginUserId = this.tokenService.audienceFromToken(token);
+      await this.feedService.deleteFeed(loginUserId, feedId);
+      return { statusCode: 200, message: 'Feed deledted successfully' };
+    } catch (error) {
+      console.log(error);
+      return { statusCode: error.code || 500, message: error.message };
+    }
   }
 
-  // @Put(/:feedId)
-  // async updateFeed(
-  //   @Headers('Authorization') token: string,
-  //   @Body() feedData: UpdateFeedDTO,
-  // ) {
-  //   try{
-  //     const loginUserId = this.tokenService.audienceFromToken(token);
-  //     await this.feedService.updateFeed(loginUserId, feedData);
-  //     return { statusCode: 201, message: 'Feed created successfully' };
-  //   } catch(error) {
-  //     console.log(error)
-  //     return { statusCode: error.code || 500, message: error.message };
-  //   }
-  // }
+  @Put('/:feedId')
+  async updateFeed(
+    @Headers('Authorization') token: string,
+    @Param('feedId') feedId: number,
+    @Body() feedData: UpdateFeedDTO,
+  ): Promise<ApiResponse> {
+    try {
+      const loginUserId = this.tokenService.audienceFromToken(token);
+      const updatedFeed = await this.feedService.updateFeed(
+        loginUserId,
+        feedId,
+        feedData,
+      );
+      return {
+        statusCode: 201,
+        message: 'Feed updated successfully',
+      };
+    } catch (error) {
+      console.log(error);
+      return { statusCode: error.code || 500, message: error.message };
+    }
+  }
 
   @Post('/:feedId/comment')
   async createComment(
