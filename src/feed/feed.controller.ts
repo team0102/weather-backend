@@ -126,7 +126,7 @@ export class FeedController {
   async createComment(
     @Headers('Authorization') token: string,
     @Param('feedId', ParseIntPipe) feedId: number,
-    @Body() content: string,
+    @Body('content') content: string,
   ): Promise<ApiResponse> {
     try {
       const loginUserId = this.tokenService.audienceFromToken(token);
