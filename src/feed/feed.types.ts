@@ -33,7 +33,7 @@ export type FeedListItem = {
 export type FeedDetailResponse = {
   statusCode: number;
   message: string;
-  data?: FeedListItem;
+  data?: FeedDatail;
 };
 
 export type FeedDatail = {

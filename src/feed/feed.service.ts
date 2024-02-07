@@ -7,8 +7,6 @@ import { DataSource } from 'typeorm';
 import { FeedCommentRepository } from './feedComment.repository';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
 import { FeedDatail, FeedListItem } from './feed.types';
-import { TransformationType } from 'class-transformer';
-import { throwError } from 'rxjs';
 
 @Injectable()
 export class FeedService {
@@ -155,6 +153,61 @@ export class FeedService {
     }
   }
 
+  async updateFeed(
+    loginUserId: number,
+    feedId: number,
+    feedData: UpdateFeedDTO,
+  ) {
+    const { content } = feedData;
+    const tags = this.extractTagsFromContent(content);
+    const queryRunner = this.dataSource.createQueryRunner();
+    try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+
+      // 기존 피드 정보 가져오기
+      const existingFeed = await this.feedRepository.findFeedById(feedId);
+      // 존재하지 않은 피드, 삭제된 피드 에러핸들링
+      if (!existingFeed || existingFeed.deletedAt)
+        throw new Error('Feed does not exist');
+      // 로그인유저=작성자 아닌 경우 에러핸들링
+      if (existingFeed.user.id !== loginUserId) throw new Error('Invalid user');
+      // 피드, 피드 이미지 업데이트
+      const updateFeed = await this.feedRepository.updateFeed(feedId, feedData);
+      // 존재하는 태그 id, 추가된 태그 id 배열
+      const savedTagIds = await this.saveTagsAndGetIds(tags);
+      // 기존 피드가 가지고 있던 FeedTag 엔터티들의 배열
+      const existingFeedTagIds =
+        existingFeed.feedTag?.map((feedTag) => feedTag.id) || [];
+      // 존재하지 않은 태그들 tagsToAdd 배열에 저장
+      const tagsToAdd = savedTagIds.filter(
+        (tagId) => !existingFeedTagIds.includes(tagId),
+      );
+      // savedTagIds 배열에 존재하지 않는 태그들 tagsToDelete 배열에 저장
+      const feedTagsToDelete = existingFeedTagIds.filter(
+        (feedTagId) => !savedTagIds.includes(feedTagId),
+      );
+      // 새로 생성된 tags를 feedTags 추가
+      await this.feedTagRepository.createFeedTags(
+        feedId,
+        tagsToAdd,
+        queryRunner,
+      );
+      // 삭제된 feedTags 삭제
+      await this.feedTagRepository.deletedFeedTags(
+        feedTagsToDelete,
+        queryRunner,
+      );
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.log(error);
+      throw new Error('Fail to update feed');
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
   private async saveTagsAndGetIds(tags: string[]): Promise<number[]> {
     const savedTagIds: number[] = [];
     for (const tagValue of tags) {
@@ -191,51 +244,6 @@ export class FeedService {
       throw new Error(error.message);
     }
   }
-
-  //=====================update Feed===========================================
-  // async updateFeed(
-  //   loginUserId: number,
-  //   feedId: number,
-  //   feedData: UpdateFeedDTO,
-  // ) {
-  //   const newDate = new Date();
-  //   const { content } = feedData;
-  //   const tags = this.extractTagsFromContent(content);
-  //   const queryRunner = this.dataSource.createQueryRunner();
-  //   await queryRunner.connect();
-  //   await queryRunner.startTransaction();
-  //   try {
-  //     // 기존 피드 정보 가져오기
-  //     const existingFeed = await this.feedRepository.findFeedById(feedId);
-  //     if (!existingFeed) throw new Error('Feed does not exist');
-  //     if (existingFeed.user.id !== loginUserId) throw new Error('Invalid user');
-  //     // 새로운 태그 생성 또는 기존 태그 가져오기
-  //     let savedTagIds: number[] = [];
-  //     for (const tagValue of tags) {
-  //       const foundTag = await this.tagRepository.findTagByContent(tagValue);
-  //       if (!foundTag) {
-  //         const savedTag = await this.tagRepository.createTag(
-  //           tagValue,
-  //           newDate,
-  //         );
-  //         savedTagIds.push(savedTag.id);
-  //       } else {
-  //         savedTagIds.push(foundTag.id);
-  //       }
-  //     }
-  //     // 기존 태그와 비교하여 feedTag 추가 및 삭제 ********* 작성중 *****************
-
-  //     //기존 피드가 가지고 있던 FeedTag 엔터티들의 배열
-  //     const existingFeedTagIds = existingFeed.feedTag.map(feedTag => feedTag.id);
-  //     //존재하지 않은 태그들 tagsToAdd 배열에 저장
-  //     const tagsToAdd = savedTagIds.filter(tagId => !existingFeedTagIds.includes(tagId));
-  //     //savedTagIds 배열에 존재하지 않는 태그들 tagsToDelete 배열에 저장
-  //     const tagsToDelete = existingFeedTagIds.filter(feedTagId => !savedTagIds.includes(feedTagId));
-  //   } catch (error) {
-  //     console.log(error.message);
-  //     throw new Error(error.message);
-  //   }
-  // }
 
   async createComment(
     loginUserId: number,
