@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ClothSetEntity } from 'src/entities/clothesSet.entity';
 import { ClothEntity } from 'src/entities/clothes.entity';
 import { UserEntity } from 'src/entities/users.entity';
 
@@ -17,39 +16,27 @@ export class ClothesService {
   async getClothesSetIdByTemperature(
     perceivedTemperature: number,
     loginUserId?: number,
-  ): Promise<{ temperatureSensitivity?: number; clothSets : ClothSetEntity[]}> {
-    let temperatureSensitivity: number | undefined;
-
+  ): Promise<ClothEntity[]> {
     if (loginUserId) {
-      const user = await this.userRepository.findOneBy({ id: loginUserId });
-
-      if (user) {
-        temperatureSensitivity = user.temperatureSensitivity;
-      }
+      await this.userRepository.findOneBy({ id: loginUserId });
     }
 
-    const clothEntitiesQueryBuilder = await this.clothesEntity
+    const clothEntities = await this.clothesEntity
       .createQueryBuilder('cloth')
       .where(
         ':perceivedTemperature BETWEEN cloth.lowPerceivedTemperature AND cloth.highPerceivedTemperature',
         { perceivedTemperature },
       )
-      .leftJoinAndSelect('cloth.clothesSetId', 'clothSet')
-      .leftJoinAndSelect('clothSet.clothesTopId', 'clothesTop')
-      .leftJoinAndSelect('clothSet.clothesBottomId', 'clothesBottom')
-      .leftJoinAndSelect('clothSet.clothesCoatId', 'clothesCoat')
-      .leftJoinAndSelect('clothSet.clothesAccessoryId', 'clothesAccessory');
-
-    const clothEntities = await clothEntitiesQueryBuilder.getMany();
+      .leftJoinAndSelect('cloth.clothesTopId', 'clothesTop')
+      .leftJoinAndSelect('cloth.clothesBottomId', 'clothesBottom')
+      .leftJoinAndSelect('cloth.clothesCoatId', 'clothesCoat')
+      .leftJoinAndSelect('cloth.clothesAccessoryId', 'clothesAccessory')
+      .getMany();
 
     if (!clothEntities || clothEntities.length === 0) {
       throw new NotFoundException('주어진 온도에 해당하는 옷 세트가 없습니다');
     }
 
-    const clothSets: ClothSetEntity[] = clothEntities.map(
-      (cloth) => cloth.clothesSetId,
-    );
-
-    return { temperatureSensitivity, clothSets };
+    return clothEntities;
   }
 }

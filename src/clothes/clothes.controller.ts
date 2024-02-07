@@ -6,9 +6,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { WeatherDto } from './dto/get-temperature.dto';
-import { ClothSetEntity } from 'src/entities/clothesSet.entity';
 import { ClothesService } from './clothes.service';
 import { TokenService } from 'src/utils/verifyToken';
+import { ClothEntity } from 'src/entities/clothes.entity';
 
 @Controller('clothes')
 export class ClothesController {
@@ -21,7 +21,7 @@ export class ClothesController {
   async getClothesSetIdByWeather(
     @Query() weatherDto: WeatherDto,
     @Headers('Authorization') token?: string,
-  ): Promise<{ temperatureSensitivity?: number; clothSets: ClothSetEntity[] }> {
+  ): Promise<ClothEntity[]> {
     const { temperature } = weatherDto;
 
     let loginUserId: number | undefined;

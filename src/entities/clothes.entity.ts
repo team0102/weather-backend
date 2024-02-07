@@ -8,7 +8,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ClothSetEntity } from './clothesSet.entity';
+// import { ClothSetEntity } from './clothesSet.entity';
+import { ClothTopEntity } from './clothesTop.entity';
+import { ClothBottomEntity } from './clothesBottom.entity';
+import { ClothCoatEntity } from './clothesCoat.entity';
+import { ClothAccessoryEntity } from './clothesAccessory.entity';
 
 @Entity({
   name: 'clothes',
@@ -27,12 +31,40 @@ export class ClothEntity {
   })
   highPerceivedTemperature: number;
 
-  @OneToOne(() => ClothSetEntity)
+  // @OneToOne(() => ClothSetEntity)
+  // @JoinColumn({
+  //   name: 'clothesSetId',
+  //   referencedColumnName: 'id',
+  // })
+  // clothesSetId: ClothSetEntity;
+
+  @ManyToOne(() => ClothTopEntity)
   @JoinColumn({
-    name: 'clothesSetId',
+    name: 'clothesTopId',
     referencedColumnName: 'id',
   })
-  clothesSetId: ClothSetEntity;
+  clothesTopId: ClothTopEntity;
+
+  @ManyToOne(() => ClothBottomEntity)
+  @JoinColumn({
+    name: 'clothesBottomId',
+    referencedColumnName: 'id',
+  })
+  clothesBottomId: ClothBottomEntity;
+
+  @ManyToOne(() => ClothCoatEntity)
+  @JoinColumn({
+    name: 'clothesCoatId',
+    referencedColumnName: 'id',
+  })
+  clothesCoatId: ClothCoatEntity;
+
+  @ManyToOne(() => ClothAccessoryEntity)
+  @JoinColumn({
+    name: 'clothesAccessoryId',
+    referencedColumnName: 'id',
+  })
+  clothesAccessoryId: ClothAccessoryEntity;
 
   @CreateDateColumn({
     type: 'timestamp',
