@@ -24,7 +24,9 @@ export class FeedRepository {
           feedComment: true,
           feedLike: true,
           weatherCondition: true,
-          bookmark: true,
+          bookmark: {
+            user: true,
+          },
           feedTag: {
             tag: true,
           },
@@ -50,7 +52,9 @@ export class FeedRepository {
           },
           feedLike: true,
           weatherCondition: true,
-          bookmark: true,
+          bookmark: {
+            user: true,
+          },
           feedTag: {
             tag: true,
           },
