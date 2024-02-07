@@ -152,4 +152,16 @@ export class FeedController {
       return { statusCode: error.code || 500, message: error.message };
     }
   }
+
+  // @Get('/bookmark')
+  // async getBookmarkList(
+  //   @Headers('Authorization') token: string,
+  // ) {
+  //   try{
+
+  //   }catch(error){
+  //     console.log(error)
+  //     return { statusCode: error.code || 500, message: error.message };
+  //   }
+  // }
 }

@@ -266,16 +266,22 @@ export class FeedService {
     }
   }
 
-  async createBookmark(loginUserId: number, feedId: number):Promise<void> {
-    try{
+  async createBookmark(loginUserId: number, feedId: number): Promise<void> {
+    try {
       const findFeed = await this.feedRepository.findFeedById(feedId);
-      if (!findFeed || findFeed.deletedAt) throw new Error('Feed does not exist');
-      const isBookmarked = await this.bookmarkRepository.isBookmarked(loginUserId, feedId);
-      if(isBookmarked) throw new Error('Feed already bookmarked');
+      if (!findFeed || findFeed.deletedAt)
+        throw new Error('Feed does not exist');
+      const isBookmarked = await this.bookmarkRepository.isBookmarked(
+        loginUserId,
+        feedId,
+      );
+      if (isBookmarked) throw new Error('Feed already bookmarked');
       await this.bookmarkRepository.createBookmark(loginUserId, feedId);
-    }catch(error){
+    } catch (error) {
       console.log(error);
       throw new Error(error.message);
     }
   }
+
+  
 }

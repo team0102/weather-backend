@@ -74,18 +74,15 @@ export class FeedRepository {
   ): Promise<FeedEntity> {
     try {
       const { weatherConditionId, imageUrl } = feedData;
-      //피드 저장 및 연결
       const savedFeed = await this.feedRepository.save({
         user: { id: userId },
         weatherCondition: { id: weatherConditionId },
         ...feedData,
       });
-      // 이미지 저장 및 연결
       const savedFeedImage = await this.feedImageRepository.save({
         feed: savedFeed,
         imageUrl: imageUrl,
       });
-      //console.log('createFeed savedFeed : ', savedFeed, savedFeedImage);
       return savedFeed;
     } catch (error) {
       console.log(error);
@@ -106,14 +103,13 @@ export class FeedRepository {
     }
   }
 
-  //=======================================update feed =============================
   async updateFeed(feedId: number, feedData: UpdateFeedDTO) {
     const { weatherConditionId, imageUrl, ...updateData } = feedData;
     try {
       if (weatherConditionId) {
         await this.feedRepository.update(
           { id: feedId },
-          { weatherCondition: { id: weatherConditionId }},
+          { weatherCondition: { id: weatherConditionId } },
         );
       }
       const updateFeed = await this.feedRepository.update(
@@ -124,7 +120,6 @@ export class FeedRepository {
         { feed: { id: feedId } },
         { imageUrl: imageUrl },
       );
-      //console.log('updateFeed savedFeed : ', updateFeed, updateFeedImage);
       return updateFeed;
     } catch (error) {
       console.log(error);
