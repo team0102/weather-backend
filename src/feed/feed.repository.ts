@@ -81,7 +81,7 @@ export class FeedRepository {
         feed: savedFeed,
         imageUrl: imageUrl,
       });
-      console.log('createFeed savedFeed : ', savedFeed, savedFeedImage);
+      //console.log('createFeed savedFeed : ', savedFeed, savedFeedImage);
       return savedFeed;
     } catch (error) {
       console.log(error);
@@ -103,55 +103,38 @@ export class FeedRepository {
   }
 
   //=======================================update feed =============================
-  // async updateFeed(userId: number, feedData: UpdateFeedDTO, newDate: Date) {
-  //   try {
-  //     const {
-  //       weatherConditionId,
-  //       highTemperature,
-  //       lowTemperature,
-  //       content,
-  //       image,
-  //     } = feedData;
-
-  //     //피드 저장 및 연결
-  //     const savedFeed = await this.feedRepository.save({
-  //       user: { id: userId },
-  //       weatherCondition: { id: weatherConditionId },
-  //       highTemperature,
-  //       lowTemperature,
-  //       content,
-  //       createdAt: newDate,
-  //       updatedAt: newDate,
-  //     });
-
-  //     // 이미지 저장 및 연결
-  //     const savedFeedImage = await this.feedImageRepository.save({
-  //       imageUrl: image,
-  //       createdAt: newDate,
-  //       updatedAt: newDate,
-  //       feed: { id: savedFeed.id },
-  //     });
-
-  //     // 결과 반환
-  //     const result = {
-  //       feed: savedFeed,
-  //       feedImage: savedFeedImage,
-  //     };
-  //     console.log('createFeed result : ', result);
-  //     return result;
-  //   } catch (error) {
-  //     console.log(error.message);
-  //     throw new Error(error.message);
-  //   }
-  // }
+  async updateFeed(feedId: number, feedData: UpdateFeedDTO) {
+    const { weatherConditionId, imageUrl, ...updateData } = feedData;
+    try {
+      if (weatherConditionId) {
+        await this.feedRepository.update(
+          { id: feedId },
+          { weatherCondition: { id: weatherConditionId }},
+        );
+      }
+      const updateFeed = await this.feedRepository.update(
+        { id: feedId },
+        { ...updateData },
+      );
+      const updateFeedImage = await this.feedImageRepository.update(
+        { feed: { id: feedId } },
+        { imageUrl: imageUrl },
+      );
+      //console.log('updateFeed savedFeed : ', updateFeed, updateFeedImage);
+      return updateFeed;
+    } catch (error) {
+      console.log(error);
+      throw new Error(error.message);
+    }
+  }
 
   async findFeedById(feedId: number): Promise<FeedEntity> {
     try {
       const result = await this.feedRepository.findOne({
         where: { id: feedId },
-        relations: ['user',]
+        relations: ['user', 'feedTag'],
       });
-      console.log('repo result : ', result)
+      console.log('repo result : ', result);
       return result;
     } catch (error) {
       console.log(error);
