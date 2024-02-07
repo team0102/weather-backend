@@ -6,7 +6,7 @@ import { FeedTagRepository } from './feedTag.repository';
 import { DataSource } from 'typeorm';
 import { FeedCommentRepository } from './feedComment.repository';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
-import { FeedDatail, FeedListItem } from './feed.types';
+import { BookmarkList, FeedDatail, FeedListItem } from './feed.types';
 import { BookmarkRepository } from './bookmark.repository';
 
 @Injectable()
@@ -283,5 +283,45 @@ export class FeedService {
     }
   }
 
-  
+  async getBookmarkList(loginUserId: number):Promise<BookmarkList[]> {
+    try {
+      const bookmarkList =
+        await this.bookmarkRepository.getBookmarkList(loginUserId);
+      //삭제된 피드 제외
+      const filteredBookmarkList = bookmarkList.filter(
+        (bookmark) => bookmark.feed !== null,
+      );
+      const processedBookmarkList = await Promise.all(
+        filteredBookmarkList.map(async (bookmark) => {
+          const { content, lowTemperature, highTemperature, weatherCondition } =
+            bookmark.feed;
+          const { nickname, profileImage } = bookmark.feed.user;
+          const imageUrl =
+            bookmark.feed.feedImage.length > 0
+              ? bookmark.feed.feedImage[0].imageUrl
+              : null;
+
+          return {
+            id: bookmark.id,
+            createdAt: bookmark.createdAt,
+            feed: {
+              id: bookmark.feed.id,
+              imageUrl,
+              content,
+              lowTemperature,
+              highTemperature,
+              weatherConditionId: weatherCondition.id,
+              createdAt: bookmark.feed.createdAt,
+              updatedAt: bookmark.feed.updatedAt,
+            },
+            author: { id: bookmark.feed.user.id, nickname, profileImage },
+          };
+        }),
+      );
+      return processedBookmarkList;
+    } catch (error) {
+      console.log(error);
+      throw new Error(error.message);
+    }
+  }
 }

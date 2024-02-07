@@ -15,6 +15,7 @@ import { TokenService } from 'src/utils/verifyToken';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
 import {
   ApiResponse,
+  BookmarkListResponse,
   FeedDetailResponse,
   FeedListResponse,
 } from './feed.types';
@@ -40,6 +41,24 @@ export class FeedController {
         statusCode: 200,
         message: 'Successed to get feedList',
         data: feedDatas,
+      };
+    } catch (error) {
+      console.log(error);
+      return { statusCode: error.code || 500, message: error.message };
+    }
+  }
+
+  @Get('/bookmark')
+  async getBookmarkList(
+    @Headers('Authorization') token: string,
+  ): Promise<BookmarkListResponse> {
+    try {
+      const loginUserId = this.tokenService.audienceFromToken(token);
+      const bookmarkList = await this.feedService.getBookmarkList(loginUserId);
+      return {
+        statusCode: 201,
+        message: 'Bookmark created successfully',
+        data: bookmarkList,
       };
     } catch (error) {
       console.log(error);
@@ -152,16 +171,4 @@ export class FeedController {
       return { statusCode: error.code || 500, message: error.message };
     }
   }
-
-  // @Get('/bookmark')
-  // async getBookmarkList(
-  //   @Headers('Authorization') token: string,
-  // ) {
-  //   try{
-
-  //   }catch(error){
-  //     console.log(error)
-  //     return { statusCode: error.code || 500, message: error.message };
-  //   }
-  // }
 }
