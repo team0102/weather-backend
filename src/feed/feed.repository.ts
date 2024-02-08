@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FeedEntity } from '../entities/feeds.entity';
-import { Repository } from 'typeorm';
+import { Repository, Not } from 'typeorm';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 import { FeedImageEntity } from 'src/entities/feedImages.entity';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
@@ -32,8 +32,14 @@ export class FeedRepository {
           },
         },
         order: { createdAt: 'DESC' },
-        where: { deletedAt: null },
+        where: {
+          deletedAt: null,
+          user: {
+            deletedAt: null,
+          },
+        },
       });
+      console.log(feedList);
       return feedList;
     } catch (error) {
       console.log(error);
@@ -59,7 +65,12 @@ export class FeedRepository {
             tag: true,
           },
         },
-        where: { id: feedId },
+        where: { 
+          id: feedId, 
+          user: {
+            deletedAt: null, // 탈퇴하지 않은 경우
+          },
+        },
       });
       return feed;
     } catch (error) {
@@ -130,7 +141,12 @@ export class FeedRepository {
   async findFeedById(feedId: number): Promise<FeedEntity> {
     try {
       const result = await this.feedRepository.findOne({
-        where: { id: feedId },
+        where: { 
+          id: feedId, 
+          user: {
+            deletedAt: null,
+          },
+        },
         relations: ['user', 'feedTag'],
       });
       console.log('repo result : ', result);
