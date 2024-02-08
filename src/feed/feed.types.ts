@@ -68,3 +68,28 @@ export type FeedDatail = {
   isBookmarked: boolean;
 };
 
+export type BookmarkListResponse = {
+  statusCode: number;
+  message: string;
+  data?: BookmarkList[];
+};
+
+export type BookmarkList = {
+  id: number;
+  createdAt: Date;
+  feed: {
+    id: number;
+    content: string;
+    imageUrl: string;
+    lowTemperature: number;
+    highTemperature: number;
+    weatherConditionId: number;
+    createdAt: Date;
+    updatedAt: Date;
+  }
+  author: {
+    id: number;
+    nickname: string;
+    profileImage: string | null;
+  }
+};

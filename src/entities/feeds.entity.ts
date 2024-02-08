@@ -81,12 +81,12 @@ export class FeedEntity {
   @OneToMany(() => FeedCommentEntity, (feedComment) => feedComment.feed)
   feedComment: FeedCommentEntity[];
 
-  @OneToMany(() => FeedLikeEntity, (feedLike) => feedLike.feed)
+  @OneToMany(() => FeedLikeEntity, (feedLike) => feedLike.feed, { cascade: ['remove']})
   feedLike: FeedLikeEntity[];
 
-  @OneToMany(() => FeedTagEntity, (feedTag) => feedTag.feed, { cascade: ['insert', 'update', 'remove']})
+  @OneToMany(() => FeedTagEntity, (feedTag) => feedTag.feed, { cascade: ['insert', 'update']})
   feedTag: FeedTagEntity[];
 
-  @OneToMany(() => BookmarkEntity, (bookmark) => bookmark.feed)
+  @OneToMany(() => BookmarkEntity, (bookmark) => bookmark.feed, { cascade: ['remove']})
   bookmark: BookmarkEntity[];
 }
