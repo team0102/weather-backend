@@ -10,12 +10,11 @@ export class TagRepository {
     private readonly tagRepository: Repository<TagEntity>,
   ) {}
 
-  async createTag(tag: string):Promise<TagEntity> {
+  async createTag(tag: string): Promise<TagEntity> {
     try {
       const savedTag = await this.tagRepository.save({
         content: tag,
       });
-      console.log('savedTag result : ', savedTag);
       return savedTag;
     } catch (error) {
       console.log(error);
@@ -23,7 +22,7 @@ export class TagRepository {
     }
   }
 
-  async findTagByContent(tag: string):Promise<TagEntity> {
+  async findTagByContent(tag: string): Promise<TagEntity> {
     try {
       const foundTag = await this.tagRepository.findOne({
         where: { content: tag },

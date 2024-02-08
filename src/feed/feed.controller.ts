@@ -133,8 +133,35 @@ export class FeedController {
       await this.feedService.createComment(loginUserId, feedId, content);
       return { statusCode: 201, message: 'Comment created successfully' };
     } catch (error) {
-      console.log(error.message);
+      console.log(error);
       return { statusCode: error.code || 500, message: error.message };
     }
   }
+
+  @Post('/:feedId/bookmark')
+  async createBookmark(
+    @Headers('Authorization') token: string,
+    @Param('feedId', ParseIntPipe) feedId: number,
+  ): Promise<ApiResponse> {
+    try {
+      const loginUserId = this.tokenService.audienceFromToken(token);
+      await this.feedService.createBookmark(loginUserId, feedId);
+      return { statusCode: 201, message: 'Bookmark created successfully' };
+    } catch (error) {
+      console.log(error);
+      return { statusCode: error.code || 500, message: error.message };
+    }
+  }
+
+  // @Get('/bookmark')
+  // async getBookmarkList(
+  //   @Headers('Authorization') token: string,
+  // ) {
+  //   try{
+
+  //   }catch(error){
+  //     console.log(error)
+  //     return { statusCode: error.code || 500, message: error.message };
+  //   }
+  // }
 }
