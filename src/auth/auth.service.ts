@@ -2,6 +2,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import axios from 'axios';
@@ -13,6 +14,7 @@ import * as bcrypt from 'bcrypt';
 import { UserRepository } from 'src/user/user.repository';
 import { UserEntity } from 'src/entities/users.entity';
 import { kakaoSignUpDto } from './dto/auth.dto';
+import { LoginResponseDto, UserInfoDto } from 'src/user/dto/user.dto';
 
 // method. A---------------------------------------------------------------------------------------------------
 
@@ -22,7 +24,7 @@ export class AuthService {
     private readonly userRepository: UserRepository,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
-  ) {} // 의존성 주입
+  ) {}
 
   // ★★★★★★★★★★★★★★★★★   accessToken만 test   ★★★★★★★★★★★★★★★★★
 
@@ -58,8 +60,8 @@ export class AuthService {
     if (!user) {
       // 회원 가입 로직
       user = await this.userRepository.create({
-        socialAccountUid: kakaoId,
         SocialAccountProvider: 1, // 1: KAKAO, 2: NAVER, 3: GOOGLE
+        socialAccountUid: kakaoId,
         email: kakaoEmail,
         nickname: kakaoNickname,
         profileImage: kakaoProfileImage,
@@ -69,12 +71,33 @@ export class AuthService {
   }
 
   generateAccessToken(user: UserEntity): string {
-    // user: UserDocument
     const payload = {
-      userId: user.socialAccountUid, // userId: user._id,
+      userId: user.socialAccountUid,
       userEmail: user.email,
     };
     return this.jwtService.sign(payload);
+  }
+
+  async getUserInfoBysocialAccountUid(
+    socialAccountUid: string,
+  ): Promise<UserInfoDto> {
+    const user = await this.userRepository.findUserByUid(socialAccountUid);
+    if (!user) throw new NotFoundException('USER_NOT_FOUND');
+
+    const { id, nickname, profileImage } =
+      await this.userRepository.findUserByUid(socialAccountUid);
+
+    // return {
+    //   id: user.id,
+    //   nickname: user.nickname,
+    //   profileImage: user.profileImage,
+    // };
+
+    return {
+      id,
+      nickname,
+      profileImage,
+    };
   }
 
   // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★

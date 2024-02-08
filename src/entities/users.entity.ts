@@ -19,7 +19,7 @@ import { FeedCommentEntity } from './feedComments.entity';
 import { FeedLikeEntity } from './feedLikes.entity';
 import { BookmarkEntity } from './bookmarks.entity';
 
-@Unique(['nickname'])
+// @Unique(['nickname'])  // 닉네임 중복 (임시)허용(240207)
 @Entity({
   name: 'users',
 })
@@ -34,7 +34,7 @@ export class UserEntity {
     length: 100,
     nullable: true,
   })
-  nickname: string; // 첫 로그인시 작성
+  nickname: string; // 첫 로그인시 작성  →  소셜로그인 정보로 삽입(240207)
 
   @Column({
     type: 'varchar',
@@ -46,7 +46,7 @@ export class UserEntity {
   @Column({
     type: 'tinyint',
     default: 0,
-    // nullable: true,
+    nullable: true,
   })
   gender: number; // 성별, 0: 공용, 1: 남성, 2: 여성 / 비회원: 0만, 회원: 0~2 모두 다
 
@@ -68,6 +68,8 @@ export class UserEntity {
     type: 'varchar',
     length: 2000,
     nullable: true,
+    default:
+      'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png',
   })
   profileImage: string; // 소셜로그인으로 정보 삽입
 
@@ -97,12 +99,12 @@ export class UserEntity {
   })
   deletedAt: Date; // 데이터는 삭제하지 않고, 탈퇴 한 날짜만 입력
 
-  @ManyToOne(() => CityEntity)
+  @ManyToOne(() => CityEntity, { eager: true })
   @JoinColumn({
     name: 'cityId',
     referencedColumnName: 'id',
   })
-  city: CityEntity;
+  city: CityEntity | number;
 
   @ManyToOne(() => SocialAccountProviderEntity)
   @JoinColumn({
