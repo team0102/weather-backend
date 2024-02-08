@@ -30,4 +30,13 @@ export class FeedCommentRepository {
       throw new Error(error.message);
     }
   }
+
+  async updateFeedComment(comment: FeedCommentEntity):Promise<void> {
+    try{
+      
+    }catch(error){
+    console.log(error)
+    throw new Error(error.message);
+    }
+  }
 }

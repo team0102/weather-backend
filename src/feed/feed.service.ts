@@ -8,6 +8,7 @@ import { FeedCommentRepository } from './feedComment.repository';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
 import { BookmarkList, FeedDatail, FeedListItem } from './feed.types';
 import { BookmarkRepository } from './bookmark.repository';
+import { FeedImageRepository } from './feedImage.repository';
 
 @Injectable()
 export class FeedService {
@@ -16,6 +17,7 @@ export class FeedService {
     private readonly tagRepository: TagRepository,
     private readonly feedTagRepository: FeedTagRepository,
     private readonly feedCommentRepository: FeedCommentRepository,
+    private readonly feedImageRepository: FeedImageRepository,
     private readonly bookmarkRepository: BookmarkRepository,
     private readonly dataSource: DataSource,
   ) {}
@@ -25,7 +27,7 @@ export class FeedService {
       const feedList = await this.feedRepository.getFeedListWithDetails();
       const processedFeedList = await Promise.all(
         feedList
-        .filter(feed => feed.user !== null) // user가 null이 아닌 것만 필터링
+        .filter(feed => feed.user !== null)
         .map(async (feed) => {
           const isAuthor = userId !== null && feed.user.id === userId;
           const likeCount = feed.feedLike.length;
@@ -239,9 +241,34 @@ export class FeedService {
       const findFeed = await this.feedRepository.findFeedById(feedId);
       if (!findFeed || findFeed.deletedAt)
         throw new Error('Feed does not exist');
-      console.log('findFeed:', findFeed);
+      //console.log('findFeed:', findFeed);
       if (!findFeed.user || findFeed.user.id !== loginUserId)
         throw new Error('Invalid User');
+
+        // if (findFeed.feedTag) {
+        //   // feedTag는 삭제
+        //   findFeed.feedTag.forEach(async (tag) => {
+        //     tag.deletedAt = newDate;
+        //     await this.feedTagRepository.save(tag);
+        //   });
+        // }
+    
+        if (findFeed.feedImage) {
+          // feedImage는 softDelete
+          findFeed.feedImage.forEach(async (image) => {
+            image.deletedAt = newDate;
+            await this.feedImageRepository.updateFeedImage(image);
+          });
+        }
+    
+        if (findFeed.feedComment) {
+          // feedComment는 softDelete
+          findFeed.feedComment.forEach(async (comment) => {
+            comment.deletedAt = newDate;
+            await this.feedCommentRepository.updateFeedComment(comment);
+          });
+        }
+
       await this.feedRepository.deletedFeed(feedId, newDate);
     } catch (error) {
       console.log(error);
