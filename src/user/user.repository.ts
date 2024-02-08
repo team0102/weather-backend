@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { UserEntity } from '../entities/users.entity';
-import { LoginDto } from './dto/user.dto';
 
 @Injectable()
 export class UserRepository {
@@ -21,19 +20,31 @@ export class UserRepository {
 
   // ------------------------------------------------------------------------------------------------
 
+  async updateUserInfo(userInfoDto: UserEntity): Promise<void> {
+    await this.userTypeormRepository.save(userInfoDto);
+  }
+
   async getCheckNicknameOverlap(nickname: string): Promise<Number> {
     return await this.userTypeormRepository.countBy({
       nickname: nickname,
     });
   }
 
-  async findOneById(id: number): Promise<UserEntity | null> {
-    return await this.userTypeormRepository.findOneBy({ id: id });
+  async findOneById(userId: number): Promise<UserEntity | null> {
+    return await this.userTypeormRepository.findOneBy({ id: userId });
   }
 
   async deleteUserById(id: number): Promise<void> {
-    await this.userTypeormRepository.softDelete({ id: id });
+    // await this.userTypeormRepository.softDelete({ id: id });
+    await this.userTypeormRepository.softRemove({ id: id });
   }
+
+  async test_deleteUserById(id): Promise<void> {
+    const user = await this.userTypeormRepository.findOne(id);
+    console.log(user);
+    await this.userTypeormRepository.softRemove(user);
+  }
+
   // ------------------------------------------------------------------------------------------------
 
   // method. A------------------------------------------------------------------------------------------------
@@ -59,7 +70,6 @@ export class UserRepository {
   // method. B------------------------------------------------------------------------------------------------
 
   async findUserByKakaoId(kakaoId: string): Promise<UserEntity> {
-    // kakaoId: string ???
     return await this.userTypeormRepository.findOne({
       where: {
         socialAccountUid: kakaoId,

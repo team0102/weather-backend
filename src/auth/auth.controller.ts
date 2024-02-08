@@ -23,6 +23,7 @@ import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service'; // , UserService
 import { ApiCookieAuth } from '@nestjs/swagger';
 import { format } from 'url';
+import { LoginResponseDto } from './dto/auth.dto';
 // import { getCheckNicknameOverlapDto, userFollowDto } from './dto/user.dto';
 
 // 회원가입(SNS), 로그인(SNS), 회원가입 상세, 로그아웃, 회원탈퇴, 회원 정보 수정, 닉네임 중복 체크, 유저 팔로우(목록, 생성, 삭제), 유저 차단(목록, 생성, 삭제)
@@ -44,9 +45,9 @@ export class AuthController {
   @HttpCode(301)
   async kakaoLogin(
     @Req() req: Request,
-    @Res() res: Response,
+    // @Res() res: Response,
     @Query('code') code: string,
-  ) {
+  ): Promise<LoginResponseDto> {
     console.log(`callback  ///  code------------ ${code}`);
 
     const { token } = await this.authService.getJWT(
@@ -63,14 +64,17 @@ export class AuthController {
 
     console.log(`token//////// ${token}`);
 
-    // const redirectUrl = '/user';
-    // return res.redirect(redirectUrl);
+    const user = await this.authService.getUserInfoBysocialAccountUid(
+      req.user.kakaoId,
+    );
 
-    return res.json({
-      message: `kakao login complete`,
+    return {
       token: token,
-    });
+      user: user,
+    };
   }
+
+  // ---
 
   // @Get('/kakao/callback')
   // @UseGuards(AuthGuard('kakao'))
@@ -110,11 +114,6 @@ export class AuthController {
   //     }),
   //   );
   // }
-
-  @Get('/kakao/login')
-  kakaocomplete() {
-    return `login complete`;
-  }
 
   // @Get('/kakao/callback')
   // @UseGuards(AuthGuard('kakao'))

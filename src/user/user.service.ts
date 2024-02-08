@@ -8,17 +8,19 @@ import {
 } from '@nestjs/common';
 // import axios from 'axios';
 import * as qs from 'qs';
+import { JwtService } from '@nestjs/jwt';
 
 import {
   GetCheckNicknameOverlapDto,
-  LoginDto,
+  LoginResponseDto,
+  UpdateUserInfoDto,
   UserFollowDto,
 } from './dto/user.dto';
-import { UserRepository } from './user.repository';
-import { UserFollowRepository } from './userFollow.repository';
 import { UserEntity } from 'src/entities/users.entity';
+import { UserRepository } from './user.repository';
 import { UserFollowEntity } from 'src/entities/userFollows.entity';
-import { JwtService } from '@nestjs/jwt';
+import { UserFollowRepository } from './userFollow.repository';
+import { CityRepository } from './city.repository';
 
 @Injectable()
 export class UserService {
@@ -26,8 +28,10 @@ export class UserService {
     private readonly JwtService: JwtService,
     private readonly userRepository: UserRepository,
     private readonly userFollowRepository: UserFollowRepository,
+    private readonly cityRepository: CityRepository,
   ) {}
 
+  // 닉네임 중복 체크 : O
   async getCheckNicknameOverlap(nickname: string): Promise<string> {
     const numberOfOverlapNickname =
       this.userRepository.getCheckNicknameOverlap(nickname);
@@ -38,11 +42,92 @@ export class UserService {
   }
 
   // 회원탈퇴_ing
-  async deleteUser(id: number): Promise<void> {
-    return await this.userRepository.deleteUserById(id);
+  // async deleteUser(id: number): Promise<void> {
+  //   return await this.userRepository.deleteUserById(id);
+  // }
+
+  async test_deleteUser(id: number): Promise<void> {
+    return await this.userRepository.test_deleteUserById(id);
   }
 
-  // 유저 팔로우(생성)
+  // 유저 정보 get : 마이페이지 입장시 필요
+  async getUserInfo(userId: number): Promise<UserEntity | null> {
+    const user = await this.userRepository.findOneById(userId);
+
+    if (!user) throw new NotFoundException('USER_NOT_FOUND');
+
+    return user;
+  }
+
+  // 회원 정보 수정 : O
+  async updateUserInfo(updateUserInfoDto: UpdateUserInfoDto): Promise<void> {
+    const {
+      email,
+      gender,
+      locationInformationAgree,
+      nickname,
+      profileImage,
+      socialAccountUid,
+      temperatureSensitivity,
+      city,
+    } = updateUserInfoDto;
+
+    if (!email || !nickname || !socialAccountUid)
+      throw new BadRequestException('KEY_ERROR: NOT_INPUT_REQUIRED_VALUE');
+
+    // 성별, 0: 공용, 1: 남성, 2: 여성
+    if (gender && !(gender >= 0 && gender <= 2))
+      throw new BadRequestException('KEY_ERROR: GENDER');
+
+    // 위치정보 동의 여부, 0:동의안함, 1:사용중에만 동의, 2: 항상 동의
+    if (
+      locationInformationAgree &&
+      !(locationInformationAgree >= 0 && locationInformationAgree <= 2)
+    )
+      throw new BadRequestException('KEY_ERROR: LOCATION_IN_FORMATIONAGREE');
+
+    // 기온 민감도, 0: 기본, 1: 추위타요, 2: 더위타요
+    if (
+      temperatureSensitivity &&
+      !(temperatureSensitivity >= 0 && temperatureSensitivity <= 2)
+    )
+      throw new BadRequestException('KEY_ERROR: TEMPERATURE_SENSITIVITY');
+
+    let checkCityExist;
+
+    if (city === 0) {
+      throw new BadRequestException('KEY_ERROR: CITY(0)');
+    } else if (city) {
+      checkCityExist = await this.cityRepository.findCityByCityId(city);
+
+      if (!checkCityExist)
+        throw new BadRequestException('KEY_ERROR: NOT_EXIST_CITY');
+    }
+
+    const user = await this.userRepository.findUserByUid(socialAccountUid);
+    if (!user) throw new NotFoundException('USER_NOT_FOUND');
+
+    if (email) user.email = email;
+    if ((gender && gender !== undefined) || gender === 0) user.gender = gender;
+    if (
+      (locationInformationAgree && locationInformationAgree !== undefined) ||
+      locationInformationAgree === 0
+    )
+      user.locationInformationAgree = locationInformationAgree;
+    if (nickname) user.nickname = nickname;
+    if (profileImage) user.profileImage = profileImage;
+    if (socialAccountUid) user.socialAccountUid = socialAccountUid;
+    if (
+      (temperatureSensitivity && temperatureSensitivity !== undefined) ||
+      temperatureSensitivity === 0
+    )
+      user.temperatureSensitivity = temperatureSensitivity;
+    if (city) user.city = city;
+
+    await this.userRepository.updateUserInfo(user);
+  }
+
+  // 유저 팔로우(생성) : O
   async createUserFollow(userFollowDto: UserFollowDto): Promise<void> {
     const { userId, followUserId } = userFollowDto;
     if (!userId || !followUserId) throw new NotFoundException('KEY_ERROR');
@@ -67,7 +152,7 @@ export class UserService {
     return await this.userFollowRepository.createUserFollow(userFollow);
   }
 
-  // 유저 팔로우(삭제)
+  // 유저 팔로우(삭제) : O
   async deleteUserFollow(userFollowDto: UserFollowDto): Promise<void> {
     const { userId, followUserId } = userFollowDto;
     if (!userId || !followUserId) throw new NotFoundException('KEY_ERROR');
@@ -93,8 +178,7 @@ export class UserService {
     return await this.userFollowRepository.deleteUserFollow(followRelation);
   }
 
-  // 유저 팔로우(목록)
-  //  - 팔로잉 목록 : 내가 팔로우 한 = 내 id가 userId에 있고, followUserId를 찾아 출력
+  // 유저 팔로잉 목록 : O / 내가 팔로우 한 = 내 id가 userId에 있고, followUserId를 찾아 출력
   async followingList(userId: number): Promise<UserFollowEntity[] | null> {
     if (!userId) throw new NotFoundException('KEY_ERROR');
 
@@ -107,7 +191,7 @@ export class UserService {
     return followingList;
   }
 
-  //  - 팔로워 목록 : 나를 팔로우 한 = 내 id가 followUserId에 있고, userId를 찾아 출력
+  //  유저 팔로워 목록 : O / 나를 팔로우 한 = 내 id가 followUserId에 있고, userId를 찾아 출력
   async followerList(followUserId: number): Promise<UserFollowEntity[] | null> {
     if (!followUserId) throw new NotFoundException('KEY_ERROR');
 
@@ -123,7 +207,6 @@ export class UserService {
     // isFollowingBack : 맞팔로우 여부(내가 팔로우 한 유저가 나를 팔로우 했는지)
     //  - 로그인 한 유저(=나) 기준, 나를 팔로우 한 유저의 목록과 내가 팔로우 한 유저의 목록을 대조 / 서로의 목록에 ID가 있으면 true, 없으면 false
     //  - followUser, user가 number 혹은 UserEntity 중 어떤 타입인지 확실히 하지 않았다. >> followUser, user를 타입으로 확인하고 일치하도록 구성
-
     followerList.forEach((follower) => {
       const followUserId =
         typeof follower.user === 'number' ? follower.user : follower.user.id;
@@ -145,7 +228,7 @@ export class UserService {
 
   // 테스트용 로그인 -----------------------------------------------
 
-  async login(socialAccountUid: string): Promise<LoginDto | null> {
+  async login(socialAccountUid: string): Promise<LoginResponseDto | null> {
     if (!socialAccountUid)
       throw new BadRequestException('socialAccountUid_required');
 
@@ -158,9 +241,14 @@ export class UserService {
       aud: userInfo.id,
     });
 
-    this.userRepository.findUserByUid(socialAccountUid);
-
-    return { token: token, user: userInfo };
+    return {
+      token: token,
+      user: {
+        id: userInfo.id,
+        nickname: userInfo.nickname,
+        profileImage: userInfo.profileImage,
+      },
+    };
   }
 
   // ------------------------------------------------------------
