@@ -40,4 +40,31 @@ export class BookmarkRepository {
       throw new Error(error.message);
     }
   }
+
+  async getBookmarkList(userId: number):Promise<BookmarkEntity[]> {
+    try {
+      const result = await this.bookmarkRepository.find({
+        relations: {
+          feed: {
+            user: true,
+            feedImage: true,
+            weatherCondition: true,
+          },
+        },
+        order: { createdAt: 'DESC' },
+        where: {
+          feed: {
+            deletedAt: null,
+          },
+          user: {
+            id: userId,
+          },
+        },
+      });
+      return result;
+    } catch (error) {
+      console.log(error);
+      throw new Error(error.message);
+    }
+  }
 }

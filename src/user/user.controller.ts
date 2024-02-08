@@ -13,6 +13,7 @@ import {
   Req,
   Res,
   Delete,
+  Put,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
@@ -20,14 +21,16 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from './user.service';
 import {
   GetCheckNicknameOverlapDto,
-  LoginDto,
+  LoginResponseDto,
   UserFollowDto,
+  UpdateUserInfoDto,
 } from './dto/user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { TokenService } from 'src/utils/verifyToken';
 import { UserFollowEntity } from 'src/entities/userFollows.entity';
+import { UserEntity } from 'src/entities/users.entity';
 
-// 회원가입 : 회원가입 상세, 로그아웃, 회원탈퇴, 회원 정보 수정, 닉네임 중복 체크(O),
+// 회원가입 : 회원가입 상세, 로그아웃, 회원탈퇴, 회원 정보 수정(O), 닉네임 중복 체크(O)
 // 유저 팔로우 : 목록(O), 생성(O), 삭제(O)
 // 유저 차단 : 목록, 생성, 삭제
 
@@ -45,6 +48,51 @@ export class UserController {
     @Param('nickname') nickname: string,
   ): Promise<string> {
     return await this.userService.getCheckNicknameOverlap(nickname);
+  }
+
+  // 마이페이지 입장시 유저 정보 get
+  @Get() async getUserInfo(
+    @Headers('authorization') token: string,
+  ): Promise<UserEntity | null> {
+    const decodedToken = this.tokenService.verifyToken(token);
+
+    const userId = decodedToken.aud;
+
+    return await this.userService.getUserInfo(userId);
+  }
+
+  // 회원 정보 수정 : O
+  @Put()
+  async updateUserInfo(
+    @Headers('authorization') token: string,
+    @Body() body: UpdateUserInfoDto,
+  ): Promise<void> {
+    const {
+      nickname,
+      email,
+      gender,
+      locationInformationAgree,
+      socialAccountUid,
+      profileImage,
+      temperatureSensitivity,
+      city,
+    } = body;
+
+    const decodedToken = this.tokenService.verifyToken(token);
+
+    const updateUserInfoDto: UpdateUserInfoDto = {
+      id: Number(decodedToken.aud),
+      nickname: nickname,
+      email: email,
+      gender: Number(gender),
+      locationInformationAgree: Number(locationInformationAgree),
+      socialAccountUid: socialAccountUid,
+      profileImage: profileImage,
+      temperatureSensitivity: Number(temperatureSensitivity),
+      city: Number(city),
+    };
+
+    return await this.userService.updateUserInfo(updateUserInfoDto);
   }
 
   // 유저 팔로우(생성) : O
@@ -77,7 +125,7 @@ export class UserController {
     return await this.userService.deleteUserFollow(userFollowDto);
   }
 
-  //  - 팔로잉 목록 : O / 내가 팔로우 한 = 내 id가 userId에 있고, followUserId를 찾아 출력
+  // 유저 팔로잉 목록 : O / 내가 팔로우 한 = 내 id가 userId에 있고, followUserId를 찾아 출력
   @Get('/following')
   async getUserFollowingList(
     @Headers('authorization') token: string,
@@ -89,7 +137,7 @@ export class UserController {
     return await this.userService.followingList(userId);
   }
 
-  //  - 팔로워 목록 : O / 나를 팔로우 한 = 내 id가 followUserId에 있고, userId를 찾아 출력
+  //  유저 팔로워 목록 : O / 나를 팔로우 한 = 내 id가 followUserId에 있고, userId를 찾아 출력
   @Get('/follower')
   async getUserFollowerList(
     @Headers('authorization') token: string,
@@ -105,18 +153,26 @@ export class UserController {
 
   @Post('/login')
   @HttpCode(200)
-  async login(@Req() req: Request): Promise<LoginDto> {
+  async login(@Req() req: Request): Promise<LoginResponseDto> {
     const { socialAccountUid } = req.body;
 
     return await this.userService.login(socialAccountUid);
   }
 
-  // -----------------------------------------------------------------
-  // verifyToken(token: string): { aud: number } {
-  //   const decodedToken = this.JwtService.verify(token);
+  @Post('/logintokencheck') // 카카오 로그인 토큰 내용 확인 테스트
+  @HttpCode(200)
+  async loginsss(@Body('token') token: string): Promise<LoginResponseDto> {
+    const decodedToken = this.JwtService.verify(token);
 
-  //   return decodedToken;
-  // }
+    return decodedToken;
+  }
+
+  // -----------------------------------------------------------------
+  verifyToken(token: string): { aud: number } {
+    const decodedToken = this.JwtService.verify(token);
+
+    return decodedToken;
+  }
 
   // ------------------------------------------------------------
 
