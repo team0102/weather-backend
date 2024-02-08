@@ -6,7 +6,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { WeatherEntity } from './weather.entity';
 import { FeedEntity } from './feeds.entity';
 
 @Entity({
@@ -40,9 +39,6 @@ export class WeatherConditionEntity {
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   updatedAt: Date;
-
-  @OneToMany(() => WeatherEntity, (weather) => weather.weatherCondition)
-  weather: WeatherEntity[];
 
   @OneToMany(() => FeedEntity, (feed) => feed.weatherCondition)
   feed: FeedEntity[];
