@@ -13,6 +13,8 @@ import { TagRepository } from './tag.repository';
 import { FeedTagRepository } from './feedTag.repository';
 import { FeedCommentRepository } from './feedComment.repository';
 import { TokenService } from 'src/utils/verifyToken';
+import { BookmarkEntity } from 'src/entities/bookmarks.entity';
+import { BookmarkRepository } from './bookmark.repository';
 
 @Module({
   imports: [
@@ -23,6 +25,7 @@ import { TokenService } from 'src/utils/verifyToken';
       FeedCommentEntity,
       FeedLikeEntity,
       TagEntity,
+      BookmarkEntity,
     ]),
   ],
   controllers: [FeedController],
@@ -33,6 +36,7 @@ import { TokenService } from 'src/utils/verifyToken';
     TagRepository,
     FeedTagRepository,
     FeedCommentRepository,
+    BookmarkRepository,
   ],
   exports: [TypeOrmModule],
 })

@@ -7,6 +7,7 @@ import { DataSource } from 'typeorm';
 import { FeedCommentRepository } from './feedComment.repository';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
 import { FeedDatail, FeedListItem } from './feed.types';
+import { BookmarkRepository } from './bookmark.repository';
 
 @Injectable()
 export class FeedService {
@@ -15,6 +16,7 @@ export class FeedService {
     private readonly tagRepository: TagRepository,
     private readonly feedTagRepository: FeedTagRepository,
     private readonly feedCommentRepository: FeedCommentRepository,
+    private readonly bookmarkRepository: BookmarkRepository,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -263,4 +265,23 @@ export class FeedService {
       throw new Error(error.message);
     }
   }
+
+  async createBookmark(loginUserId: number, feedId: number): Promise<void> {
+    try {
+      const findFeed = await this.feedRepository.findFeedById(feedId);
+      if (!findFeed || findFeed.deletedAt)
+        throw new Error('Feed does not exist');
+      const isBookmarked = await this.bookmarkRepository.isBookmarked(
+        loginUserId,
+        feedId,
+      );
+      if (isBookmarked) throw new Error('Feed already bookmarked');
+      await this.bookmarkRepository.createBookmark(loginUserId, feedId);
+    } catch (error) {
+      console.log(error);
+      throw new Error(error.message);
+    }
+  }
+
+  
 }
