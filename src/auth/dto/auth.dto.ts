@@ -1,16 +1,15 @@
-// export type LoginResponseDto = {
-//   token: string;
-//   user: UserInfo;
-// };
-
 import { SocialAccountProviderEntity } from 'src/entities/socialAccountProviders.entity';
 
-// export type UserInfo = {
-//   id: number;
-//   name: string;
-//   email: string;
-//   phoneNumber: string;
-// };
+export type LoginResponseDto = {
+  token: string;
+  user: UserInfo;
+};
+
+export type UserInfo = {
+  id: number;
+  nickname: string;
+  profileImage: string;
+};
 
 // export type SignUpRequestDto = {
 //   name?: string;
