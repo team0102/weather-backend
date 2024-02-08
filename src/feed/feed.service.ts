@@ -24,7 +24,9 @@ export class FeedService {
     try {
       const feedList = await this.feedRepository.getFeedListWithDetails();
       const processedFeedList = await Promise.all(
-        feedList.map(async (feed) => {
+        feedList
+        .filter(feed => feed.user !== null) // user가 null이 아닌 것만 필터링
+        .map(async (feed) => {
           const isAuthor = userId !== null && feed.user.id === userId;
           const likeCount = feed.feedLike.length;
           const commentCount = feed.feedComment.length;

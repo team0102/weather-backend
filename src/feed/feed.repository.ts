@@ -34,7 +34,9 @@ export class FeedRepository {
         order: { createdAt: 'DESC' },
         where: {
           deletedAt: null,
-          user: Not(null),
+          user: {
+            deletedAt: null,
+          },
         },
       });
       console.log(feedList);
@@ -63,7 +65,12 @@ export class FeedRepository {
             tag: true,
           },
         },
-        where: { id: feedId, user: Not(null) },
+        where: { 
+          id: feedId, 
+          user: {
+            deletedAt: null, // 탈퇴하지 않은 경우
+          },
+        },
       });
       return feed;
     } catch (error) {
@@ -134,7 +141,12 @@ export class FeedRepository {
   async findFeedById(feedId: number): Promise<FeedEntity> {
     try {
       const result = await this.feedRepository.findOne({
-        where: { id: feedId, user: Not(null) },
+        where: { 
+          id: feedId, 
+          user: {
+            deletedAt: null,
+          },
+        },
         relations: ['user', 'feedTag'],
       });
       console.log('repo result : ', result);
