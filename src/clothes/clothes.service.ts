@@ -2,15 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ClothEntity } from 'src/entities/clothes.entity';
-import { UserEntity } from 'src/entities/users.entity';
+import { UserRepository } from 'src/user/user.repository';
 
 @Injectable()
 export class ClothesService {
   constructor(
     @InjectRepository(ClothEntity)
     private readonly clothesEntity: Repository<ClothEntity>,
-    @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
+    private readonly userRepository: UserRepository,
   ) {}
 
   async getClothesSetIdByTemperature(
@@ -18,7 +17,7 @@ export class ClothesService {
     loginUserId?: number,
   ): Promise<ClothEntity[]> {
     if (loginUserId) {
-      await this.userRepository.findOneBy({ id: loginUserId });
+      await this.userRepository.findOneById(loginUserId);
     }
 
     const clothEntities = await this.clothesEntity
