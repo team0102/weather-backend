@@ -47,6 +47,14 @@ export class UserController {
     return await this.userService.getCheckNicknameOverlap(nickname);
   }
 
+  // 회원탈퇴_ing
+  @Delete()
+  async deleteUser(@Headers('authorization') token: string): Promise<void> {
+    const userId = this.tokenService.audienceFromToken(token);
+
+    return await this.userService.deleteUser(userId);
+  }
+
   // 유저 팔로우(생성) : O
   @Post('/follow/:followUserId')
   async createUserFollow(

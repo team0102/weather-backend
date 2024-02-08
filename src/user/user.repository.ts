@@ -30,6 +30,10 @@ export class UserRepository {
   async findOneById(id: number): Promise<UserEntity | null> {
     return await this.userTypeormRepository.findOneBy({ id: id });
   }
+
+  async deleteUserById(id: number): Promise<void> {
+    await this.userTypeormRepository.softDelete({ id: id });
+  }
   // ------------------------------------------------------------------------------------------------
 
   // method. A------------------------------------------------------------------------------------------------

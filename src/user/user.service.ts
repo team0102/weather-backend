@@ -37,6 +37,11 @@ export class UserService {
       : 'USER_EXIST';
   }
 
+  // 회원탈퇴_ing
+  async deleteUser(id: number): Promise<void> {
+    return await this.userRepository.deleteUserById(id);
+  }
+
   // 유저 팔로우(생성)
   async createUserFollow(userFollowDto: UserFollowDto): Promise<void> {
     const { userId, followUserId } = userFollowDto;
