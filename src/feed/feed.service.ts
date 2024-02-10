@@ -67,7 +67,7 @@ export class FeedService {
       return processedFeedList;
     } catch (error) {
       console.log(error);
-      throw new Error('Fail to get feedList');
+      throw new Error(error.message);
     }
   }
 
@@ -124,7 +124,7 @@ export class FeedService {
       return processedFeed;
     } catch (error) {
       console.log(error);
-      throw new Error('Fail to get feedDetails');
+      throw new Error(error.message);
     }
   }
 
@@ -152,7 +152,7 @@ export class FeedService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error(error);
-      throw new Error('Fail to create feed');
+      throw new Error(error.message);
     } finally {
       await queryRunner.release();
     }
@@ -196,12 +196,10 @@ export class FeedService {
       await this.feedTagRepository.createFeedTags(
         feedId,
         tagsToAdd,
-        //queryRunner,
       );
       // 삭제된 feedTags 삭제
       await this.feedTagRepository.deleteFeedTags(
         feedTagsToDelete,
-        //queryRunner,
       );
       await queryRunner.commitTransaction();
     } catch (error) {
@@ -318,10 +316,10 @@ export class FeedService {
     try {
       const bookmarkList =
         await this.bookmarkRepository.getBookmarkList(loginUserId);
-      //삭제된 피드 제외
-      const filteredBookmarkList = bookmarkList.filter(
-        (bookmark) => bookmark.feed !== null,
-      );
+      //삭제된 피드, 작성자가 탈퇴한 피드 제외
+      const filteredBookmarkList = bookmarkList.filter((bookmark) => {
+        return bookmark.feed !== null && bookmark.user !== null;
+      });
       const processedBookmarkList = await Promise.all(
         filteredBookmarkList.map(async (bookmark) => {
           const { content, lowTemperature, highTemperature, weatherCondition } =
