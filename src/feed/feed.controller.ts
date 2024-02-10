@@ -171,4 +171,22 @@ export class FeedController {
       return { statusCode: error.code || 500, message: error.message };
     }
   }
+
+  @Post('/:feedId/like')
+  async handleFeedLike(
+    @Headers('Authorization') token: string,
+    @Param('feedId', ParseIntPipe) feedId: number,
+    @Body('isLiked') isLiked: unknown,
+  ): Promise<ApiResponse> {
+    try {
+      //isLiked가 boolean이 아니거나 빈 값이라면 에러 발생
+      if (typeof isLiked !== 'boolean') throw new Error('Invalid value for isLiked');
+      const loginUserId = this.tokenService.audienceFromToken(token);
+      await this.feedService.handleFeedLike(isLiked, loginUserId, feedId);
+      return { statusCode: 201, message: 'FeedLike changed successfully' };
+    } catch (error) {
+      console.log(error);
+      return { statusCode: error.code || 500, message: error.message };
+    }
+  }
 }

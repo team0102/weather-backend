@@ -56,7 +56,9 @@ export class FeedRepository {
           feedComment: {
             user: true,
           },
-          feedLike: true,
+          feedLike: {
+            user: true,
+          },
           weatherCondition: true,
           bookmark: {
             user: true,

@@ -8,6 +8,7 @@ import { FeedCommentRepository } from './feedComment.repository';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
 import { BookmarkList, FeedDatail, FeedListItem } from './feed.types';
 import { BookmarkRepository } from './bookmark.repository';
+import { FeedLikeRepository } from './feedLike.repository';
 
 @Injectable()
 export class FeedService {
@@ -16,6 +17,7 @@ export class FeedService {
     private readonly tagRepository: TagRepository,
     private readonly feedTagRepository: FeedTagRepository,
     private readonly feedCommentRepository: FeedCommentRepository,
+    private readonly feedLikeRepository: FeedLikeRepository,
     private readonly bookmarkRepository: BookmarkRepository,
     private readonly dataSource: DataSource,
   ) {}
@@ -171,7 +173,8 @@ export class FeedService {
       await queryRunner.startTransaction();
 
       // 기존 피드 정보 가져오기
-      const existingFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
+      const existingFeed =
+        await this.feedRepository.getFeedWithDetailsById(feedId);
       // 존재하지 않은 피드, 삭제된 피드 에러핸들링
       if (!existingFeed || existingFeed.deletedAt)
         throw new Error('Feed does not exist');
@@ -193,14 +196,9 @@ export class FeedService {
         (feedTagId) => !savedTagIds.includes(feedTagId),
       );
       // 새로 생성된 tags를 feedTags 추가
-      await this.feedTagRepository.createFeedTags(
-        feedId,
-        tagsToAdd,
-      );
+      await this.feedTagRepository.createFeedTags(feedId, tagsToAdd);
       // 삭제된 feedTags 삭제
-      await this.feedTagRepository.deleteFeedTags(
-        feedTagsToDelete,
-      );
+      await this.feedTagRepository.deleteFeedTags(feedTagsToDelete);
       await queryRunner.commitTransaction();
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -249,8 +247,8 @@ export class FeedService {
           const deleteFeedTagIds: number[] = [];
           deleteFeedTagIds.push(feedTag.id);
           await this.feedTagRepository.deleteFeedTags(deleteFeedTagIds);
-      });
-      };
+        });
+      }
       // bookmark는 delete
       // if (findFeed.bookmark) {
       //   findFeed.bookmark.forEach(async (bookmark) => {
@@ -282,7 +280,8 @@ export class FeedService {
     content: string,
   ): Promise<void> {
     try {
-      const existingFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
+      const existingFeed =
+        await this.feedRepository.getFeedWithDetailsById(feedId);
       if (!existingFeed) throw new Error('Feed does not exist');
       await this.feedCommentRepository.createComment(
         loginUserId,
@@ -292,7 +291,7 @@ export class FeedService {
     } catch (error) {
       console.log(error);
       throw new Error(error.message);
-    } 
+    }
   }
 
   async createBookmark(loginUserId: number, feedId: number): Promise<void> {
@@ -316,7 +315,6 @@ export class FeedService {
     try {
       const bookmarkList =
         await this.bookmarkRepository.getBookmarkList(loginUserId);
-      //삭제된 피드, 작성자가 탈퇴한 피드 제외
       const filteredBookmarkList = bookmarkList.filter((bookmark) => {
         return bookmark.feed !== null && bookmark.user !== null;
       });
@@ -348,6 +346,45 @@ export class FeedService {
         }),
       );
       return processedBookmarkList;
+    } catch (error) {
+      console.log(error);
+      throw new Error(error.message);
+    }
+  }
+
+  async handleFeedLike(isLiked: boolean, loginUserId: number, feedId: number) {
+    try {
+      // 존재하는 피드인지, 삭제되지 않은 피드인지, 작성자가 탈퇴하지 않았는지 에러 핸들링
+      const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
+      if (!findFeed || findFeed.deletedAt || findFeed.user.deletedAt)
+        throw new Error('Feed does not exist');
+
+      // 좋아요를 누르지 않은 상태(isLike = false)에서 요청이 오면 좋아요 생성
+      if (isLiked) {
+        // 좋아요를 취소하는 경우
+        const findFeedLike =
+          await this.feedLikeRepository.findFeedLikeByFeedIdAndUserId(
+            loginUserId,
+            feedId,
+          );
+        if (!findFeedLike) {
+          // isLiked가 true인데 findFeedLike가 존재하지 않으면 잘못된 요청
+          throw new Error('Invalid request');
+        }
+        await this.feedLikeRepository.deleteFeedLike(findFeedLike.id);
+      } else {
+        // 좋아요를 생성하는 경우
+        const existingFeedLike =
+          await this.feedLikeRepository.findFeedLikeByFeedIdAndUserId(
+            loginUserId,
+            feedId,
+          );
+        if (existingFeedLike) {
+          // isLiked가 false인데 findFeedLike가 이미 존재하면 잘못된 요청
+          throw new Error('Invalid request');
+        }
+        await this.feedLikeRepository.createFeedLike(loginUserId, feedId);
+      }
     } catch (error) {
       console.log(error);
       throw new Error(error.message);
