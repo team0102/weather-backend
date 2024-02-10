@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ClothEntity } from 'src/entities/clothes.entity';
 import { Repository } from 'typeorm';
+import { ClothesDto, ClothesResponseDto } from './dto/cloth-response.dto';
 
 @Injectable()
 export class ClothesRepository {
@@ -12,8 +13,7 @@ export class ClothesRepository {
 
   async getClothesSetIdByTemperature(
     perceivedTemperature: number,
-  ): Promise<ClothEntity[]> {
-
+  ): Promise<ClothesResponseDto> {
     const clothEntities = await this.clothRepository
       .createQueryBuilder('cloth')
       .where(
@@ -30,6 +30,14 @@ export class ClothesRepository {
       throw new NotFoundException('주어진 온도에 해당하는 옷 세트가 없습니다');
     }
 
-    return clothEntities;
+    const clothesDtoArray: ClothesDto[] = clothEntities.map((cloth) => ({
+      id: cloth.id,
+      clothesTopId: cloth.clothesTopId,
+      clothesBottomId: cloth.clothesBottomId,
+      clothesCoatId: cloth.clothesCoatId,
+      clothesAccessoryId: cloth.clothesAccessoryId,
+    }));
+
+    return { statusCode: 200, message: 'Success', data: clothesDtoArray };
   }
 }

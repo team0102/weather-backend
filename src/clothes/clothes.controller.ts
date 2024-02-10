@@ -8,7 +8,7 @@ import {
 import { WeatherDto } from './dto/get-temperature.dto';
 import { ClothesService } from './clothes.service';
 import { TokenService } from 'src/utils/verifyToken';
-import { ClothEntity } from 'src/entities/clothes.entity';
+import { ClothesResponseDto } from './dto/cloth-response.dto';
 
 @Controller('clothes')
 export class ClothesController {
@@ -21,7 +21,7 @@ export class ClothesController {
   async getClothesSetIdByWeather(
     @Query() weatherDto: WeatherDto,
     @Headers('Authorization') token?: string,
-  ): Promise<ClothEntity[]> {
+  ): Promise<ClothesResponseDto> {
     const { temperature } = weatherDto;
 
     let loginUserId: number | undefined;
@@ -35,11 +35,15 @@ export class ClothesController {
       }
     }
 
-    const result = this.clothesService.getClothesSetIdByTemperature(
+    const result = await this.clothesService.getClothesSetIdByTemperature(
       temperature,
       loginUserId,
     );
 
-    return result;
+    return {
+      statusCode: 200,
+      message: 'Success get Clothes',
+      data: result.data,
+    };
   }
 }
