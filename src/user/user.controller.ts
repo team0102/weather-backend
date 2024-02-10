@@ -50,7 +50,7 @@ export class UserController {
     return await this.userService.getCheckNicknameOverlap(nickname);
   }
 
-  // 마이페이지 입장시 유저 정보 get
+  // 유저 정보 조회 : O
   @Get() async getUserInfo(
     @Headers('authorization') token: string,
   ): Promise<UserEntity | null> {
@@ -59,6 +59,14 @@ export class UserController {
     const userId = decodedToken.aud;
 
     return await this.userService.getUserInfo(userId);
+  }
+
+  // 로그아웃_ing
+  @Put('/logout')
+  async userLogout(@Headers('authorization') token: string): Promise<void> {
+    const userId = this.tokenService.audienceFromToken(token);
+
+    return; // ★★★★★★★★★★★★★★★★조사 필요★★★★★★★★★★★★★★★★
   }
 
   // 회원 정보 수정 : O

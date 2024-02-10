@@ -41,7 +41,7 @@ export class UserService {
       : 'USER_EXIST';
   }
 
-  // 유저 정보 get : 마이페이지 입장시 필요
+  // 유저 정보 조회 : O
   async getUserInfo(userId: number): Promise<UserEntity | null> {
     const user = await this.userRepository.findOneById(userId);
 
