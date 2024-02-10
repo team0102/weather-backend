@@ -8,6 +8,9 @@ import {
   Headers,
   Put,
   Delete,
+  HttpException,
+  HttpStatus,
+  UseFilters,
 } from '@nestjs/common';
 import { FeedService } from './feed.service';
 import { CreateFeedDTO } from './dto/create-feed.dto';
@@ -19,6 +22,7 @@ import {
   FeedDetailResponse,
   FeedListResponse,
 } from './feed.types';
+import HttpError from 'src/utils/httpError';
 
 @Controller('feeds')
 export class FeedController {
@@ -178,15 +182,12 @@ export class FeedController {
     @Param('feedId', ParseIntPipe) feedId: number,
     @Body('isLiked') isLiked: unknown,
   ): Promise<ApiResponse> {
-    try {
+    if (typeof isLiked !== 'boolean') {
       //isLiked가 boolean이 아니거나 빈 값이라면 에러 발생
-      if (typeof isLiked !== 'boolean') throw new Error('Invalid value for isLiked');
-      const loginUserId = this.tokenService.audienceFromToken(token);
-      await this.feedService.handleFeedLike(isLiked, loginUserId, feedId);
-      return { statusCode: 201, message: 'FeedLike changed successfully' };
-    } catch (error) {
-      console.log(error);
-      return { statusCode: error.code || 500, message: error.message };
+      throw new HttpError(400, 'Invalid value for isLiked');
     }
+    const loginUserId = this.tokenService.audienceFromToken(token);
+    await this.feedService.handleFeedLike(isLiked, loginUserId, feedId);
+    return { statusCode: 201, message: 'FeedLike changed successfully' };
   }
 }

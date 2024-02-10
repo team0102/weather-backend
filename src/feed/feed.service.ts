@@ -1,4 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { FeedRepository } from './feed.repository';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 import { TagRepository } from './tag.repository';
@@ -9,6 +14,7 @@ import { UpdateFeedDTO } from './dto/update-feed.dto';
 import { BookmarkList, FeedDatail, FeedListItem } from './feed.types';
 import { BookmarkRepository } from './bookmark.repository';
 import { FeedLikeRepository } from './feedLike.repository';
+import HttpError from 'src/utils/httpError';
 
 @Injectable()
 export class FeedService {
@@ -250,12 +256,14 @@ export class FeedService {
         });
       }
       //feedLike들 delete
-      if(findFeed.feedLike) {
+      if (findFeed.feedLike) {
         findFeed.feedLike.forEach(async (feedLike) => {
           const deledtedFeedLikeIds: number[] = [];
           deledtedFeedLikeIds.push(feedLike.id);
-          await this.feedLikeRepository.deleteFeedLikesByIds(deledtedFeedLikeIds);
-        })
+          await this.feedLikeRepository.deleteFeedLikesByIds(
+            deledtedFeedLikeIds,
+          );
+        });
       }
       // bookmark는 delete
       // if (findFeed.bookmark) {
@@ -362,41 +370,36 @@ export class FeedService {
   }
 
   async handleFeedLike(isLiked: boolean, loginUserId: number, feedId: number) {
-    try {
-      // 존재하는 피드인지, 삭제되지 않은 피드인지, 작성자가 탈퇴하지 않았는지 에러 핸들링
-      const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
-      if (!findFeed || findFeed.deletedAt || findFeed.user.deletedAt)
-        throw new Error('Feed does not exist');
+    // 존재하는 피드인지, 삭제되지 않은 피드인지, 작성자가 탈퇴하지 않았는지 에러 핸들링
+    const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
+    if (!findFeed || findFeed.deletedAt || findFeed.user.deletedAt)
+      throw new HttpError(404, 'Feed does not exist');
 
-      // 좋아요를 누르지 않은 상태(isLike = false)에서 요청이 오면 좋아요 생성
-      if (isLiked) {
-        // 좋아요를 취소하는 경우
-        const findFeedLike =
-          await this.feedLikeRepository.findFeedLikeByFeedIdAndUserId(
-            loginUserId,
-            feedId,
-          );
-        if (!findFeedLike) {
-          // isLiked가 true인데 findFeedLike가 존재하지 않으면 잘못된 요청
-          throw new Error('Invalid request');
-        }
-        await this.feedLikeRepository.deleteFeedLike(findFeedLike.id);
-      } else {
-        // 좋아요를 생성하는 경우
-        const existingFeedLike =
-          await this.feedLikeRepository.findFeedLikeByFeedIdAndUserId(
-            loginUserId,
-            feedId,
-          );
-        if (existingFeedLike) {
-          // isLiked가 false인데 findFeedLike가 이미 존재하면 잘못된 요청
-          throw new Error('Invalid request');
-        }
-        await this.feedLikeRepository.createFeedLike(loginUserId, feedId);
+    // 좋아요를 누르지 않은 상태(isLike = false)에서 요청이 오면 좋아요 생성
+    if (isLiked) {
+      // 좋아요를 취소하는 경우
+      const findFeedLike =
+        await this.feedLikeRepository.findFeedLikeByFeedIdAndUserId(
+          loginUserId,
+          feedId,
+        );
+      if (!findFeedLike) {
+        // isLiked가 true인데 findFeedLike가 존재하지 않으면 잘못된 요청
+        throw new HttpError(400, 'Invalid request');
       }
-    } catch (error) {
-      console.log(error);
-      throw new Error(error.message);
+      await this.feedLikeRepository.deleteFeedLike(findFeedLike.id);
+    } else {
+      // 좋아요를 생성하는 경우
+      const existingFeedLike =
+        await this.feedLikeRepository.findFeedLikeByFeedIdAndUserId(
+          loginUserId,
+          feedId,
+        );
+      if (existingFeedLike) {
+        // isLiked가 false인데 findFeedLike가 이미 존재하면 잘못된 요청
+        throw new HttpError(400, 'Invalid request');
+      }
+      await this.feedLikeRepository.createFeedLike(loginUserId, feedId);
     }
   }
 }

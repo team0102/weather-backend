@@ -14,49 +14,29 @@ export class FeedLikeRepository {
     loginUserId: number,
     feedId: number,
   ): Promise<FeedLikeEntity> {
-    try {
-      console.log(loginUserId, feedId);
-      const result = await this.feedLikeRepository.findOne({
-        where: {
-          user: { id: loginUserId },
-          feed: { id: feedId },
-        },
-      });
-      console.log(result);
-      return result;
-    } catch (error) {
-      console.log(error);
-      throw new Error(error.message);
-    }
+    console.log(loginUserId, feedId);
+    const result = await this.feedLikeRepository.findOne({
+      where: {
+        user: { id: loginUserId },
+        feed: { id: feedId },
+      },
+    });
+    console.log(result);
+    return result;
   }
 
   async createFeedLike(loginUserId: number, feedId: number): Promise<void> {
-    try {
-      const result = await this.feedLikeRepository.save({
-        user: { id: loginUserId },
-        feed: { id: feedId },
-      });
-    } catch (error) {
-      console.log(error);
-      throw new Error(error.message);
-    }
+    await this.feedLikeRepository.save({
+      user: { id: loginUserId },
+      feed: { id: feedId },
+    });
   }
 
   async deleteFeedLike(id: number): Promise<void> {
-    try {
-      await this.feedLikeRepository.delete({ id });
-    } catch (error) {
-      console.log(error);
-      throw new Error(error.message);
-    }
+    await this.feedLikeRepository.delete({ id });
   }
 
   async deleteFeedLikesByIds(ids: number[]): Promise<void> {
-    try {
-      await this.feedLikeRepository.delete(ids);
-    } catch (error) {
-      console.log(error);
-      throw new Error(error.message);
-    }
+    await this.feedLikeRepository.delete(ids);
   }
 }
