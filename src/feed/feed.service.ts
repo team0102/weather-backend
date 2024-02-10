@@ -8,7 +8,6 @@ import { FeedCommentRepository } from './feedComment.repository';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
 import { BookmarkList, FeedDatail, FeedListItem } from './feed.types';
 import { BookmarkRepository } from './bookmark.repository';
-import { FeedImageRepository } from './feedImage.repository';
 
 @Injectable()
 export class FeedService {
@@ -17,7 +16,6 @@ export class FeedService {
     private readonly tagRepository: TagRepository,
     private readonly feedTagRepository: FeedTagRepository,
     private readonly feedCommentRepository: FeedCommentRepository,
-    private readonly feedImageRepository: FeedImageRepository,
     private readonly bookmarkRepository: BookmarkRepository,
     private readonly dataSource: DataSource,
   ) {}
@@ -27,42 +25,44 @@ export class FeedService {
       const feedList = await this.feedRepository.getFeedListWithDetails();
       const processedFeedList = await Promise.all(
         feedList
-        .filter(feed => feed.user !== null)
-        .map(async (feed) => {
-          const isAuthor = userId !== null && feed.user.id === userId;
-          const likeCount = feed.feedLike.length;
-          const commentCount = feed.feedComment.length;
-          const isLiked = feed.feedLike.some((like) => like.user.id === userId);
-          const isBookmarked = feed.bookmark.some(
-            (bookmark) => bookmark.user.id === userId,
-          );
-          const { id, nickname, profileImage } = feed.user;
-          const imageUrl =
-            feed.feedImage.length > 0 ? feed.feedImage[0].imageUrl : null;
-          const {
-            content,
-            lowTemperature,
-            highTemperature,
-            createdAt,
-            updatedAt,
-          } = feed;
-          return {
-            id: feed.id,
-            imageUrl,
-            content,
-            lowTemperature,
-            highTemperature,
-            weatherConditionId: feed.weatherCondition.id,
-            createdAt,
-            updatedAt,
-            author: { id, nickname, profileImage },
-            isAuthor,
-            likeCount,
-            commentCount,
-            isLiked,
-            isBookmarked,
-          };
-        }),
+          .filter((feed) => feed.user !== null)
+          .map(async (feed) => {
+            const isAuthor = userId !== null && feed.user.id === userId;
+            const likeCount = feed.feedLike.length;
+            const commentCount = feed.feedComment.length;
+            const isLiked = feed.feedLike.some(
+              (like) => like.user.id === userId,
+            );
+            const isBookmarked = feed.bookmark.some(
+              (bookmark) => bookmark.user.id === userId,
+            );
+            const { id, nickname, profileImage } = feed.user;
+            const imageUrl =
+              feed.feedImage.length > 0 ? feed.feedImage[0].imageUrl : null;
+            const {
+              content,
+              lowTemperature,
+              highTemperature,
+              createdAt,
+              updatedAt,
+            } = feed;
+            return {
+              id: feed.id,
+              imageUrl,
+              content,
+              lowTemperature,
+              highTemperature,
+              weatherConditionId: feed.weatherCondition.id,
+              createdAt,
+              updatedAt,
+              author: { id, nickname, profileImage },
+              isAuthor,
+              likeCount,
+              commentCount,
+              isLiked,
+              isBookmarked,
+            };
+          }),
       );
       return processedFeedList;
     } catch (error) {
@@ -147,7 +147,6 @@ export class FeedService {
       const savedFeedTag = await this.feedTagRepository.createFeedTags(
         savedFeedId,
         savedTagIds,
-        queryRunner,
       );
       await queryRunner.commitTransaction();
     } catch (error) {
@@ -172,7 +171,7 @@ export class FeedService {
       await queryRunner.startTransaction();
 
       // 기존 피드 정보 가져오기
-      const existingFeed = await this.feedRepository.findFeedById(feedId);
+      const existingFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
       // 존재하지 않은 피드, 삭제된 피드 에러핸들링
       if (!existingFeed || existingFeed.deletedAt)
         throw new Error('Feed does not exist');
@@ -197,12 +196,12 @@ export class FeedService {
       await this.feedTagRepository.createFeedTags(
         feedId,
         tagsToAdd,
-        queryRunner,
+        //queryRunner,
       );
       // 삭제된 feedTags 삭제
-      await this.feedTagRepository.deletedFeedTags(
+      await this.feedTagRepository.deleteFeedTags(
         feedTagsToDelete,
-        queryRunner,
+        //queryRunner,
       );
       await queryRunner.commitTransaction();
     } catch (error) {
@@ -236,43 +235,48 @@ export class FeedService {
   }
 
   async deleteFeed(loginUserId: number, feedId: number): Promise<void> {
+    const newDate = new Date();
+    const queryRunner = this.dataSource.createQueryRunner();
     try {
-      const newDate = new Date();
-      const findFeed = await this.feedRepository.findFeedById(feedId);
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
       if (!findFeed || findFeed.deletedAt)
         throw new Error('Feed does not exist');
       //console.log('findFeed:', findFeed);
       if (!findFeed.user || findFeed.user.id !== loginUserId)
         throw new Error('Invalid User');
 
-        // if (findFeed.feedTag) {
-        //   // feedTag는 삭제
-        //   findFeed.feedTag.forEach(async (tag) => {
-        //     tag.deletedAt = newDate;
-        //     await this.feedTagRepository.save(tag);
-        //   });
-        // }
-    
-        if (findFeed.feedImage) {
-          // feedImage는 softDelete
-          findFeed.feedImage.forEach(async (image) => {
-            image.deletedAt = newDate;
-            await this.feedImageRepository.updateFeedImage(image);
-          });
-        }
-    
-        if (findFeed.feedComment) {
-          // feedComment는 softDelete
-          findFeed.feedComment.forEach(async (comment) => {
-            comment.deletedAt = newDate;
-            await this.feedCommentRepository.updateFeedComment(comment);
-          });
-        }
-
-      await this.feedRepository.deletedFeed(feedId, newDate);
+      // feedTag는 delete
+      if (findFeed.feedTag) {
+        findFeed.feedTag.forEach(async (feedTag) => {
+          const deleteFeedTagIds: number[] = [];
+          deleteFeedTagIds.push(feedTag.id);
+          await this.feedTagRepository.deleteFeedTags(deleteFeedTagIds);
+      });
+      };
+      // bookmark는 delete
+      // if (findFeed.bookmark) {
+      //   findFeed.bookmark.forEach(async (bookmark) => {
+      //     //comment.deletedAt = newDate;
+      //     await this.bookmarkRepository.deleteBookmark(bookmark);
+      //   });
+      // };
+      // feedComment는 softDelete
+      // if (findFeed.feedComment) {
+      //   findFeed.feedComment.forEach(async (comment) => {
+      //     comment.deletedAt = newDate;
+      //     await this.feedCommentRepository.updateFeedComment(comment);
+      //   });
+      // };
+      await this.feedRepository.deletedFeed(findFeed, newDate);
+      await queryRunner.commitTransaction();
     } catch (error) {
+      await queryRunner.rollbackTransaction();
       console.log(error);
       throw new Error(error.message);
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -282,7 +286,7 @@ export class FeedService {
     content: string,
   ): Promise<void> {
     try {
-      const existingFeed = await this.feedRepository.findFeedById(feedId);
+      const existingFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
       if (!existingFeed) throw new Error('Feed does not exist');
       await this.feedCommentRepository.createComment(
         loginUserId,
@@ -292,12 +296,12 @@ export class FeedService {
     } catch (error) {
       console.log(error);
       throw new Error(error.message);
-    }
+    } 
   }
 
   async createBookmark(loginUserId: number, feedId: number): Promise<void> {
     try {
-      const findFeed = await this.feedRepository.findFeedById(feedId);
+      const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
       if (!findFeed || findFeed.deletedAt)
         throw new Error('Feed does not exist');
       const isBookmarked = await this.bookmarkRepository.isBookmarked(
@@ -312,7 +316,7 @@ export class FeedService {
     }
   }
 
-  async getBookmarkList(loginUserId: number):Promise<BookmarkList[]> {
+  async getBookmarkList(loginUserId: number): Promise<BookmarkList[]> {
     try {
       const bookmarkList =
         await this.bookmarkRepository.getBookmarkList(loginUserId);

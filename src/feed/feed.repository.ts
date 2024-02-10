@@ -65,10 +65,10 @@ export class FeedRepository {
             tag: true,
           },
         },
-        where: { 
-          id: feedId, 
+        where: {
+          id: feedId,
           user: {
-            deletedAt: null, // 탈퇴하지 않은 경우
+            deletedAt: null,
           },
         },
       });
@@ -101,13 +101,21 @@ export class FeedRepository {
     }
   }
 
-  async deletedFeed(feedId: number, newDate: Date): Promise<void> {
+  async deletedFeed(findFeed: FeedEntity, newDate: Date): Promise<void> {
+    const { feedImage } = findFeed;
     try {
-      const result = await this.feedRepository.save({
-        id: feedId,
+      if (Array.isArray(feedImage) && feedImage.length > 0) {
+        await Promise.all(
+          feedImage.map(async (image) => {
+            image.deletedAt = newDate;
+            await this.feedImageRepository.save(image);
+          }),
+        );
+      };
+      await this.feedRepository.save({
+        id: findFeed.id,
         deletedAt: newDate,
       });
-      console.log('delete feed result : ', result);
     } catch (error) {
       console.log(error);
       throw new Error(error.message);
@@ -127,6 +135,7 @@ export class FeedRepository {
         { id: feedId },
         { ...updateData },
       );
+      // 이미지가 1개인 경우만 고려
       const updateFeedImage = await this.feedImageRepository.update(
         { feed: { id: feedId } },
         { imageUrl: imageUrl },
@@ -138,18 +147,18 @@ export class FeedRepository {
     }
   }
 
+  // ==================생략 예정===================
   async findFeedById(feedId: number): Promise<FeedEntity> {
     try {
       const result = await this.feedRepository.findOne({
-        where: { 
-          id: feedId, 
+        where: {
+          id: feedId,
           user: {
             deletedAt: null,
           },
         },
-        relations: ['user', 'feedTag'],
+        relations: ['user', 'feedTag', 'feedImage', 'bookmark'],
       });
-      console.log('repo result : ', result);
       return result;
     } catch (error) {
       console.log(error);

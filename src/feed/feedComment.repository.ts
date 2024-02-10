@@ -31,12 +31,12 @@ export class FeedCommentRepository {
     }
   }
 
-  async updateFeedComment(comment: FeedCommentEntity):Promise<void> {
-    try{
+  // async updateFeedComment(comment: FeedCommentEntity):Promise<void> {
+  //   try{
       
-    }catch(error){
-    console.log(error)
-    throw new Error(error.message);
-    }
-  }
+  //   }catch(error){
+  //   console.log(error)
+  //   throw new Error(error.message);
+  //   }
+  // }
 }
