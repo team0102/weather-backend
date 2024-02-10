@@ -50,23 +50,6 @@ export class UserController {
     return await this.userService.getCheckNicknameOverlap(nickname);
   }
 
-  // 회원탈퇴_ing
-  // @Delete()
-  // async deleteUser(@Headers('authorization') token: string): Promise<void> {
-  //   const userId = this.tokenService.audienceFromToken(token);
-
-  //   return await this.userService.deleteUser(userId);
-  // }
-
-  @Delete()
-  async test_deleteUser(
-    @Headers('authorization') token: string,
-  ): Promise<void> {
-    const userId: number = this.tokenService.audienceFromToken(token);
-
-    return await this.userService.test_deleteUser(Number(userId));
-  }
-
   // 마이페이지 입장시 유저 정보 get
   @Get() async getUserInfo(
     @Headers('authorization') token: string,
@@ -76,6 +59,14 @@ export class UserController {
     const userId = decodedToken.aud;
 
     return await this.userService.getUserInfo(userId);
+  }
+
+  // 회원탈퇴_ing
+  @Delete()
+  async deleteUser(@Headers('authorization') token: string): Promise<void> {
+    const userId = this.tokenService.audienceFromToken(token);
+
+    return await this.userService.deleteUser(userId);
   }
 
   // 회원 정보 수정 : O

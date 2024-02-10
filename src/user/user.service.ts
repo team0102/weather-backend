@@ -41,15 +41,6 @@ export class UserService {
       : 'USER_EXIST';
   }
 
-  // 회원탈퇴_ing
-  // async deleteUser(id: number): Promise<void> {
-  //   return await this.userRepository.deleteUserById(id);
-  // }
-
-  async test_deleteUser(id: number): Promise<void> {
-    return await this.userRepository.test_deleteUserById(id);
-  }
-
   // 유저 정보 get : 마이페이지 입장시 필요
   async getUserInfo(userId: number): Promise<UserEntity | null> {
     const user = await this.userRepository.findOneById(userId);
@@ -57,6 +48,15 @@ export class UserService {
     if (!user) throw new NotFoundException('USER_NOT_FOUND');
 
     return user;
+  }
+
+  // 회원탈퇴_ing
+  async deleteUser(id: number): Promise<void> {
+    const user = this.userRepository.findOneById(id);
+
+    if (!user) throw new NotFoundException(`USER_NOT_FOUND`);
+
+    return await this.userRepository.deleteUserById(id);
   }
 
   // 회원 정보 수정 : O
