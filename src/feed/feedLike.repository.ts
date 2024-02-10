@@ -50,4 +50,13 @@ export class FeedLikeRepository {
       throw new Error(error.message);
     }
   }
+
+  async deleteFeedLikesByIds(ids: number[]): Promise<void> {
+    try {
+      await this.feedLikeRepository.delete(ids);
+    } catch (error) {
+      console.log(error);
+      throw new Error(error.message);
+    }
+  }
 }

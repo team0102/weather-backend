@@ -241,13 +241,21 @@ export class FeedService {
       if (!findFeed.user || findFeed.user.id !== loginUserId)
         throw new Error('Invalid User');
 
-      // feedTag는 delete
+      // feedTag들 delete
       if (findFeed.feedTag) {
         findFeed.feedTag.forEach(async (feedTag) => {
           const deleteFeedTagIds: number[] = [];
           deleteFeedTagIds.push(feedTag.id);
           await this.feedTagRepository.deleteFeedTags(deleteFeedTagIds);
         });
+      }
+      //feedLike들 delete
+      if(findFeed.feedLike) {
+        findFeed.feedLike.forEach(async (feedLike) => {
+          const deledtedFeedLikeIds: number[] = [];
+          deledtedFeedLikeIds.push(feedLike.id);
+          await this.feedLikeRepository.deleteFeedLikesByIds(deledtedFeedLikeIds);
+        })
       }
       // bookmark는 delete
       // if (findFeed.bookmark) {
@@ -256,6 +264,7 @@ export class FeedService {
       //     await this.bookmarkRepository.deleteBookmark(bookmark);
       //   });
       // };
+
       // feedComment는 softDelete
       // if (findFeed.feedComment) {
       //   findFeed.feedComment.forEach(async (comment) => {
