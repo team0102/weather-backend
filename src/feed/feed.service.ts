@@ -372,7 +372,7 @@ export class FeedService {
   async handleFeedLike(isLiked: boolean, loginUserId: number, feedId: number) {
     // 존재하는 피드인지, 삭제되지 않은 피드인지, 작성자가 탈퇴하지 않았는지 에러 핸들링
     const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
-    if (!findFeed || findFeed.deletedAt || findFeed.user.deletedAt)
+    if (!findFeed || findFeed.deletedAt || !findFeed.user)
       throw new HttpError(404, 'Feed does not exist');
 
     // 좋아요를 누르지 않은 상태(isLike = false)에서 요청이 오면 좋아요 생성
