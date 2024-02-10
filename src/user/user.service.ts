@@ -50,6 +50,15 @@ export class UserService {
     return user;
   }
 
+  // 회원탈퇴_ing
+  async deleteUser(id: number): Promise<void> {
+    const user = this.userRepository.findOneById(id);
+
+    if (!user) throw new NotFoundException(`USER_NOT_FOUND`);
+
+    return await this.userRepository.deleteUserById(id);
+  }
+
   // 회원 정보 수정 : O
   async updateUserInfo(updateUserInfoDto: UpdateUserInfoDto): Promise<void> {
     const {

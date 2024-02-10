@@ -23,7 +23,7 @@ export type UserInfoDto = {
 
 export type UpdateUserInfoDto = {
   id: number;
-  nickname: string; // 첫 로그인시 작성
+  nickname: string; // 첫 로그인시 작성  →  소셜로그인 정보로 삽입(240207)
   email: string; // 소셜로그인으로 정보 삽입
   gender?: number; // 성별, 0: 공용, 1: 남성, 2: 여성 / 비회원: 0만, 회원: 0~2 모두 다
   locationInformationAgree?: number; // 위치정보 동의 여부, 0:동의안함, 1:사용중에만 동의, 2: 항상 동의
