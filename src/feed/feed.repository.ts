@@ -101,20 +101,18 @@ export class FeedRepository {
     }
   }
 
-  async deletedFeed(findFeed: FeedEntity, newDate: Date): Promise<void> {
+  async deletedFeed(findFeed: FeedEntity): Promise<void> {
     const { feedImage } = findFeed;
     try {
       if (Array.isArray(feedImage) && feedImage.length > 0) {
         await Promise.all(
           feedImage.map(async (image) => {
-            image.deletedAt = newDate;
-            await this.feedImageRepository.save(image);
+            await this.feedImageRepository.softDelete(image);
           }),
         );
       };
-      await this.feedRepository.save({
+      await this.feedRepository.softDelete({
         id: findFeed.id,
-        deletedAt: newDate,
       });
     } catch (error) {
       console.log(error);

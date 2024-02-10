@@ -207,7 +207,7 @@ export class FeedService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.log(error);
-      throw new Error('Fail to update feed');
+      throw new Error(error.message);
     } finally {
       await queryRunner.release();
     }
@@ -235,7 +235,6 @@ export class FeedService {
   }
 
   async deleteFeed(loginUserId: number, feedId: number): Promise<void> {
-    const newDate = new Date();
     const queryRunner = this.dataSource.createQueryRunner();
     try {
       await queryRunner.connect();
@@ -243,7 +242,6 @@ export class FeedService {
       const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
       if (!findFeed || findFeed.deletedAt)
         throw new Error('Feed does not exist');
-      //console.log('findFeed:', findFeed);
       if (!findFeed.user || findFeed.user.id !== loginUserId)
         throw new Error('Invalid User');
 
@@ -266,10 +264,10 @@ export class FeedService {
       // if (findFeed.feedComment) {
       //   findFeed.feedComment.forEach(async (comment) => {
       //     comment.deletedAt = newDate;
-      //     await this.feedCommentRepository.updateFeedComment(comment);
+      //     await this.feedCommentRepository.deleteFeedComment(comment);
       //   });
       // };
-      await this.feedRepository.deletedFeed(findFeed, newDate);
+      await this.feedRepository.deletedFeed(findFeed);
       await queryRunner.commitTransaction();
     } catch (error) {
       await queryRunner.rollbackTransaction();
