@@ -42,7 +42,7 @@ export class FeedService {
               (like) => like.user.id === userId,
             );
             const isBookmarked = feed.bookmark.some(
-              (bookmark) => bookmark.user.id === userId,
+              (bookmark) => bookmark.user !==null && bookmark.user.id === userId,
             );
             const { id, nickname, profileImage } = feed.user;
             const imageUrl =
@@ -83,7 +83,7 @@ export class FeedService {
     try {
       const feedDetails =
         await this.feedRepository.getFeedWithDetailsById(feedId);
-      if (!feedDetails || feedDetails.deletedAt)
+      if (!feedDetails || feedDetails.deletedAt || !feedDetails.user)
         throw new Error('Feed does not exist');
       const isAuthor = feedDetails.user.id === userId;
       const likeCount = feedDetails.feedLike.length;
@@ -92,7 +92,7 @@ export class FeedService {
         (like) => like.user.id === userId,
       );
       const isBookmarked = feedDetails.bookmark.some(
-        (bookmark) => bookmark.user.id === userId,
+        (bookmark) => bookmark.user !==null && bookmark.user.id === userId,
       );
       const { id, nickname, profileImage } = feedDetails.user;
       const imageUrl =
