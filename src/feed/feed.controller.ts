@@ -57,7 +57,7 @@ export class FeedController {
       const bookmarkList = await this.feedService.getBookmarkList(loginUserId);
       return {
         statusCode: 201,
-        message: 'Bookmark created successfully',
+        message: 'Successed to get BookmarkList',
         data: bookmarkList,
       };
     } catch (error) {
