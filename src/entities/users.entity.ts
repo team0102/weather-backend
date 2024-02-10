@@ -125,7 +125,7 @@ export class UserEntity {
   @OneToMany(() => UserBlockEntity, (userBlocker) => userBlocker.blockUser)
   userBlocker: UserBlockEntity[];
 
-  @OneToMany(() => FeedEntity, (feed) => feed.user, { cascade: true })
+  @OneToMany(() => FeedEntity, (feed) => feed.user)
   feed: FeedEntity[];
 
   @OneToMany(() => FeedCommentEntity, (feedComment) => feedComment.user)
