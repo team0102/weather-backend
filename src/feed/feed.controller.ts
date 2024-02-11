@@ -120,7 +120,7 @@ export class FeedController {
     return { status: 201, message: 'Comment created successfully' };
   }
 
-  @Post('/:feedId/like')
+  @Post('/like/:feedId')
   async handleFeedLike(
     @Headers('Authorization') token: string,
     @Param('feedId', ParseIntPipe) feedId: number,
