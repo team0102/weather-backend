@@ -20,8 +20,12 @@ export class FeedRepository {
       relations: {
         user: true,
         feedImage: true,
-        feedComment: true,
-        feedLike: true,
+        feedComment: {
+          user:true,
+        },
+        feedLike: {
+          user : true
+        },
         weatherCondition: true,
         bookmark: {
           user: true,

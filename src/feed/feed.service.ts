@@ -32,10 +32,9 @@ export class FeedService {
           const isAuthor = userId !== null && feed.user.id === userId;
           const likeCount = feed.feedLike.length;
           const commentCount = feed.feedComment.length;
-          const isLiked = feed.feedLike.some((like) => like.user.id === userId);
+          const isLiked = feed.feedLike.some((like) => like.user && like.user.id === userId);
           const isBookmarked = feed.bookmark.some(
-            (bookmark) => bookmark.user !== null && bookmark.user.id === userId,
-          );
+            (bookmark) => bookmark.user && bookmark.user.id === userId);
           const { id, nickname, profileImage } = feed.user;
           const imageUrl =
             feed.feedImage.length > 0 ? feed.feedImage[0].imageUrl : null;
@@ -76,10 +75,10 @@ export class FeedService {
     const likeCount = feedDetails.feedLike.length;
     const commentCount = feedDetails.feedComment.length;
     const isLiked = feedDetails.feedLike.some(
-      (like) => like.user.id === userId,
+      (like) => like.user && like.user.id === userId,
     );
     const isBookmarked = feedDetails.bookmark.some(
-      (bookmark) => bookmark.user !== null && bookmark.user.id === userId,
+      (bookmark) => bookmark.user && bookmark.user.id === userId,
     );
     const { id, nickname, profileImage } = feedDetails.user;
     const imageUrl =
