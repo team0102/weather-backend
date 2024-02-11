@@ -321,17 +321,17 @@ export class FeedService {
   }
 
   // 기존 북마크 추가 서비스 로직
-  // async createBookmark(loginUserId: number, feedId: number): Promise<void> {
-  //   const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
-  //   if (!findFeed || findFeed.deletedAt || !findFeed.user)
-  //   throw new HttpError(404, 'Feed does not exist');
-  //   const isBookmarked = await this.bookmarkRepository.isBookmarked(
-  //     loginUserId,
-  //     feedId,
-  //   );
-  //   if (isBookmarked) throw new Error('Feed already bookmarked');
-  //   await this.bookmarkRepository.createBookmark(loginUserId, feedId);
-  // }
+  async createBookmark(loginUserId: number, feedId: number): Promise<void> {
+    const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
+    if (!findFeed || findFeed.deletedAt || !findFeed.user)
+    throw new HttpError(404, 'Feed does not exist');
+    const isBookmarked = await this.bookmarkRepository.isBookmarked(
+      loginUserId,
+      feedId,
+    );
+    if (isBookmarked) throw new Error('Feed already bookmarked');
+    await this.bookmarkRepository.createBookmark(loginUserId, feedId);
+  }
 
   async getBookmarkList(loginUserId: number): Promise<BookmarkList[]> {
     const bookmarkList =

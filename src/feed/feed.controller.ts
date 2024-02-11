@@ -120,7 +120,22 @@ export class FeedController {
     return { status: 201, message: 'Comment created successfully' };
   }
 
-  @Post('/:feedId/bookmark')
+  @Post('/:feedId/like')
+  async handleFeedLike(
+    @Headers('Authorization') token: string,
+    @Param('feedId', ParseIntPipe) feedId: number,
+    @Body('isLiked') isLiked: unknown,
+  ): Promise<ApiResponse> {
+    if (typeof isLiked !== 'boolean') {
+      //isLiked가 boolean이 아니거나 빈 값이라면 에러 발생
+      throw new HttpError(400, 'Invalid value for isLiked');
+    }
+    const loginUserId = this.tokenService.audienceFromToken(token);
+    await this.feedService.handleFeedLike(isLiked, loginUserId, feedId);
+    return { status: 201, message: 'FeedLike changed successfully' };
+  }
+
+  @Post('/bookmark/:feedId')
   async handleBookmark(
     @Headers('Authorization') token: string,
     @Param('feedId', ParseIntPipe) feedId: number,
@@ -136,28 +151,14 @@ export class FeedController {
   }
 
   // 기존 북마크 추가 요청
-  // @Post('/:feedId/bookmark')
-  // async createBookmark(
-  //   @Headers('Authorization') token: string,
-  //   @Param('feedId', ParseIntPipe) feedId: number,
-  // ): Promise<ApiResponse> {
-  //     const loginUserId = this.tokenService.audienceFromToken(token);
-  //     await this.feedService.createBookmark(loginUserId, feedId;
-  //     return { status: 201, message: 'Bookmark created successfully' };
-  // }
-
-  @Post('/:feedId/like')
-  async handleFeedLike(
+  @Post('/:feedId/bookmark')
+  async createBookmark(
     @Headers('Authorization') token: string,
     @Param('feedId', ParseIntPipe) feedId: number,
-    @Body('isLiked') isLiked: unknown,
   ): Promise<ApiResponse> {
-    if (typeof isLiked !== 'boolean') {
-      //isLiked가 boolean이 아니거나 빈 값이라면 에러 발생
-      throw new HttpError(400, 'Invalid value for isLiked');
-    }
-    const loginUserId = this.tokenService.audienceFromToken(token);
-    await this.feedService.handleFeedLike(isLiked, loginUserId, feedId);
-    return { status: 201, message: 'FeedLike changed successfully' };
+      const loginUserId = this.tokenService.audienceFromToken(token);
+      await this.feedService.createBookmark(loginUserId, feedId);
+      return { status: 201, message: 'Bookmark created successfully' };
   }
+
 }
