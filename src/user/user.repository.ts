@@ -20,10 +20,6 @@ export class UserRepository {
 
   // ------------------------------------------------------------------------------------------------
 
-  async updateUserInfo(userInfoDto: UserEntity): Promise<void> {
-    await this.userTypeormRepository.save(userInfoDto);
-  }
-
   async getCheckNicknameOverlap(nickname: string): Promise<Number> {
     return await this.userTypeormRepository.countBy({
       nickname: nickname,
@@ -32,6 +28,14 @@ export class UserRepository {
 
   async findOneById(userId: number): Promise<UserEntity | null> {
     return await this.userTypeormRepository.findOneBy({ id: userId });
+  }
+
+  async deleteUserById(id: number): Promise<void> {
+    await this.userTypeormRepository.softDelete({ id });
+  }
+
+  async updateUserInfo(userInfoDto: UserEntity): Promise<void> {
+    await this.userTypeormRepository.save(userInfoDto);
   }
 
   // ------------------------------------------------------------------------------------------------

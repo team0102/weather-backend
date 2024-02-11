@@ -55,6 +55,9 @@ export class BookmarkRepository {
         where: {
           feed: {
             deletedAt: null,
+            user: {
+              deletedAt: null,
+            }
           },
           user: {
             id: userId,

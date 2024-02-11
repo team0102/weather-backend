@@ -15,6 +15,7 @@ import { FeedCommentRepository } from './feedComment.repository';
 import { TokenService } from 'src/utils/verifyToken';
 import { BookmarkEntity } from 'src/entities/bookmarks.entity';
 import { BookmarkRepository } from './bookmark.repository';
+import { FeedLikeRepository } from './feedLike.repository';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { BookmarkRepository } from './bookmark.repository';
     TagRepository,
     FeedTagRepository,
     FeedCommentRepository,
+    FeedLikeRepository,
     BookmarkRepository,
   ],
   exports: [TypeOrmModule],

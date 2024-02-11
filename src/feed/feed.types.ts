@@ -1,10 +1,10 @@
 export type ApiResponse = {
-  statusCode: number;
+  status: number;
   message: string;
 };
 
 export type FeedListResponse = {
-  statusCode: number;
+  status: number;
   message: string;
   data?: FeedListItem[];
 };
@@ -31,7 +31,7 @@ export type FeedListItem = {
 };
 
 export type FeedDetailResponse = {
-  statusCode: number;
+  status: number;
   message: string;
   data?: FeedDatail;
 };
@@ -69,7 +69,7 @@ export type FeedDatail = {
 };
 
 export type BookmarkListResponse = {
-  statusCode: number;
+  status: number;
   message: string;
   data?: BookmarkList[];
 };

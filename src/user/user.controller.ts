@@ -54,11 +54,17 @@ export class UserController {
   @Get() async getUserInfo(
     @Headers('authorization') token: string,
   ): Promise<UserEntity | null> {
-    const decodedToken = this.tokenService.verifyToken(token);
-
-    const userId = decodedToken.aud;
+    const userId = this.tokenService.audienceFromToken(token);
 
     return await this.userService.getUserInfo(userId);
+  }
+
+  // 회원탈퇴_ing
+  @Delete()
+  async deleteUser(@Headers('authorization') token: string): Promise<void> {
+    const userId = this.tokenService.audienceFromToken(token);
+
+    return await this.userService.deleteUser(userId);
   }
 
   // 회원 정보 수정 : O
@@ -78,10 +84,10 @@ export class UserController {
       city,
     } = body;
 
-    const decodedToken = this.tokenService.verifyToken(token);
+    const userId = this.tokenService.audienceFromToken(token);
 
     const updateUserInfoDto: UpdateUserInfoDto = {
-      id: Number(decodedToken.aud),
+      id: Number(userId),
       nickname: nickname,
       email: email,
       gender: Number(gender),
@@ -101,9 +107,10 @@ export class UserController {
     @Headers('authorization') token: string,
     @Param('followUserId') followUserId: number,
   ): Promise<void> {
-    const decodedToken = this.tokenService.verifyToken(token);
+    const userId = this.tokenService.audienceFromToken(token);
+
     const userFollowDto: UserFollowDto = {
-      userId: Number(decodedToken.aud),
+      userId: Number(userId),
       followUserId: Number(followUserId),
     };
 
@@ -116,9 +123,10 @@ export class UserController {
     @Headers('authorization') token: string,
     @Param('followUserId') followUserId: number,
   ): Promise<void> {
-    const decodedToken = this.tokenService.verifyToken(token);
+    const userID = this.tokenService.audienceFromToken(token);
+
     const userFollowDto: UserFollowDto = {
-      userId: Number(decodedToken.aud),
+      userId: Number(userID),
       followUserId: Number(followUserId),
     };
 
@@ -130,9 +138,7 @@ export class UserController {
   async getUserFollowingList(
     @Headers('authorization') token: string,
   ): Promise<UserFollowEntity[] | null> {
-    const decodedToken = this.tokenService.verifyToken(token);
-
-    const userId = decodedToken.aud;
+    const userId = this.tokenService.audienceFromToken(token);
 
     return await this.userService.followingList(userId);
   }
@@ -142,9 +148,7 @@ export class UserController {
   async getUserFollowerList(
     @Headers('authorization') token: string,
   ): Promise<UserFollowEntity[] | null> {
-    const decodedToken = this.tokenService.verifyToken(token);
-
-    const followUserId = decodedToken.aud;
+    const followUserId = this.tokenService.audienceFromToken(token);
 
     return await this.userService.followerList(followUserId);
   }
@@ -168,11 +172,11 @@ export class UserController {
   }
 
   // -----------------------------------------------------------------
-  verifyToken(token: string): { aud: number } {
-    const decodedToken = this.JwtService.verify(token);
+  // verifyToken(token: string): { aud: number } {
+  //   const decodedToken = this.JwtService.verify(token);
 
-    return decodedToken;
-  }
+  //   return decodedToken;
+  // }
 
   // ------------------------------------------------------------
 
