@@ -53,7 +53,6 @@ export class FeedController {
   async getBookmarkList(
     @Headers('Authorization') token: string,
   ): Promise<BookmarkListResponse> {
-    try {
       const loginUserId = this.tokenService.audienceFromToken(token);
       const bookmarkList = await this.feedService.getBookmarkList(loginUserId);
       return {
@@ -61,10 +60,6 @@ export class FeedController {
         message: 'Successed to get BookmarkList',
         data: bookmarkList,
       };
-    } catch (error) {
-      console.log(error);
-      return { status: error.code || 500, message: error.message };
-    }
   }
 
   @Get('/:feedId')
@@ -159,19 +154,31 @@ export class FeedController {
   }
 
   @Post('/:feedId/bookmark')
-  async createBookmark(
+  async handleBookmark(
     @Headers('Authorization') token: string,
     @Param('feedId', ParseIntPipe) feedId: number,
+    @Body('isBookmarked') isBookmarked: unknown,
   ): Promise<ApiResponse> {
-    try {
+      if(typeof isBookmarked !== 'boolean'){
+        //isBookmarked boolean이 아니거나 빈 값이라면 에러 발생
+      throw new HttpError(400, 'Invalid value for isBookmarked');
+      }
       const loginUserId = this.tokenService.audienceFromToken(token);
-      await this.feedService.createBookmark(loginUserId, feedId);
-      return { status: 201, message: 'Bookmark created successfully' };
-    } catch (error) {
-      console.log(error);
-      return { status: error.code || 500, message: error.message };
-    }
+      await this.feedService.handleBookmark(loginUserId, feedId, isBookmarked);
+      return { status: 201, message: 'Bookmark changed successfully' };
   }
+
+
+  // 기존 북마크 추가 요청
+  // @Post('/:feedId/bookmark')
+  // async createBookmark(
+  //   @Headers('Authorization') token: string,
+  //   @Param('feedId', ParseIntPipe) feedId: number,
+  // ): Promise<ApiResponse> {
+  //     const loginUserId = this.tokenService.audienceFromToken(token);
+  //     await this.feedService.createBookmark(loginUserId, feedId;
+  //     return { status: 201, message: 'Bookmark created successfully' };
+  // }
 
   @Post('/:feedId/like')
   async handleFeedLike(

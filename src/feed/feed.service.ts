@@ -42,7 +42,8 @@ export class FeedService {
               (like) => like.user.id === userId,
             );
             const isBookmarked = feed.bookmark.some(
-              (bookmark) => bookmark.user !==null && bookmark.user.id === userId,
+              (bookmark) =>
+                bookmark.user !== null && bookmark.user.id === userId,
             );
             const { id, nickname, profileImage } = feed.user;
             const imageUrl =
@@ -92,7 +93,7 @@ export class FeedService {
         (like) => like.user.id === userId,
       );
       const isBookmarked = feedDetails.bookmark.some(
-        (bookmark) => bookmark.user !==null && bookmark.user.id === userId,
+        (bookmark) => bookmark.user !== null && bookmark.user.id === userId,
       );
       const { id, nickname, profileImage } = feedDetails.user;
       const imageUrl =
@@ -311,62 +312,85 @@ export class FeedService {
     }
   }
 
-  async createBookmark(loginUserId: number, feedId: number): Promise<void> {
-    try {
-      const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
-      if (!findFeed || findFeed.deletedAt)
-        throw new Error('Feed does not exist');
-      const isBookmarked = await this.bookmarkRepository.isBookmarked(
+  async handleBookmark(
+    loginUserId: number,
+    feedId: number,
+    isBookmarked: boolean,
+  ): Promise<void> {
+    const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
+    if (!findFeed || findFeed.deletedAt || !findFeed.user)
+      throw new HttpError(404, 'Feed does not exist');
+    // 북마크를 누르지 않은 상태에서 요청이 오면 북마크 추가
+    if (isBookmarked) {
+      const findBookmark = await this.bookmarkRepository.isBookmarked(
         loginUserId,
         feedId,
       );
-      if (isBookmarked) throw new Error('Feed already bookmarked');
+      if (!findBookmark) {
+        // isBookmarked가 true findBookmark 존재하지 않으면 잘못된 요청
+        throw new HttpError(400, 'Invalid request');
+      }
+      await this.bookmarkRepository.deleteBookmark(findBookmark.id);
+    } else {
+      //이미 북마크를 누른 상태에서 요청이 오면 북마크 취소
+      const existingBookmarked = await this.bookmarkRepository.isBookmarked(
+        loginUserId,
+        feedId,
+      );
+      if (existingBookmarked) {
+        // isBookmarked가 false인데 existingBookmarked 존재하면 잘못된 요청
+        throw new HttpError(400, 'Invalid request');
+      }
       await this.bookmarkRepository.createBookmark(loginUserId, feedId);
-    } catch (error) {
-      console.log(error);
-      throw new Error(error.message);
     }
   }
 
-  async getBookmarkList(loginUserId: number): Promise<BookmarkList[]> {
-    try {
-      const bookmarkList =
-        await this.bookmarkRepository.getBookmarkList(loginUserId);
-      const filteredBookmarkList = bookmarkList.filter((bookmark) => {
-        return bookmark.feed !== null && bookmark.user !== null;
-      });
-      const processedBookmarkList = await Promise.all(
-        filteredBookmarkList.map(async (bookmark) => {
-          const { content, lowTemperature, highTemperature, weatherCondition } =
-            bookmark.feed;
-          const { nickname, profileImage } = bookmark.feed.user;
-          const imageUrl =
-            bookmark.feed.feedImage.length > 0
-              ? bookmark.feed.feedImage[0].imageUrl
-              : null;
+  // 기존 북마크 추가 서비스 로직
+  // async createBookmark(loginUserId: number, feedId: number): Promise<void> {
+  //   const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
+  //   if (!findFeed || findFeed.deletedAt || !findFeed.user) 
+  //   throw new HttpError(404, 'Feed does not exist');
+  //   const isBookmarked = await this.bookmarkRepository.isBookmarked(
+  //     loginUserId,
+  //     feedId,
+  //   );
+  //   if (isBookmarked) throw new Error('Feed already bookmarked');
+  //   await this.bookmarkRepository.createBookmark(loginUserId, feedId);
+  // }
 
-          return {
-            id: bookmark.id,
-            createdAt: bookmark.createdAt,
-            feed: {
-              id: bookmark.feed.id,
-              imageUrl,
-              content,
-              lowTemperature,
-              highTemperature,
-              weatherConditionId: weatherCondition.id,
-              createdAt: bookmark.feed.createdAt,
-              updatedAt: bookmark.feed.updatedAt,
-            },
-            author: { id: bookmark.feed.user.id, nickname, profileImage },
-          };
-        }),
-      );
-      return processedBookmarkList;
-    } catch (error) {
-      console.log(error);
-      throw new Error(error.message);
-    }
+  async getBookmarkList(loginUserId: number): Promise<BookmarkList[]> {
+    const bookmarkList =
+      await this.bookmarkRepository.getBookmarkList(loginUserId);
+    const filteredBookmarkList = bookmarkList.filter((bookmark) => {
+      return bookmark.feed !== null && bookmark.user !== null;
+    });
+    const processedBookmarkList = await Promise.all(
+      filteredBookmarkList.map(async (bookmark) => {
+        const { content, lowTemperature, highTemperature, weatherCondition } =
+          bookmark.feed;
+        const { nickname, profileImage } = bookmark.feed.user;
+        const imageUrl =
+          bookmark.feed.feedImage.length > 0
+            ? bookmark.feed.feedImage[0].imageUrl
+            : null;
+        return {
+          id: bookmark.id,
+          createdAt: bookmark.createdAt,
+          feed: {
+            id: bookmark.feed.id,
+            imageUrl,
+            content,
+            lowTemperature,
+            highTemperature,
+            weatherConditionId: weatherCondition.id,
+            createdAt: bookmark.feed.createdAt,
+            updatedAt: bookmark.feed.updatedAt,
+          },
+          author: { id: bookmark.feed.user.id, nickname, profileImage },
+        };
+      }),
+    );
+    return processedBookmarkList;
   }
 
   async handleFeedLike(isLiked: boolean, loginUserId: number, feedId: number) {
