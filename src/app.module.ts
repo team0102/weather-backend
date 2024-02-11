@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeORMConfig } from './config/typeORM.config';
 import { ConfigModule } from '@nestjs/config';
@@ -9,6 +10,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { FeedModule } from './feed/feed.module';
 import { ClothesModule } from './clothes/clothes.module';
+import CatchException from './utils/CatchException';
 
 @Module({
   imports: [
@@ -27,5 +29,9 @@ import { ClothesModule } from './clothes/clothes.module';
     FeedModule,
     ClothesModule,
   ],
+  providers: [{
+    provide: APP_FILTER,
+    useClass: CatchException,
+  }]
 })
 export class AppModule {}

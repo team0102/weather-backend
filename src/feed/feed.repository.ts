@@ -48,7 +48,6 @@ export class FeedRepository {
   }
 
   async getFeedWithDetailsById(feedId: number): Promise<FeedEntity> {
-    try {
       const [feed] = await this.feedRepository.find({
         relations: {
           user: true,
@@ -56,7 +55,9 @@ export class FeedRepository {
           feedComment: {
             user: true,
           },
-          feedLike: true,
+          feedLike: {
+            user: true,
+          },
           weatherCondition: true,
           bookmark: {
             user: true,
@@ -72,11 +73,8 @@ export class FeedRepository {
           },
         },
       });
+      console.log(feed);
       return feed;
-    } catch (error) {
-      console.log(error);
-      throw new Error(error.message);
-    }
   }
 
   async createFeed(

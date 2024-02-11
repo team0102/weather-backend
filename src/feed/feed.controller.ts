@@ -19,6 +19,7 @@ import {
   FeedDetailResponse,
   FeedListResponse,
 } from './feed.types';
+import HttpError from 'src/utils/httpError';
 
 @Controller('feeds')
 export class FeedController {
@@ -38,13 +39,13 @@ export class FeedController {
       }
       const feedDatas = await this.feedService.getFeedList(loginUserId);
       return {
-        statusCode: 200,
+        status: 200,
         message: 'Successed to get feedList',
         data: feedDatas,
       };
     } catch (error) {
       console.log(error);
-      return { statusCode: error.code || 500, message: error.message };
+      return { status: error.code || 500, message: error.message };
     }
   }
 
@@ -56,13 +57,13 @@ export class FeedController {
       const loginUserId = this.tokenService.audienceFromToken(token);
       const bookmarkList = await this.feedService.getBookmarkList(loginUserId);
       return {
-        statusCode: 201,
+        status: 201,
         message: 'Successed to get BookmarkList',
         data: bookmarkList,
       };
     } catch (error) {
       console.log(error);
-      return { statusCode: error.code || 500, message: error.message };
+      return { status: error.code || 500, message: error.message };
     }
   }
 
@@ -78,13 +79,13 @@ export class FeedController {
         feedId,
       );
       return {
-        statusCode: 200,
+        status: 200,
         message: 'Successed to get feedDetails',
         data: feedData,
       };
     } catch (error) {
       console.log(error);
-      return { statusCode: error.code || 500, message: error.message };
+      return { status: error.code || 500, message: error.message };
     }
   }
 
@@ -96,10 +97,10 @@ export class FeedController {
     try {
       const loginUserId = this.tokenService.audienceFromToken(token);
       await this.feedService.createFeed(loginUserId, feedData);
-      return { statusCode: 201, message: 'Feed created successfully' };
+      return { status: 201, message: 'Feed created successfully' };
     } catch (error) {
       console.log(error);
-      return { statusCode: error.code || 500, message: error.message };
+      return { status: error.code || 500, message: error.message };
     }
   }
 
@@ -111,10 +112,10 @@ export class FeedController {
     try {
       const loginUserId = this.tokenService.audienceFromToken(token);
       await this.feedService.deleteFeed(loginUserId, feedId);
-      return { statusCode: 200, message: 'Feed deledted successfully' };
+      return { status: 200, message: 'Feed deledted successfully' };
     } catch (error) {
       console.log(error);
-      return { statusCode: error.code || 500, message: error.message };
+      return { status: error.code || 500, message: error.message };
     }
   }
 
@@ -132,12 +133,12 @@ export class FeedController {
         feedData,
       );
       return {
-        statusCode: 201,
+        status: 201,
         message: 'Feed updated successfully',
       };
     } catch (error) {
       console.log(error);
-      return { statusCode: error.code || 500, message: error.message };
+      return { status: error.code || 500, message: error.message };
     }
   }
 
@@ -150,10 +151,10 @@ export class FeedController {
     try {
       const loginUserId = this.tokenService.audienceFromToken(token);
       await this.feedService.createComment(loginUserId, feedId, content);
-      return { statusCode: 201, message: 'Comment created successfully' };
+      return { status: 201, message: 'Comment created successfully' };
     } catch (error) {
       console.log(error);
-      return { statusCode: error.code || 500, message: error.message };
+      return { status: error.code || 500, message: error.message };
     }
   }
 
@@ -165,10 +166,25 @@ export class FeedController {
     try {
       const loginUserId = this.tokenService.audienceFromToken(token);
       await this.feedService.createBookmark(loginUserId, feedId);
-      return { statusCode: 201, message: 'Bookmark created successfully' };
+      return { status: 201, message: 'Bookmark created successfully' };
     } catch (error) {
       console.log(error);
-      return { statusCode: error.code || 500, message: error.message };
+      return { status: error.code || 500, message: error.message };
     }
+  }
+
+  @Post('/:feedId/like')
+  async handleFeedLike(
+    @Headers('Authorization') token: string,
+    @Param('feedId', ParseIntPipe) feedId: number,
+    @Body('isLiked') isLiked: unknown,
+  ): Promise<ApiResponse> {
+    if (typeof isLiked !== 'boolean') {
+      //isLiked가 boolean이 아니거나 빈 값이라면 에러 발생
+      throw new HttpError(400, 'Invalid value for isLiked');
+    }
+    const loginUserId = this.tokenService.audienceFromToken(token);
+    await this.feedService.handleFeedLike(isLiked, loginUserId, feedId);
+    return { status: 201, message: 'FeedLike changed successfully' };
   }
 }
