@@ -1,9 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { FeedRepository } from './feed.repository';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 import { TagRepository } from './tag.repository';
@@ -169,10 +164,11 @@ export class FeedService {
       const existingFeed =
         await this.feedRepository.getFeedWithDetailsById(feedId);
       // 존재하지 않은 피드, 삭제된 피드 에러핸들링
-      if (!existingFeed || existingFeed.deletedAt)
+      if (!existingFeed || existingFeed.deletedAt || !existingFeed.user)
         throw new HttpError(404, 'Feed does not exist');
       // 로그인유저=작성자 아닌 경우 에러핸들링
-      if (existingFeed.user.id !== loginUserId) throw new HttpError(403, 'Invalid user');
+      if (existingFeed.user.id !== loginUserId)
+        throw new HttpError(403, 'Invalid user');
       // 피드, 피드 이미지 업데이트
       const updateFeed = await this.feedRepository.updateFeed(feedId, feedData);
       // 존재하는 태그 id, 추가된 태그 id 배열
@@ -228,7 +224,7 @@ export class FeedService {
       await queryRunner.connect();
       await queryRunner.startTransaction();
       const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
-      if (!findFeed || findFeed.deletedAt)
+      if (!findFeed || findFeed.deletedAt || !findFeed.user)
         throw new HttpError(404, 'Feed does not exist');
       if (!findFeed.user || findFeed.user.id !== loginUserId)
         throw new HttpError(403, 'Invalid User');
@@ -283,7 +279,8 @@ export class FeedService {
   ): Promise<void> {
     const existingFeed =
       await this.feedRepository.getFeedWithDetailsById(feedId);
-    if (!existingFeed) throw new HttpError(404, 'Feed does not exist');
+    if (!existingFeed || existingFeed.deletedAt || !existingFeed.user)
+      throw new HttpError(404, 'Feed does not exist');
     await this.feedCommentRepository.createComment(
       loginUserId,
       feedId,
