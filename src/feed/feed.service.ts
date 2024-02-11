@@ -29,7 +29,7 @@ export class FeedService {
       feedList
         .filter((feed) => feed.user !== null)
         .map(async (feed) => {
-          const isAuthor = userId !== null && feed.user.id === userId;
+          const isAuthor = userId && feed.user.id === userId;
           const likeCount = feed.feedLike.length;
           const commentCount = feed.feedComment.length;
           const isLiked = feed.feedLike.some((like) => like.user && like.user.id === userId);
@@ -71,7 +71,7 @@ export class FeedService {
       await this.feedRepository.getFeedWithDetailsById(feedId);
     if (!feedDetails || feedDetails.deletedAt || !feedDetails.user)
       throw new HttpError(404, 'Feed does not exist');
-    const isAuthor = feedDetails.user.id === userId;
+    const isAuthor = feedDetails.user && feedDetails.user.id === userId;
     const likeCount = feedDetails.feedLike.length;
     const commentCount = feedDetails.feedComment.length;
     const isLiked = feedDetails.feedLike.some(
