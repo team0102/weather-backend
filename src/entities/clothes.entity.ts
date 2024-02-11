@@ -31,12 +31,18 @@ export class ClothEntity {
   })
   highPerceivedTemperature: number;
 
-  // @OneToOne(() => ClothSetEntity)
-  // @JoinColumn({
-  //   name: 'clothesSetId',
-  //   referencedColumnName: 'id',
-  // })
-  // clothesSetId: ClothSetEntity;
+  @CreateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
+  createdAt: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+    onUpdate: 'CURRENT_TIMESTAMP(6)',
+  })
+  updatedAt: Date;
 
   @ManyToOne(() => ClothTopEntity)
   @JoinColumn({
@@ -65,17 +71,4 @@ export class ClothEntity {
     referencedColumnName: 'id',
   })
   clothesAccessoryId: ClothAccessoryEntity;
-
-  @CreateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
-  })
-  createdAt: Date;
-
-  @UpdateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
-    onUpdate: 'CURRENT_TIMESTAMP(6)',
-  })
-  updatedAt: Date;
 }
