@@ -38,6 +38,6 @@ export class ClothesRepository {
       clothesAccessoryId: cloth.clothesAccessoryId,
     }));
 
-    return { statusCode: 200, message: 'Success', data: clothesDtoArray };
+    return { status: 200, message: 'Success', data: clothesDtoArray };
   }
 }

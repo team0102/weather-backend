@@ -41,7 +41,7 @@ export class ClothesController {
     );
 
     return {
-      statusCode: 200,
+      status: 200,
       message: 'Success get Clothes',
       data: result.data,
     };

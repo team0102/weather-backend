@@ -43,7 +43,7 @@ export type ClothesDto = {
 };
 
 export type ClothesResponseDto = {
-  statusCode: number;
+  status: number;
   message: string;
   data?: ClothesDto[];
 };
