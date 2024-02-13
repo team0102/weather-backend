@@ -9,12 +9,15 @@ import { WeatherDto } from './dto/get-temperature.dto';
 import { ClothesService } from './clothes.service';
 import { TokenService } from 'src/utils/verifyToken';
 import { ClothesResponseDto } from './dto/cloth-response.dto';
+import { FeedListResponse } from 'src/feed/feed.types';
+import { FeedService } from 'src/feed/feed.service';
 
 @Controller('clothes')
 export class ClothesController {
   constructor(
     private readonly clothesService: ClothesService,
     private readonly tokenService: TokenService,
+    private readonly feedService: FeedService,
   ) {}
 
   @Get()
@@ -45,5 +48,26 @@ export class ClothesController {
       message: 'Success get Clothes',
       data: result.data,
     };
+  }
+
+  @Get('/mainFeed')
+  async getFeedList(
+    @Headers('Authorization') token: string | undefined,
+  ): Promise<FeedListResponse> {
+    try {
+      let loginUserId: number | null = null;
+      if (token) {
+        loginUserId = this.tokenService.audienceFromToken(token);
+      }
+      const feedDatas = await this.feedService.getFeedList(loginUserId);
+      return {
+        status: 200,
+        message: 'Successed to get feedList',
+        data: feedDatas,
+      };
+    } catch (error) {
+      console.log(error);
+      return { status: error.code || 500, message: error.message };
+    }
   }
 }
