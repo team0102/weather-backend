@@ -142,6 +142,7 @@ export class FeedService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error(error);
+      throw error; 
     } finally {
       await queryRunner.release();
     }
@@ -191,6 +192,7 @@ export class FeedService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.log(error);
+      throw error; 
     } finally {
       await queryRunner.release();
     }
@@ -247,12 +249,11 @@ export class FeedService {
         });
       }
       // bookmark는 delete
-      // if (findFeed.bookmark) {
-      //   findFeed.bookmark.forEach(async (bookmark) => {
-      //     //comment.deletedAt = newDate;
-      //     await this.bookmarkRepository.deleteBookmark(bookmark);
-      //   });
-      // };
+      if (findFeed.bookmark) {
+        findFeed.bookmark.forEach(async (bookmark) => {
+          await this.bookmarkRepository.deleteBookmark(bookmark.id);
+        });
+      };
 
       // feedComment는 softDelete
       // if (findFeed.feedComment) {
@@ -266,6 +267,7 @@ export class FeedService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.log(error);
+      throw error;
     } finally {
       await queryRunner.release();
     }
