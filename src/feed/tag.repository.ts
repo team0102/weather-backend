@@ -11,26 +11,16 @@ export class TagRepository {
   ) {}
 
   async createTag(tag: string): Promise<TagEntity> {
-    try {
-      const savedTag = await this.tagRepository.save({
-        content: tag,
-      });
-      return savedTag;
-    } catch (error) {
-      console.log(error);
-      throw new Error(error.message);
-    }
+    const savedTag = await this.tagRepository.save({
+      content: tag,
+    });
+    return savedTag;
   }
 
   async findTagByContent(tag: string): Promise<TagEntity> {
-    try {
-      const foundTag = await this.tagRepository.findOne({
-        where: { content: tag },
-      });
-      return foundTag;
-    } catch (error) {
-      console.log(error);
-      throw new Error(error.message);
-    }
+    const foundTag = await this.tagRepository.findOne({
+      where: { content: tag },
+    });
+    return foundTag;
   }
 }

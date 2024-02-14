@@ -10,36 +10,21 @@ export class FeedTagRepository {
     private readonly feedTagRepository: Repository<FeedTagEntity>,
   ) {}
 
-  async createFeedTags(
-    feedId: number,
-    tagIds: number[],
-  ) {
-    try {
-      const savedFeedTags = await Promise.all(
-        tagIds.map(async (tagId) => {
-          return this.feedTagRepository.save({
-            feed: { id: feedId },
-            tag: { id: tagId },
-          });
-        }),
-      );
-      return savedFeedTags;
-    } catch (error) {
-      console.log(error);
-      throw new Error(error.message);
-    }
+  async createFeedTags(feedId: number, tagIds: number[]) {
+    const savedFeedTags = await Promise.all(
+      tagIds.map(async (tagId) => {
+        return this.feedTagRepository.save({
+          feed: { id: feedId },
+          tag: { id: tagId },
+        });
+      }),
+    );
+    return savedFeedTags;
   }
 
-  async deleteFeedTags(
-    feedTagsIds: number[],
-  ): Promise<void> {
-    try {
-      for (const feedTagId of feedTagsIds) {
-        await this.feedTagRepository.delete(feedTagId);
-      }
-    } catch (error) {
-      console.log(error);
-      throw new Error(error.message);
+  async deleteFeedTags(feedTagsIds: number[]): Promise<void> {
+    for (const feedTagId of feedTagsIds) {
+      await this.feedTagRepository.delete(feedTagId);
     }
   }
 }
