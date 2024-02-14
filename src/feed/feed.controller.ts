@@ -135,6 +135,29 @@ export class FeedController {
     return { status: 201, message: 'FeedLike changed successfully' };
   }
 
+  // 북마크 추가 요청
+  @Post('/:feedId/bookmark')
+  async createBookmark(
+    @Headers('Authorization') token: string,
+    @Param('feedId', ParseIntPipe) feedId: number,
+  ): Promise<ApiResponse> {
+    const loginUserId = this.tokenService.audienceFromToken(token);
+    await this.feedService.createBookmark(loginUserId, feedId);
+    return { status: 201, message: 'Bookmark created successfully' };
+  }
+
+  
+  @Delete('/:feedId/bookmark')
+  async deleteBookmark(
+    @Headers('Authorization') token: string,
+    @Param('feedId', ParseIntPipe) feedId: number,
+  ): Promise<ApiResponse> {
+    const loginUserId = this.tokenService.audienceFromToken(token);
+    await this.feedService.deleteBookmark(loginUserId, feedId);
+    return { status: 204, message: 'Bookmark deleted successfully' };
+  }
+
+  // 북마크 상태 변경 api : 미사용중
   @Post('/bookmark/:feedId')
   async handleBookmark(
     @Headers('Authorization') token: string,
@@ -149,16 +172,4 @@ export class FeedController {
     await this.feedService.handleBookmark(loginUserId, feedId, isBookmarked);
     return { status: 201, message: 'Bookmark changed successfully' };
   }
-
-  // 기존 북마크 추가 요청
-  @Post('/:feedId/bookmark')
-  async createBookmark(
-    @Headers('Authorization') token: string,
-    @Param('feedId', ParseIntPipe) feedId: number,
-  ): Promise<ApiResponse> {
-      const loginUserId = this.tokenService.audienceFromToken(token);
-      await this.feedService.createBookmark(loginUserId, feedId);
-      return { status: 201, message: 'Bookmark created successfully' };
-  }
-
 }
