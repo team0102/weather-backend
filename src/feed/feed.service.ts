@@ -1,4 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { FeedRepository } from './feed.repository';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 import { TagRepository } from './tag.repository';
@@ -8,6 +13,8 @@ import { FeedCommentRepository } from './feedComment.repository';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
 import { BookmarkList, FeedDatail, FeedListItem } from './feed.types';
 import { BookmarkRepository } from './bookmark.repository';
+import { FeedLikeRepository } from './feedLike.repository';
+import HttpError from 'src/utils/httpError';
 
 @Injectable()
 export class FeedService {
@@ -16,6 +23,7 @@ export class FeedService {
     private readonly tagRepository: TagRepository,
     private readonly feedTagRepository: FeedTagRepository,
     private readonly feedCommentRepository: FeedCommentRepository,
+    private readonly feedLikeRepository: FeedLikeRepository,
     private readonly bookmarkRepository: BookmarkRepository,
     private readonly dataSource: DataSource,
   ) {}
@@ -25,47 +33,50 @@ export class FeedService {
       const feedList = await this.feedRepository.getFeedListWithDetails();
       const processedFeedList = await Promise.all(
         feedList
-        .filter(feed => feed.user !== null) // user가 null이 아닌 것만 필터링
-        .map(async (feed) => {
-          const isAuthor = userId !== null && feed.user.id === userId;
-          const likeCount = feed.feedLike.length;
-          const commentCount = feed.feedComment.length;
-          const isLiked = feed.feedLike.some((like) => like.user.id === userId);
-          const isBookmarked = feed.bookmark.some(
-            (bookmark) => bookmark.user.id === userId,
-          );
-          const { id, nickname, profileImage } = feed.user;
-          const imageUrl =
-            feed.feedImage.length > 0 ? feed.feedImage[0].imageUrl : null;
-          const {
-            content,
-            lowTemperature,
-            highTemperature,
-            createdAt,
-            updatedAt,
-          } = feed;
-          return {
-            id: feed.id,
-            imageUrl,
-            content,
-            lowTemperature,
-            highTemperature,
-            weatherConditionId: feed.weatherCondition.id,
-            createdAt,
-            updatedAt,
-            author: { id, nickname, profileImage },
-            isAuthor,
-            likeCount,
-            commentCount,
-            isLiked,
-            isBookmarked,
-          };
-        }),
+          .filter((feed) => feed.user !== null)
+          .map(async (feed) => {
+            const isAuthor = userId !== null && feed.user.id === userId;
+            const likeCount = feed.feedLike.length;
+            const commentCount = feed.feedComment.length;
+            const isLiked = feed.feedLike.some(
+              (like) => like.user.id === userId,
+            );
+            const isBookmarked = feed.bookmark.some(
+              (bookmark) =>
+                bookmark.user !== null && bookmark.user.id === userId,
+            );
+            const { id, nickname, profileImage } = feed.user;
+            const imageUrl =
+              feed.feedImage.length > 0 ? feed.feedImage[0].imageUrl : null;
+            const {
+              content,
+              lowTemperature,
+              highTemperature,
+              createdAt,
+              updatedAt,
+            } = feed;
+            return {
+              id: feed.id,
+              imageUrl,
+              content,
+              lowTemperature,
+              highTemperature,
+              weatherConditionId: feed.weatherCondition.id,
+              createdAt,
+              updatedAt,
+              author: { id, nickname, profileImage },
+              isAuthor,
+              likeCount,
+              commentCount,
+              isLiked,
+              isBookmarked,
+            };
+          }),
       );
       return processedFeedList;
     } catch (error) {
       console.log(error);
-      throw new Error('Fail to get feedList');
+      throw new Error(error.message);
     }
   }
 
@@ -73,7 +84,7 @@ export class FeedService {
     try {
       const feedDetails =
         await this.feedRepository.getFeedWithDetailsById(feedId);
-      if (!feedDetails || feedDetails.deletedAt)
+      if (!feedDetails || feedDetails.deletedAt || !feedDetails.user)
         throw new Error('Feed does not exist');
       const isAuthor = feedDetails.user.id === userId;
       const likeCount = feedDetails.feedLike.length;
@@ -82,7 +93,7 @@ export class FeedService {
         (like) => like.user.id === userId,
       );
       const isBookmarked = feedDetails.bookmark.some(
-        (bookmark) => bookmark.user.id === userId,
+        (bookmark) => bookmark.user !== null && bookmark.user.id === userId,
       );
       const { id, nickname, profileImage } = feedDetails.user;
       const imageUrl =
@@ -122,7 +133,7 @@ export class FeedService {
       return processedFeed;
     } catch (error) {
       console.log(error);
-      throw new Error('Fail to get feedDetails');
+      throw new Error(error.message);
     }
   }
 
@@ -145,13 +156,12 @@ export class FeedService {
       const savedFeedTag = await this.feedTagRepository.createFeedTags(
         savedFeedId,
         savedTagIds,
-        queryRunner,
       );
       await queryRunner.commitTransaction();
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error(error);
-      throw new Error('Fail to create feed');
+      throw new Error(error.message);
     } finally {
       await queryRunner.release();
     }
@@ -170,7 +180,8 @@ export class FeedService {
       await queryRunner.startTransaction();
 
       // 기존 피드 정보 가져오기
-      const existingFeed = await this.feedRepository.findFeedById(feedId);
+      const existingFeed =
+        await this.feedRepository.getFeedWithDetailsById(feedId);
       // 존재하지 않은 피드, 삭제된 피드 에러핸들링
       if (!existingFeed || existingFeed.deletedAt)
         throw new Error('Feed does not exist');
@@ -192,21 +203,14 @@ export class FeedService {
         (feedTagId) => !savedTagIds.includes(feedTagId),
       );
       // 새로 생성된 tags를 feedTags 추가
-      await this.feedTagRepository.createFeedTags(
-        feedId,
-        tagsToAdd,
-        queryRunner,
-      );
+      await this.feedTagRepository.createFeedTags(feedId, tagsToAdd);
       // 삭제된 feedTags 삭제
-      await this.feedTagRepository.deletedFeedTags(
-        feedTagsToDelete,
-        queryRunner,
-      );
+      await this.feedTagRepository.deleteFeedTags(feedTagsToDelete);
       await queryRunner.commitTransaction();
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.log(error);
-      throw new Error('Fail to update feed');
+      throw new Error(error.message);
     } finally {
       await queryRunner.release();
     }
@@ -234,18 +238,57 @@ export class FeedService {
   }
 
   async deleteFeed(loginUserId: number, feedId: number): Promise<void> {
+    const queryRunner = this.dataSource.createQueryRunner();
     try {
-      const newDate = new Date();
-      const findFeed = await this.feedRepository.findFeedById(feedId);
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
       if (!findFeed || findFeed.deletedAt)
         throw new Error('Feed does not exist');
-      console.log('findFeed:', findFeed);
       if (!findFeed.user || findFeed.user.id !== loginUserId)
         throw new Error('Invalid User');
-      await this.feedRepository.deletedFeed(feedId, newDate);
+
+      // feedTag들 delete
+      if (findFeed.feedTag) {
+        findFeed.feedTag.forEach(async (feedTag) => {
+          const deleteFeedTagIds: number[] = [];
+          deleteFeedTagIds.push(feedTag.id);
+          await this.feedTagRepository.deleteFeedTags(deleteFeedTagIds);
+        });
+      }
+      //feedLike들 delete
+      if (findFeed.feedLike) {
+        findFeed.feedLike.forEach(async (feedLike) => {
+          const deledtedFeedLikeIds: number[] = [];
+          deledtedFeedLikeIds.push(feedLike.id);
+          await this.feedLikeRepository.deleteFeedLikesByIds(
+            deledtedFeedLikeIds,
+          );
+        });
+      }
+      // bookmark는 delete
+      // if (findFeed.bookmark) {
+      //   findFeed.bookmark.forEach(async (bookmark) => {
+      //     //comment.deletedAt = newDate;
+      //     await this.bookmarkRepository.deleteBookmark(bookmark);
+      //   });
+      // };
+
+      // feedComment는 softDelete
+      // if (findFeed.feedComment) {
+      //   findFeed.feedComment.forEach(async (comment) => {
+      //     comment.deletedAt = newDate;
+      //     await this.feedCommentRepository.deleteFeedComment(comment);
+      //   });
+      // };
+      await this.feedRepository.deletedFeed(findFeed);
+      await queryRunner.commitTransaction();
     } catch (error) {
+      await queryRunner.rollbackTransaction();
       console.log(error);
       throw new Error(error.message);
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -255,7 +298,8 @@ export class FeedService {
     content: string,
   ): Promise<void> {
     try {
-      const existingFeed = await this.feedRepository.findFeedById(feedId);
+      const existingFeed =
+        await this.feedRepository.getFeedWithDetailsById(feedId);
       if (!existingFeed) throw new Error('Feed does not exist');
       await this.feedCommentRepository.createComment(
         loginUserId,
@@ -268,62 +312,118 @@ export class FeedService {
     }
   }
 
-  async createBookmark(loginUserId: number, feedId: number): Promise<void> {
-    try {
-      const findFeed = await this.feedRepository.findFeedById(feedId);
-      if (!findFeed || findFeed.deletedAt)
-        throw new Error('Feed does not exist');
-      const isBookmarked = await this.bookmarkRepository.isBookmarked(
+  async handleBookmark(
+    loginUserId: number,
+    feedId: number,
+    isBookmarked: boolean,
+  ): Promise<void> {
+    const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
+    if (!findFeed || findFeed.deletedAt || !findFeed.user)
+      throw new HttpError(404, 'Feed does not exist');
+    // 북마크를 누르지 않은 상태에서 요청이 오면 북마크 추가
+    if (isBookmarked) {
+      const findBookmark = await this.bookmarkRepository.isBookmarked(
         loginUserId,
         feedId,
       );
-      if (isBookmarked) throw new Error('Feed already bookmarked');
+      if (!findBookmark) {
+        // isBookmarked가 true findBookmark 존재하지 않으면 잘못된 요청
+        throw new HttpError(400, 'Invalid request');
+      }
+      await this.bookmarkRepository.deleteBookmark(findBookmark.id);
+    } else {
+      //이미 북마크를 누른 상태에서 요청이 오면 북마크 취소
+      const existingBookmarked = await this.bookmarkRepository.isBookmarked(
+        loginUserId,
+        feedId,
+      );
+      if (existingBookmarked) {
+        // isBookmarked가 false인데 existingBookmarked 존재하면 잘못된 요청
+        throw new HttpError(400, 'Invalid request');
+      }
       await this.bookmarkRepository.createBookmark(loginUserId, feedId);
-    } catch (error) {
-      console.log(error);
-      throw new Error(error.message);
     }
   }
 
-  async getBookmarkList(loginUserId: number):Promise<BookmarkList[]> {
-    try {
-      const bookmarkList =
-        await this.bookmarkRepository.getBookmarkList(loginUserId);
-      //삭제된 피드 제외
-      const filteredBookmarkList = bookmarkList.filter(
-        (bookmark) => bookmark.feed !== null,
-      );
-      const processedBookmarkList = await Promise.all(
-        filteredBookmarkList.map(async (bookmark) => {
-          const { content, lowTemperature, highTemperature, weatherCondition } =
-            bookmark.feed;
-          const { nickname, profileImage } = bookmark.feed.user;
-          const imageUrl =
-            bookmark.feed.feedImage.length > 0
-              ? bookmark.feed.feedImage[0].imageUrl
-              : null;
+  // 기존 북마크 추가 서비스 로직
+  // async createBookmark(loginUserId: number, feedId: number): Promise<void> {
+  //   const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
+  //   if (!findFeed || findFeed.deletedAt || !findFeed.user) 
+  //   throw new HttpError(404, 'Feed does not exist');
+  //   const isBookmarked = await this.bookmarkRepository.isBookmarked(
+  //     loginUserId,
+  //     feedId,
+  //   );
+  //   if (isBookmarked) throw new Error('Feed already bookmarked');
+  //   await this.bookmarkRepository.createBookmark(loginUserId, feedId);
+  // }
 
-          return {
-            id: bookmark.id,
-            createdAt: bookmark.createdAt,
-            feed: {
-              id: bookmark.feed.id,
-              imageUrl,
-              content,
-              lowTemperature,
-              highTemperature,
-              weatherConditionId: weatherCondition.id,
-              createdAt: bookmark.feed.createdAt,
-              updatedAt: bookmark.feed.updatedAt,
-            },
-            author: { id: bookmark.feed.user.id, nickname, profileImage },
-          };
-        }),
-      );
-      return processedBookmarkList;
-    } catch (error) {
-      console.log(error);
-      throw new Error(error.message);
+  async getBookmarkList(loginUserId: number): Promise<BookmarkList[]> {
+    const bookmarkList =
+      await this.bookmarkRepository.getBookmarkList(loginUserId);
+    const filteredBookmarkList = bookmarkList.filter((bookmark) => {
+      return bookmark.feed !== null && bookmark.user !== null;
+    });
+    const processedBookmarkList = await Promise.all(
+      filteredBookmarkList.map(async (bookmark) => {
+        const { content, lowTemperature, highTemperature, weatherCondition } =
+          bookmark.feed;
+        const { nickname, profileImage } = bookmark.feed.user;
+        const imageUrl =
+          bookmark.feed.feedImage.length > 0
+            ? bookmark.feed.feedImage[0].imageUrl
+            : null;
+        return {
+          id: bookmark.id,
+          createdAt: bookmark.createdAt,
+          feed: {
+            id: bookmark.feed.id,
+            imageUrl,
+            content,
+            lowTemperature,
+            highTemperature,
+            weatherConditionId: weatherCondition.id,
+            createdAt: bookmark.feed.createdAt,
+            updatedAt: bookmark.feed.updatedAt,
+          },
+          author: { id: bookmark.feed.user.id, nickname, profileImage },
+        };
+      }),
+    );
+    return processedBookmarkList;
+  }
+
+  async handleFeedLike(isLiked: boolean, loginUserId: number, feedId: number) {
+    // 존재하는 피드인지, 삭제되지 않은 피드인지, 작성자가 탈퇴하지 않았는지 에러 핸들링
+    const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
+    if (!findFeed || findFeed.deletedAt || !findFeed.user)
+      throw new HttpError(404, 'Feed does not exist');
+
+    // 좋아요를 누르지 않은 상태(isLike = false)에서 요청이 오면 좋아요 생성
+    if (isLiked) {
+      // 좋아요를 취소하는 경우
+      const findFeedLike =
+        await this.feedLikeRepository.findFeedLikeByFeedIdAndUserId(
+          loginUserId,
+          feedId,
+        );
+      if (!findFeedLike) {
+        // isLiked가 true인데 findFeedLike가 존재하지 않으면 잘못된 요청
+        throw new HttpError(400, 'Invalid request');
+      }
+      await this.feedLikeRepository.deleteFeedLike(findFeedLike.id);
+    } else {
+      // 좋아요를 생성하는 경우
+      const existingFeedLike =
+        await this.feedLikeRepository.findFeedLikeByFeedIdAndUserId(
+          loginUserId,
+          feedId,
+        );
+      if (existingFeedLike) {
+        // isLiked가 false인데 findFeedLike가 이미 존재하면 잘못된 요청
+        throw new HttpError(400, 'Invalid request');
+      }
+      await this.feedLikeRepository.createFeedLike(loginUserId, feedId);
     }
   }
 }
