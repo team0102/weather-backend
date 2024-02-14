@@ -329,7 +329,7 @@ export class FeedService {
       loginUserId,
       feedId,
     );
-    if (isBookmarked) throw new Error('Feed already bookmarked');
+    if (isBookmarked) throw new HttpError(400, 'Feed already bookmarked');
     await this.bookmarkRepository.createBookmark(loginUserId, feedId);
   }
 
