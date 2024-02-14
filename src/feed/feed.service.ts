@@ -229,7 +229,6 @@ export class FeedService {
         throw new HttpError(404, 'Feed does not exist');
       if (!findFeed.user || findFeed.user.id !== loginUserId)
         throw new HttpError(403, 'Invalid User');
-
       // feedTag들 delete
       if (findFeed.feedTag) {
         findFeed.feedTag.forEach(async (feedTag) => {
@@ -254,14 +253,12 @@ export class FeedService {
           await this.bookmarkRepository.deleteBookmark(bookmark.id);
         });
       };
-
       // feedComment는 softDelete
-      // if (findFeed.feedComment) {
-      //   findFeed.feedComment.forEach(async (comment) => {
-      //     comment.deletedAt = newDate;
-      //     await this.feedCommentRepository.deleteFeedComment(comment);
-      //   });
-      // };
+      if (findFeed.feedComment) {
+        findFeed.feedComment.forEach(async (comment) => {
+          await this.feedCommentRepository.deleteComment(comment.id);
+        });
+      };
       await this.feedRepository.deletedFeed(findFeed);
       await queryRunner.commitTransaction();
     } catch (error) {
@@ -287,6 +284,21 @@ export class FeedService {
       feedId,
       content,
     );
+  }
+
+  async deleteComment(
+    loginUserId: number,
+    feedId: number,
+    commentId: number,
+  ): Promise<void> {
+    const existingFeedComment = await this.feedCommentRepository.getCommentById(commentId);
+    if(!existingFeedComment) throw new HttpError(404, 'Comment does not exist');
+    if(existingFeedComment.user.id !== loginUserId) throw new HttpError(403, 'Invalid User');
+    const existingFeed =
+      await this.feedRepository.getFeedWithDetailsById(feedId);
+    if (!existingFeed || existingFeed.deletedAt || !existingFeed.user)
+      throw new HttpError(404, 'Feed does not exist');
+    await this.feedCommentRepository.deleteComment(commentId);
   }
 
   // 북마크 상태 변경 api : 미사용중
