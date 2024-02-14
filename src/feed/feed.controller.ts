@@ -88,7 +88,7 @@ export class FeedController {
   ): Promise<ApiResponse> {
     const loginUserId = this.tokenService.audienceFromToken(token);
     await this.feedService.deleteFeed(loginUserId, feedId);
-    return { status: 200, message: 'Feed deledted successfully' };
+    return { status: 204, message: 'Feed deledted successfully' };
   }
 
   @Put('/:feedId')

@@ -43,7 +43,7 @@ export class FeedCommentRepository {
     await this.feedCommentRepository.softDelete(commentId);
   }
 
-  // async updateFeedComment(comment: FeedCommentEntity):Promise<void> {
+  // async updateComment(comment: FeedCommentEntity):Promise<void> {
   //   try{
 
   //   }catch(error){
