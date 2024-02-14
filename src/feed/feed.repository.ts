@@ -99,7 +99,7 @@ export class FeedRepository {
     if (Array.isArray(feedImage) && feedImage.length > 0) {
       await Promise.all(
         feedImage.map(async (image) => {
-          await this.feedImageRepository.softDelete(image);
+          await this.feedImageRepository.softDelete(image.id);
         }),
       );
     }
