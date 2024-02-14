@@ -131,7 +131,7 @@ export class FeedController {
     return { status: 204, message: 'Comment deleted successfully' };
   }
 
-  @Post('/like/:feedId')
+  @Post('/:feedId/like')
   async handleFeedLike(
     @Headers('Authorization') token: string,
     @Param('feedId', ParseIntPipe) feedId: number,
