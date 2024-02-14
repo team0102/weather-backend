@@ -229,7 +229,6 @@ export class FeedService {
         throw new HttpError(404, 'Feed does not exist');
       if (!findFeed.user || findFeed.user.id !== loginUserId)
         throw new HttpError(403, 'Invalid User');
-
       // feedTag들 delete
       if (findFeed.feedTag) {
         findFeed.feedTag.forEach(async (feedTag) => {
@@ -254,14 +253,12 @@ export class FeedService {
           await this.bookmarkRepository.deleteBookmark(bookmark.id);
         });
       };
-
       // feedComment는 softDelete
-      // if (findFeed.feedComment) {
-      //   findFeed.feedComment.forEach(async (comment) => {
-      //     comment.deletedAt = newDate;
-      //     await this.feedCommentRepository.deleteFeedComment(comment);
-      //   });
-      // };
+      if (findFeed.feedComment) {
+        findFeed.feedComment.forEach(async (comment) => {
+          await this.feedCommentRepository.deleteComment(comment.id);
+        });
+      };
       await this.feedRepository.deletedFeed(findFeed);
       await queryRunner.commitTransaction();
     } catch (error) {
