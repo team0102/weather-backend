@@ -33,7 +33,7 @@ export class BookmarkRepository {
 
   async deleteBookmark(id: number): Promise<void> {
     const result = await this.bookmarkRepository.delete({ id });
-    //console.log(result)
+    console.log(result)
   }
 
   async getBookmarkList(userId: number): Promise<BookmarkEntity[]> {

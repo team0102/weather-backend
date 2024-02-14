@@ -142,6 +142,7 @@ export class FeedService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error(error);
+      throw error; 
     } finally {
       await queryRunner.release();
     }
@@ -191,6 +192,7 @@ export class FeedService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.log(error);
+      throw error; 
     } finally {
       await queryRunner.release();
     }
@@ -247,12 +249,11 @@ export class FeedService {
         });
       }
       // bookmark는 delete
-      // if (findFeed.bookmark) {
-      //   findFeed.bookmark.forEach(async (bookmark) => {
-      //     //comment.deletedAt = newDate;
-      //     await this.bookmarkRepository.deleteBookmark(bookmark);
-      //   });
-      // };
+      if (findFeed.bookmark) {
+        findFeed.bookmark.forEach(async (bookmark) => {
+          await this.bookmarkRepository.deleteBookmark(bookmark.id);
+        });
+      };
 
       // feedComment는 softDelete
       // if (findFeed.feedComment) {
@@ -266,6 +267,7 @@ export class FeedService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.log(error);
+      throw error;
     } finally {
       await queryRunner.release();
     }
@@ -287,6 +289,7 @@ export class FeedService {
     );
   }
 
+  // 북마크 상태 변경 api : 미사용중
   async handleBookmark(
     loginUserId: number,
     feedId: number,
@@ -320,7 +323,6 @@ export class FeedService {
     }
   }
 
-  // 기존 북마크 추가 서비스 로직
   async createBookmark(loginUserId: number, feedId: number): Promise<void> {
     const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
     if (!findFeed || findFeed.deletedAt || !findFeed.user)
@@ -329,8 +331,20 @@ export class FeedService {
       loginUserId,
       feedId,
     );
-    if (isBookmarked) throw new Error('Feed already bookmarked');
+    if (isBookmarked) throw new HttpError(400, 'Feed already bookmarked');
     await this.bookmarkRepository.createBookmark(loginUserId, feedId);
+  }
+
+  async deleteBookmark(loginUserId: number, feedId: number): Promise<void> {
+    const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
+    if (!findFeed || findFeed.deletedAt || !findFeed.user)
+    throw new HttpError(404, 'Feed does not exist');
+    const isBookmarked = await this.bookmarkRepository.isBookmarked(
+      loginUserId,
+      feedId,
+    );
+    if (!isBookmarked) throw new HttpError(404, 'Bookmark does not exist');
+    await this.bookmarkRepository.deleteBookmark(isBookmarked.id);
   }
 
   async getBookmarkList(loginUserId: number): Promise<BookmarkList[]> {
