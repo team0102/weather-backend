@@ -120,6 +120,17 @@ export class FeedController {
     return { status: 201, message: 'Comment created successfully' };
   }
 
+  @Delete('/:feedId/comment/:commentId')
+  async deleteComment(
+    @Headers('Authorization') token: string,
+    @Param('commentId', ParseIntPipe) commentId: number,
+    @Param('feedId', ParseIntPipe) feedId: number,
+  ): Promise<ApiResponse> {
+    const loginUserId = this.tokenService.audienceFromToken(token);
+    await this.feedService.deleteComment(loginUserId, feedId, commentId);
+    return { status: 204, message: 'Comment deleted successfully' };
+  }
+
   @Post('/like/:feedId')
   async handleFeedLike(
     @Headers('Authorization') token: string,

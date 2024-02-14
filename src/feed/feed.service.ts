@@ -289,6 +289,21 @@ export class FeedService {
     );
   }
 
+  async deleteComment(
+    loginUserId: number,
+    feedId: number,
+    commentId: number,
+  ): Promise<void> {
+    const existingFeedComment = await this.feedCommentRepository.getCommentById(commentId);
+    if(!existingFeedComment) throw new HttpError(404, 'Comment does not exist');
+    if(existingFeedComment.user.id !== loginUserId) throw new HttpError(403, 'Invalid User');
+    const existingFeed =
+      await this.feedRepository.getFeedWithDetailsById(feedId);
+    if (!existingFeed || existingFeed.deletedAt || !existingFeed.user)
+      throw new HttpError(404, 'Feed does not exist');
+    await this.feedCommentRepository.deleteComment(commentId);
+  }
+
   // 북마크 상태 변경 api : 미사용중
   async handleBookmark(
     loginUserId: number,
