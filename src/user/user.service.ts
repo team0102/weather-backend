@@ -15,12 +15,14 @@ import {
   LoginResponseDto,
   UpdateUserInfoDto,
   UserFollowDto,
+  UserInfoDto,
 } from './dto/user.dto';
 import { UserEntity } from 'src/entities/users.entity';
 import { UserRepository } from './user.repository';
 import { UserFollowEntity } from 'src/entities/userFollows.entity';
 import { UserFollowRepository } from './userFollow.repository';
 import { CityRepository } from './city.repository';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
@@ -29,7 +31,82 @@ export class UserService {
     private readonly userRepository: UserRepository,
     private readonly userFollowRepository: UserFollowRepository,
     private readonly cityRepository: CityRepository,
+    private readonly configService: ConfigService,
   ) {}
+
+  // -----소셜로그인 : auth → user_ing
+  async getJWT(
+    kakaoId: string,
+    kakaoEmail: string,
+    kakaoNickname: string,
+    kakaoProfileImage: string,
+  ) {
+    const user = await this.kakaoValidateUser(
+      kakaoId,
+      kakaoEmail,
+      kakaoNickname,
+      kakaoProfileImage,
+    ); // 카카오 정보 검증 및 회원가입 로직
+
+    const token = this.generateAccessToken(user); // accessToken 생성
+
+    return { token };
+  }
+
+  // 사용자 확인, 미존재시 회원가입
+  async kakaoValidateUser(
+    kakaoId: string,
+    kakaoEmail: string,
+    kakaoNickname: string,
+    kakaoProfileImage: string,
+  ): Promise<UserEntity> {
+    let user: UserEntity = await this.userRepository.findUserByKakaoId(kakaoId); // 유저 조회
+
+    console.log(user);
+
+    if (!user) {
+      // 회원 가입 로직
+      user = await this.userRepository.create({
+        SocialAccountProvider: 1, // 1: KAKAO, 2: NAVER, 3: GOOGLE
+        socialAccountUid: kakaoId,
+        email: kakaoEmail,
+        nickname: kakaoNickname,
+        profileImage: kakaoProfileImage,
+      });
+    }
+    return user;
+  }
+
+  generateAccessToken(user: UserEntity): string {
+    const payload = {
+      userId: user.socialAccountUid,
+      userEmail: user.email,
+    };
+    return this.JwtService.sign(payload);
+  }
+
+  async getUserInfoBysocialAccountUid(
+    socialAccountUid: string,
+  ): Promise<UserInfoDto> {
+    const user = await this.userRepository.findUserByUid(socialAccountUid);
+    if (!user) throw new NotFoundException('USER_NOT_FOUND');
+
+    const { id, nickname, profileImage } =
+      await this.userRepository.findUserByUid(socialAccountUid);
+
+    // return {
+    //   id: user.id,
+    //   nickname: user.nickname,
+    //   profileImage: user.profileImage,
+    // };
+
+    return {
+      id,
+      nickname,
+      profileImage,
+    };
+  }
+  // -----소셜로그인
 
   // 닉네임 중복 체크 : O
   async getCheckNicknameOverlap(nickname: string): Promise<string> {

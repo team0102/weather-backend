@@ -12,7 +12,7 @@ export type UserFollowDto = {
 
 export type LoginResponseDto = {
   token: string;
-  user: UserInfoDto;
+  user: UserInfo;
 };
 
 export type UserInfoDto = {
@@ -31,4 +31,25 @@ export type UpdateUserInfoDto = {
   profileImage?: string; // 소셜로그인으로 정보 삽입
   temperatureSensitivity?: number; // 기온 민감도, 0: 기본, 1: 추위타요, 2: 더위타요
   city?: number;
+};
+
+// --- auth
+
+import { SocialAccountProviderEntity } from 'src/entities/socialAccountProviders.entity';
+
+export type UserInfo = {
+  id: number;
+  nickname: string;
+  profileImage: string;
+};
+
+export type kakaoSignUpDto = {
+  email: string;
+  gender?: number;
+  locationInformationAgree?: number; // 위치정보 동의 여부, 0:동의안함, 1:사용중에만 동의, 2: 항상 동의
+  socialAccountUid: string; // 소셜로그인시, SNS ID
+  profileImage?: string; // 소셜로그인으로 정보 삽입
+  temperatureSensitivity?: number; // 기온 민감도, 0: 기본, 1: 추위타요, 2: 더위타요
+  // SocialAccountProvider: number;
+  SocialAccountProvider: SocialAccountProviderEntity; // 1: 카카오, 2: 네이버, 3: 구글 등
 };
