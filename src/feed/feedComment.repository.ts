@@ -13,27 +13,39 @@ export class FeedCommentRepository {
     private readonly feedCommentRepository: Repository<FeedCommentEntity>,
   ) {}
 
+  async getCommentById(id: number): Promise<FeedCommentEntity> {
+    const result = await this.feedCommentRepository.findOne({
+      relations:{
+        feed: true,
+        user: true,
+      },
+      where: { id: id },
+    });
+    return result;
+  }
+
   async createComment(
     userId: number,
     feedId: number,
     content: string,
   ): Promise<FeedCommentEntity> {
-    try {
-      const savedComment = await this.feedCommentRepository.save({
-        user: { id: userId },
-        content: content,
-        feed: { id: feedId },
-      });
-      return savedComment;
-    } catch (error) {
-      console.log(error);
-      throw new Error(error.message);
-    }
+    const savedComment = await this.feedCommentRepository.save({
+      user: { id: userId },
+      content: content,
+      feed: { id: feedId },
+    });
+    return savedComment;
   }
 
-  // async updateFeedComment(comment: FeedCommentEntity):Promise<void> {
+  async deleteComment(
+    commentId: number
+  ): Promise<void> {
+    await this.feedCommentRepository.softDelete(commentId);
+  }
+
+  // async updateComment(comment: FeedCommentEntity):Promise<void> {
   //   try{
-      
+
   //   }catch(error){
   //   console.log(error)
   //   throw new Error(error.message);
