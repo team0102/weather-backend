@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
 
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
@@ -11,9 +14,38 @@ import { TokenService } from 'src/utils/verifyToken';
 import { CityRepository } from './city.repository';
 import { CityEntity } from 'src/entities/cities.entity';
 
+import { KakaoStrategy } from './strategy/kakao.strategy';
+import { JwtStrategy } from './strategy/jwt.strategy';
+
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, UserFollowEntity, CityEntity]),
+    TypeOrmModule.forFeature([
+      UserEntity,
+      UserFollowEntity,
+      CityEntity,
+      // UserRepository,
+    ]),
+    ConfigModule,
+    PassportModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_ACCESS_TOKEN_SECRET_KEY'),
+        signOptions: {
+          expiresIn: configService.get<string>(
+            'JWT_ACCESS_TOKEN_EXPIRATION_TIME',
+          ),
+        },
+      }),
+      inject: [ConfigService],
+    }),
+    PassportModule.register({ defaultStrategy: 'kakao' }),
+    // JwtModule.register({
+    //   secret: 'test_secret_key',
+    //   signOptions: {
+    //     expiresIn: 3600,
+    //   },
+    // }),
   ],
   controllers: [UserController],
   providers: [
@@ -22,7 +54,17 @@ import { CityEntity } from 'src/entities/cities.entity';
     UserFollowRepository,
     TokenService,
     CityRepository,
+    KakaoStrategy,
+    JwtStrategy,
   ],
-  exports: [UserService, UserRepository, UserFollowRepository, CityRepository],
+  exports: [
+    UserService,
+    UserRepository,
+    UserFollowRepository,
+    CityRepository,
+    KakaoStrategy,
+    JwtStrategy,
+    PassportModule,
+  ],
 })
 export class UserModule {}

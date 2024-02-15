@@ -14,16 +14,19 @@ import {
   Res,
   Delete,
   Put,
+  Query,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { ApiCookieAuth } from '@nestjs/swagger';
 
 import { UserService } from './user.service';
 import {
-  GetCheckNicknameOverlapDto,
   LoginResponseDto,
   UserFollowDto,
   UpdateUserInfoDto,
+  LoginUserInfoDto,
 } from './dto/user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { TokenService } from 'src/utils/verifyToken';
@@ -40,9 +43,51 @@ export class UserController {
     private readonly userService: UserService,
     private readonly JwtService: JwtService,
     private readonly tokenService: TokenService,
+    readonly configService: ConfigService,
   ) {}
 
+  // 소셜로그인
+  @ApiCookieAuth() //  Swagger (OpenAPI) 문서를 자동으로 생성, Swagger 문서에서 특정 API 엔드포인트가 쿠키 기반의 인증을 사용한다는 정보를 표시
+  @Get('/kakao/callback') // 카카오 서버를 거쳐서 도착하게 될 엔드포인트
+  @UseGuards(AuthGuard('kakao')) // kakao.strategy를 실행
+  @HttpCode(301)
+  async kakaoLogin(
+    @Req() req: Request,
+    // @Res() res: Response,
+    @Query('code') code: string,
+  ): Promise<LoginResponseDto> {
+    console.log(`callback  ///  code------------ ${code}`);
+
+    const { kakaoId, kakaoEmail, kakaoNickname, kakaoProfileImage } = req.user;
+
+    const loginUserInfo: LoginUserInfoDto = {
+      userId: kakaoId,
+      userEmail: kakaoEmail,
+      userNickname: kakaoNickname,
+      userProfileImage: kakaoProfileImage,
+    };
+
+    const token = await this.userService.getToken(loginUserInfo);
+
+    // 쿠키 여부 확인 필요
+    // res.cookie('accessToken', accessToken, { httpOnly: true });
+    // res.cookie('refreshToken', refreshToken, { httpOnly: true });
+    // res.cookie('isLoggedIn', true, { httpOnly: false });
+
+    console.log(`token//////// ${token}`);
+
+    const user = await this.userService.getUserInfoBysocialAccountUid(
+      req.user.kakaoId,
+    );
+
+    return {
+      token: token,
+      user: user,
+    };
+  }
+
   // 닉네임 중복 체크 : O
+
   @Get('/check/:nickname')
   async getCheckNicknameOverlap(
     @Param('nickname') nickname: string,

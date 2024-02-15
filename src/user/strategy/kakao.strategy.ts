@@ -2,7 +2,6 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Profile, Strategy } from 'passport-kakao';
-import { AuthService } from '../auth.service';
 import * as _ from 'lodash';
 import { VerifyCallback } from 'passport-jwt';
 
@@ -10,7 +9,7 @@ import { VerifyCallback } from 'passport-jwt';
 
 @Injectable()
 export class KakaoStrategy extends PassportStrategy(Strategy, 'kakao') {
-  constructor(private readonly configService: ConfigService) {
+  constructor(readonly configService: ConfigService) {
     super({
       // 아래 내용으로 카카오 서버에 POST 요청(/oauth/token)을 보낸다.
       clientID: configService.get('KAKAO_CLIENTID'), // REST API 키
