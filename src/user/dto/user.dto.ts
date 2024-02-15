@@ -1,5 +1,4 @@
-import { CityEntity } from 'src/entities/cities.entity';
-import { UserEntity } from 'src/entities/users.entity';
+import { SocialAccountProviderEntity } from 'src/entities/socialAccountProviders.entity';
 
 export type GetCheckNicknameOverlapDto = {
   nickname?: string;
@@ -18,7 +17,7 @@ export type LoginUserInfoDto = {
 };
 
 export type SignUpUserInfoDto = {
-  SocialAccountProvider: number;
+  socialAccountProvider: number;
   socialAccountUid: string;
   email: string;
   nickname: string;
@@ -27,7 +26,7 @@ export type SignUpUserInfoDto = {
 
 export type LoginResponseDto = {
   token: string;
-  user: UserInfo;
+  user: UserInfoDto;
 };
 
 export type UserInfoDto = {
@@ -49,14 +48,6 @@ export type UpdateUserInfoDto = {
 };
 
 // --- auth
-
-import { SocialAccountProviderEntity } from 'src/entities/socialAccountProviders.entity';
-
-export type UserInfo = {
-  id: number;
-  nickname: string;
-  profileImage: string;
-};
 
 export type kakaoSignUpDto = {
   email: string;

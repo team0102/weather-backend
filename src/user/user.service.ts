@@ -32,10 +32,10 @@ export class UserService {
     private readonly userRepository: UserRepository,
     private readonly userFollowRepository: UserFollowRepository,
     private readonly cityRepository: CityRepository,
-    private readonly configService: ConfigService,
+    readonly configService: ConfigService,
   ) {}
 
-  // 소셜로그인 : auth → user_ing
+  // 소셜로그인
 
   async getToken(loginUserInfo: LoginUserInfoDto) {
     const user = await this.kakaoValidateUser(loginUserInfo); // 카카오 정보 검증 및 회원가입 로직
@@ -57,7 +57,7 @@ export class UserService {
     // 회원 가입 로직
     if (!user) {
       const signUpUserInfo: SignUpUserInfoDto = {
-        SocialAccountProvider: 1, // 1: KAKAO, 2: NAVER, 3: GOOGLE
+        socialAccountProvider: 1, // 1: KAKAO, 2: NAVER, 3: GOOGLE
         socialAccountUid: userId,
         email: userEmail,
         nickname: userNickname,
