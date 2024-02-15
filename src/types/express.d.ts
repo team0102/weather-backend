@@ -5,12 +5,21 @@ import { Types } from 'mysql2';
 
 declare module 'express' {
   interface Request extends Req {
+    // user: {
+    //   kakaoId?: string; // number??????
+    //   //   userId?: Types.ObjectId;  // mongo 기준 ObjectId, RDB 기준 uuid?
+    //   userId?: UUID;
+    //   email?: string; // 추가
+    //   kakaoEmail?: string;
+    //   kakaoNickname?: string;
+    //   kakaoProfileImage?: string;
+    // };
     user: {
-      kakaoId?: string; // number??????
+      kakaoId: string; // number??????
       //   userId?: Types.ObjectId;  // mongo 기준 ObjectId, RDB 기준 uuid?
       userId?: UUID;
-      email?: string; // 추가
-      kakaoEmail?: string;
+      // email?: string; // 추가
+      kakaoEmail: string;
       kakaoNickname?: string;
       kakaoProfileImage?: string;
     };

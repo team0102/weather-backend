@@ -10,6 +10,21 @@ export type UserFollowDto = {
   followUserId: number;
 };
 
+export type LoginUserInfoDto = {
+  userId: string;
+  userEmail: string;
+  userNickname: string;
+  userProfileImage: string;
+};
+
+export type SignUpUserInfoDto = {
+  SocialAccountProvider: number;
+  socialAccountUid: string;
+  email: string;
+  nickname: string;
+  profileImage: string;
+};
+
 export type LoginResponseDto = {
   token: string;
   user: UserInfo;
