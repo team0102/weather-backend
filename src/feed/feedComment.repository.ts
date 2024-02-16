@@ -15,7 +15,7 @@ export class FeedCommentRepository {
 
   async getCommentById(id: number): Promise<FeedCommentEntity> {
     const result = await this.feedCommentRepository.findOne({
-      relations:{
+      relations: {
         feed: true,
         user: true,
       },
@@ -37,18 +37,14 @@ export class FeedCommentRepository {
     return savedComment;
   }
 
-  async deleteComment(
-    commentId: number
-  ): Promise<void> {
+  async deleteComment(commentId: number): Promise<void> {
     await this.feedCommentRepository.softDelete(commentId);
   }
 
-  // async updateComment(comment: FeedCommentEntity):Promise<void> {
-  //   try{
-
-  //   }catch(error){
-  //   console.log(error)
-  //   throw new Error(error.message);
-  //   }
-  // }
+  async updateComment(commentId: number, content: string): Promise<void> {
+    await this.feedCommentRepository.update(
+      { id: commentId },
+      { content: content },
+    );
+  }
 }

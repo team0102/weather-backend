@@ -32,9 +32,12 @@ export class FeedService {
           const isAuthor = userId && feed.user.id === userId;
           const likeCount = feed.feedLike.length;
           const commentCount = feed.feedComment.length;
-          const isLiked = feed.feedLike.some((like) => like.user && like.user.id === userId);
+          const isLiked = feed.feedLike.some(
+            (like) => like.user && like.user.id === userId,
+          );
           const isBookmarked = feed.bookmark.some(
-            (bookmark) => bookmark.user && bookmark.user.id === userId);
+            (bookmark) => bookmark.user && bookmark.user.id === userId,
+          );
           const { id, nickname, profileImage } = feed.user;
           const imageUrl =
             feed.feedImage.length > 0 ? feed.feedImage[0].imageUrl : null;
@@ -142,7 +145,7 @@ export class FeedService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error(error);
-      throw error; 
+      throw error;
     } finally {
       await queryRunner.release();
     }
@@ -192,7 +195,7 @@ export class FeedService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.log(error);
-      throw error; 
+      throw error;
     } finally {
       await queryRunner.release();
     }
@@ -252,13 +255,13 @@ export class FeedService {
         findFeed.bookmark.forEach(async (bookmark) => {
           await this.bookmarkRepository.deleteBookmark(bookmark.id);
         });
-      };
+      }
       // feedComment는 softDelete
       if (findFeed.feedComment) {
         findFeed.feedComment.forEach(async (comment) => {
           await this.feedCommentRepository.deleteComment(comment.id);
         });
-      };
+      }
       await this.feedRepository.deletedFeed(findFeed);
       await queryRunner.commitTransaction();
     } catch (error) {
@@ -286,14 +289,36 @@ export class FeedService {
     );
   }
 
+  async updateComment(
+    loginUserId: number,
+    feedId: number,
+    commentId: number,
+    content: string,
+  ): Promise<void> {
+    const existingFeed =
+      await this.feedRepository.getFeedWithDetailsById(feedId);
+    if (!existingFeed || existingFeed.deletedAt || !existingFeed.user)
+      throw new HttpError(404, 'Feed does not exist');
+    const existingFeedComment =
+      await this.feedCommentRepository.getCommentById(commentId);
+    if (!existingFeedComment)
+      throw new HttpError(404, 'Comment does not exist');
+    if (existingFeedComment.user.id !== loginUserId)
+      throw new HttpError(403, 'Invalid User');
+    await this.feedCommentRepository.updateComment(commentId, content);
+  }
+
   async deleteComment(
     loginUserId: number,
     feedId: number,
     commentId: number,
   ): Promise<void> {
-    const existingFeedComment = await this.feedCommentRepository.getCommentById(commentId);
-    if(!existingFeedComment) throw new HttpError(404, 'Comment does not exist');
-    if(existingFeedComment.user.id !== loginUserId) throw new HttpError(403, 'Invalid User');
+    const existingFeedComment =
+      await this.feedCommentRepository.getCommentById(commentId);
+    if (!existingFeedComment)
+      throw new HttpError(404, 'Comment does not exist');
+    if (existingFeedComment.user.id !== loginUserId)
+      throw new HttpError(403, 'Invalid User');
     const existingFeed =
       await this.feedRepository.getFeedWithDetailsById(feedId);
     if (!existingFeed || existingFeed.deletedAt || !existingFeed.user)
@@ -338,7 +363,7 @@ export class FeedService {
   async createBookmark(loginUserId: number, feedId: number): Promise<void> {
     const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
     if (!findFeed || findFeed.deletedAt || !findFeed.user)
-    throw new HttpError(404, 'Feed does not exist');
+      throw new HttpError(404, 'Feed does not exist');
     const isBookmarked = await this.bookmarkRepository.isBookmarked(
       loginUserId,
       feedId,
@@ -350,7 +375,7 @@ export class FeedService {
   async deleteBookmark(loginUserId: number, feedId: number): Promise<void> {
     const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
     if (!findFeed || findFeed.deletedAt || !findFeed.user)
-    throw new HttpError(404, 'Feed does not exist');
+      throw new HttpError(404, 'Feed does not exist');
     const isBookmarked = await this.bookmarkRepository.isBookmarked(
       loginUserId,
       feedId,
