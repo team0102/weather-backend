@@ -94,11 +94,20 @@ export class FeedService {
       createdAt: comment.createdAt,
       updatedAt: comment.updatedAt,
       deletedAt: comment.deletedAt,
-      author: {
-        id: comment.user.id,
-        nickname: comment.user.nickname,
-        profileImage: comment.user.profileImage,
-      },
+      // 댓글 작성자가 존재하지 않으면 기본값을 사용
+      author : comment.user
+      ? {
+          id: comment.user.id,
+          nickname: comment.user.nickname,
+          profileImage: comment.user.profileImage,
+        }
+      : null
+
+      // author: {
+      //   id: comment.user.id,
+      //   nickname: comment.user.nickname,
+      //   profileImage: comment.user.profileImage,
+      // },
     }));
 
     const processedFeed = {
@@ -301,7 +310,7 @@ export class FeedService {
       throw new HttpError(404, 'Feed does not exist');
     const existingFeedComment =
       await this.feedCommentRepository.getCommentById(commentId);
-    if (!existingFeedComment)
+    if (!existingFeedComment || existingFeedComment.deletedAt || !existingFeedComment.user )
       throw new HttpError(404, 'Comment does not exist');
     if (existingFeedComment.user.id !== loginUserId)
       throw new HttpError(403, 'Invalid User');
