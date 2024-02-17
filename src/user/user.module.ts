@@ -16,12 +16,15 @@ import { CityEntity } from 'src/entities/cities.entity';
 
 import { KakaoStrategy } from './strategy/kakao.strategy';
 import { JwtStrategy } from './strategy/jwt.strategy';
+import { UserBlockEntity } from 'src/entities/userBlocks.entity';
+import { UserBlockRepository } from './userBlock.repository';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       UserEntity,
       UserFollowEntity,
+      UserBlockEntity,
       CityEntity,
       // UserRepository,
     ]),
@@ -52,6 +55,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
     UserService,
     UserRepository,
     UserFollowRepository,
+    UserBlockRepository,
     TokenService,
     CityRepository,
     KakaoStrategy,
@@ -61,6 +65,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
     UserService,
     UserRepository,
     UserFollowRepository,
+    UserBlockRepository,
     CityRepository,
     KakaoStrategy,
     JwtStrategy,

@@ -15,6 +15,7 @@ import {
   LoginUserInfoDto,
   SignUpUserInfoDto,
   UpdateUserInfoDto,
+  UserBlockDto,
   UserFollowDto,
   UserInfoDto,
 } from './dto/user.dto';
@@ -24,6 +25,8 @@ import { UserFollowEntity } from 'src/entities/userFollows.entity';
 import { UserFollowRepository } from './userFollow.repository';
 import { CityRepository } from './city.repository';
 import { ConfigService } from '@nestjs/config';
+import { UserBlockRepository } from './userBlock.repository';
+import { UserBlockEntity } from 'src/entities/userBlocks.entity';
 
 @Injectable()
 export class UserService {
@@ -33,6 +36,7 @@ export class UserService {
     private readonly userFollowRepository: UserFollowRepository,
     private readonly cityRepository: CityRepository,
     readonly configService: ConfigService,
+    private readonly userBlockRepository: UserBlockRepository,
   ) {}
 
   // 소셜로그인
@@ -237,15 +241,15 @@ export class UserService {
       throw new BadRequestException('NOT_FOLLOWING');
 
     const followRelation =
-      await this.userFollowRepository.findFollowRelationByUserIdAndFollowUserId(
-        userFollowDto,
-      );
+      await this.userFollowRepository.findFollowRelation(userFollowDto);
 
     return await this.userFollowRepository.deleteUserFollow(followRelation);
   }
 
   // 유저 팔로잉 목록 : O / 내가 팔로우 한 = 내 id가 userId에 있고, followUserId를 찾아 출력
-  async followingList(userId: number): Promise<UserFollowEntity[] | null> {
+  async getUserFollowingList(
+    userId: number,
+  ): Promise<UserFollowEntity[] | null> {
     if (!userId) throw new NotFoundException('KEY_ERROR');
 
     const user = this.userRepository.findOneById(userId);
@@ -258,7 +262,9 @@ export class UserService {
   }
 
   //  유저 팔로워 목록 : O / 나를 팔로우 한 = 내 id가 followUserId에 있고, userId를 찾아 출력
-  async followerList(followUserId: number): Promise<UserFollowEntity[] | null> {
+  async getUserFollowerList(
+    followUserId: number,
+  ): Promise<UserFollowEntity[] | null> {
     if (!followUserId) throw new NotFoundException('KEY_ERROR');
 
     const followUser = this.userRepository.findOneById(followUserId);
@@ -290,6 +296,59 @@ export class UserService {
     });
 
     return followerList;
+  }
+
+  // 유저 차단(생성)
+  async createUserBlock(userBlockDto: UserBlockDto): Promise<void> {
+    const { userId, blockUserId } = userBlockDto;
+
+    if (!userId || !blockUserId) throw new NotFoundException('KEY_ERROR');
+
+    if (userId === blockUserId)
+      throw new BadRequestException('SAME_ID_REQUESTED');
+
+    const user = await this.userRepository.findOneById(userId);
+    if (!user) throw new NotFoundException('USER_NOT_FOUND');
+    const blockUser = await this.userRepository.findOneById(blockUserId);
+    if (!blockUser) throw new NotFoundException('BLOCK_USER_NOT_FOUND');
+
+    const isBlocked =
+      await this.userBlockRepository.findBlockRelation(userBlockDto);
+    if (isBlocked) throw new BadRequestException('ALREADY_BLOCK');
+
+    const userBlock = new UserBlockEntity();
+    userBlock.user = userId;
+    userBlock.blockUser = blockUserId;
+
+    return await this.userBlockRepository.createUserBlock(userBlock);
+  }
+
+  // 유저 차단(삭제)
+  async deleteUserBlock(userBlockDto: UserBlockDto): Promise<void> {
+    const { userId, blockUserId } = userBlockDto;
+
+    if (!userId || !blockUserId) throw new NotFoundException('KEY_ERROR');
+
+    if (userId === blockUserId)
+      throw new BadRequestException('SAME_ID_REQUESTED');
+
+    const user = await this.userRepository.findOneById(userId);
+    if (!user) throw new NotFoundException('USER_NOT_FOUND');
+    const blockUser = await this.userRepository.findOneById(blockUserId);
+    if (!blockUser) throw new NotFoundException('BLOCK_USER_NOT_FOUND');
+
+    const isBlocked =
+      await this.userBlockRepository.findBlockRelation(userBlockDto);
+    if (!isBlocked) throw new BadRequestException('NOT_BLOCKED');
+
+    return await this.userBlockRepository.deleteUserBlock(isBlocked);
+  }
+  // 유저 차단(목록)
+  async getUserBlockList(userId: number): Promise<UserBlockEntity[] | null> {
+    const user = this.userRepository.findOneById(userId);
+    if (!user) throw new NotFoundException('USER_NOT_FOUND');
+
+    return this.userBlockRepository.findUserBlockList(userId);
   }
 
   // 테스트용 로그인 -----------------------------------------------

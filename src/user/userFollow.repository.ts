@@ -26,7 +26,7 @@ export class UserFollowRepository {
     await this.userFollowTypeormRepository.save(userFollowDto);
   }
 
-  async findFollowRelationByUserIdAndFollowUserId(
+  async findFollowRelation(
     userFollowDto: UserFollowDto,
   ): Promise<UserFollowEntity[] | null> {
     const { userId, followUserId } = userFollowDto;
