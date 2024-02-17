@@ -10,7 +10,7 @@ export class FeedCommentRepository {
     private readonly feedCommentRepository: Repository<FeedCommentEntity>,
   ) {}
 
-  async getCommentById(id: number): Promise<FeedCommentEntity> {
+  async getFeedCommentById(id: number): Promise<FeedCommentEntity> {
     const result = await this.feedCommentRepository.findOne({
       relations: {
         feed: true,
@@ -21,7 +21,7 @@ export class FeedCommentRepository {
     return result;
   }
 
-  async createComment(
+  async createFeedComment(
     userId: number,
     feedId: number,
     content: string,
@@ -34,11 +34,11 @@ export class FeedCommentRepository {
     return savedComment;
   }
 
-  async deleteComment(commentId: number): Promise<void> {
+  async deleteFeedComment(commentId: number): Promise<void> {
     await this.feedCommentRepository.softDelete(commentId);
   }
 
-  async updateComment(commentId: number, content: string): Promise<void> {
+  async updateFeedComment(commentId: number, content: string): Promise<void> {
     await this.feedCommentRepository.update(
       { id: commentId },
       { content: content },

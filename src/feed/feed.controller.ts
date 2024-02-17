@@ -110,36 +110,36 @@ export class FeedController {
   }
 
   @Post('/:feedId/comment')
-  async createComment(
+  async createFeedComment(
     @Headers('Authorization') token: string,
     @Param('feedId', ParseIntPipe) feedId: number,
     @Body('content') content: string,
   ): Promise<ApiResponse> {
     const loginUserId = this.tokenService.audienceFromToken(token);
-    await this.feedService.createComment(loginUserId, feedId, content);
+    await this.feedService.createFeedComment(loginUserId, feedId, content);
     return { status: 201, message: 'Comment created successfully' };
   }
 
   @Put('/:feedId/comment/:commentId')
-  async updateComment(
+  async updateFeedComment(
     @Headers('Authorization') token: string,
     @Param('commentId', ParseIntPipe) commentId: number,
     @Param('feedId', ParseIntPipe) feedId: number,
     @Body('content') content: string,
   ): Promise<ApiResponse> {
     const loginUserId = this.tokenService.audienceFromToken(token);
-    await this.feedService.updateComment(loginUserId, feedId, commentId, content);
+    await this.feedService.updateFeedComment(loginUserId, feedId, commentId, content);
     return { status: 201, message: 'Comment updated successfully' };
   }
 
   @Delete('/:feedId/comment/:commentId')
-  async deleteComment(
+  async deleteFeedComment(
     @Headers('Authorization') token: string,
     @Param('commentId', ParseIntPipe) commentId: number,
     @Param('feedId', ParseIntPipe) feedId: number,
   ): Promise<ApiResponse> {
     const loginUserId = this.tokenService.audienceFromToken(token);
-    await this.feedService.deleteComment(loginUserId, feedId, commentId);
+    await this.feedService.deleteFeedComment(loginUserId, feedId, commentId);
     return { status: 204, message: 'Comment deleted successfully' };
   }
 

@@ -268,7 +268,7 @@ export class FeedService {
       // feedComment는 softDelete
       if (findFeed.feedComment) {
         findFeed.feedComment.forEach(async (comment) => {
-          await this.feedCommentRepository.deleteComment(comment.id);
+          await this.feedCommentRepository.deleteFeedComment(comment.id);
         });
       }
       await this.feedRepository.deletedFeed(findFeed);
@@ -282,7 +282,7 @@ export class FeedService {
     }
   }
 
-  async createComment(
+  async createFeedComment(
     loginUserId: number,
     feedId: number,
     content: string,
@@ -291,14 +291,14 @@ export class FeedService {
       await this.feedRepository.getFeedWithDetailsById(feedId);
     if (!existingFeed || existingFeed.deletedAt || !existingFeed.user)
       throw new HttpError(404, 'Feed does not exist');
-    await this.feedCommentRepository.createComment(
+    await this.feedCommentRepository.createFeedComment(
       loginUserId,
       feedId,
       content,
     );
   }
 
-  async updateComment(
+  async updateFeedComment(
     loginUserId: number,
     feedId: number,
     commentId: number,
@@ -309,21 +309,21 @@ export class FeedService {
     if (!existingFeed || existingFeed.deletedAt || !existingFeed.user)
       throw new HttpError(404, 'Feed does not exist');
     const existingFeedComment =
-      await this.feedCommentRepository.getCommentById(commentId);
+      await this.feedCommentRepository.getFeedCommentById(commentId);
     if (!existingFeedComment || existingFeedComment.deletedAt || !existingFeedComment.user )
       throw new HttpError(404, 'Comment does not exist');
     if (existingFeedComment.user.id !== loginUserId)
       throw new HttpError(403, 'Invalid User');
-    await this.feedCommentRepository.updateComment(commentId, content);
+    await this.feedCommentRepository.updateFeedComment(commentId, content);
   }
 
-  async deleteComment(
+  async deleteFeedComment(
     loginUserId: number,
     feedId: number,
     commentId: number,
   ): Promise<void> {
     const existingFeedComment =
-      await this.feedCommentRepository.getCommentById(commentId);
+      await this.feedCommentRepository.getFeedCommentById(commentId);
     if (!existingFeedComment)
       throw new HttpError(404, 'Comment does not exist');
     if (existingFeedComment.user.id !== loginUserId)
@@ -332,7 +332,7 @@ export class FeedService {
       await this.feedRepository.getFeedWithDetailsById(feedId);
     if (!existingFeed || existingFeed.deletedAt || !existingFeed.user)
       throw new HttpError(404, 'Feed does not exist');
-    await this.feedCommentRepository.deleteComment(commentId);
+    await this.feedCommentRepository.deleteFeedComment(commentId);
   }
 
   // 북마크 상태 변경 api : 미사용중
