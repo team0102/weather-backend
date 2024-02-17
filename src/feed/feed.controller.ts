@@ -129,7 +129,7 @@ export class FeedController {
   ): Promise<ApiResponse> {
     const loginUserId = this.tokenService.audienceFromToken(token);
     await this.feedService.updateComment(loginUserId, feedId, commentId, content);
-    return { status: 201, message: 'Comment updateed successfully' };
+    return { status: 201, message: 'Comment updated successfully' };
   }
 
   @Delete('/:feedId/comment/:commentId')
