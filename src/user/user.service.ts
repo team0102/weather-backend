@@ -11,16 +11,19 @@ import * as qs from 'qs';
 import { JwtService } from '@nestjs/jwt';
 
 import {
-  GetCheckNicknameOverlapDto,
   LoginResponseDto,
+  LoginUserInfoDto,
+  SignUpUserInfoDto,
   UpdateUserInfoDto,
   UserFollowDto,
+  UserInfoDto,
 } from './dto/user.dto';
 import { UserEntity } from 'src/entities/users.entity';
 import { UserRepository } from './user.repository';
 import { UserFollowEntity } from 'src/entities/userFollows.entity';
 import { UserFollowRepository } from './userFollow.repository';
 import { CityRepository } from './city.repository';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
@@ -29,7 +32,70 @@ export class UserService {
     private readonly userRepository: UserRepository,
     private readonly userFollowRepository: UserFollowRepository,
     private readonly cityRepository: CityRepository,
+    readonly configService: ConfigService,
   ) {}
+
+  // 소셜로그인
+
+  async getToken(loginUserInfo: LoginUserInfoDto) {
+    const user = await this.kakaoValidateUser(loginUserInfo); // 카카오 정보 검증 및 회원가입 로직
+
+    const token = this.generateAccessToken(user); // accessToken 생성
+
+    return token;
+  }
+
+  async kakaoValidateUser(
+    loginUserInfo: LoginUserInfoDto,
+  ): Promise<UserEntity> {
+    const { userId, userEmail, userNickname, userProfileImage } = loginUserInfo;
+
+    let user: UserEntity = await this.userRepository.findUserByKakaoId(userId); // 유저 조회
+
+    console.log(user);
+
+    // 회원 가입 로직
+    if (!user) {
+      const signUpUserInfo: SignUpUserInfoDto = {
+        socialAccountProvider: 1, // 1: KAKAO, 2: NAVER, 3: GOOGLE
+        socialAccountUid: userId,
+        email: userEmail,
+        nickname: userNickname,
+        profileImage: userProfileImage,
+      };
+
+      user = await this.userRepository.createUser(signUpUserInfo);
+    }
+
+    return user;
+  }
+
+  generateAccessToken(user: UserEntity): string {
+    const payload = {
+      userId: user.socialAccountUid,
+      userEmail: user.email,
+    };
+
+    return this.JwtService.sign(payload);
+  }
+
+  async getUserInfoBysocialAccountUid(
+    socialAccountUid: string,
+  ): Promise<UserInfoDto> {
+    const user = await this.userRepository.findUserByUid(socialAccountUid);
+    if (!user) throw new NotFoundException('USER_NOT_FOUND');
+
+    const { id, nickname, profileImage } =
+      await this.userRepository.findUserByUid(socialAccountUid);
+
+    const userInfo = {
+      id,
+      nickname,
+      profileImage,
+    };
+
+    return userInfo;
+  }
 
   // 닉네임 중복 체크 : O
   async getCheckNicknameOverlap(nickname: string): Promise<string> {

@@ -143,8 +143,9 @@ export class FeedController {
     return { status: 204, message: 'Comment deleted successfully' };
   }
 
+
   // === 좋아요 상태 변경 api ===
-  @Post('/like/:feedId')
+  @Post('/:feedId/like')
   async handleFeedLike(
     @Headers('Authorization') token: string,
     @Param('feedId', ParseIntPipe) feedId: number,
