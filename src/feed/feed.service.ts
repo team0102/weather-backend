@@ -32,9 +32,12 @@ export class FeedService {
           const isAuthor = userId && feed.user.id === userId;
           const likeCount = feed.feedLike.length;
           const commentCount = feed.feedComment.length;
-          const isLiked = feed.feedLike.some((like) => like.user && like.user.id === userId);
+          const isLiked = feed.feedLike.some(
+            (like) => like.user && like.user.id === userId,
+          );
           const isBookmarked = feed.bookmark.some(
-            (bookmark) => bookmark.user && bookmark.user.id === userId);
+            (bookmark) => bookmark.user && bookmark.user.id === userId,
+          );
           const { id, nickname, profileImage } = feed.user;
           const imageUrl =
             feed.feedImage.length > 0 ? feed.feedImage[0].imageUrl : null;
@@ -91,11 +94,20 @@ export class FeedService {
       createdAt: comment.createdAt,
       updatedAt: comment.updatedAt,
       deletedAt: comment.deletedAt,
-      author: {
-        id: comment.user.id,
-        nickname: comment.user.nickname,
-        profileImage: comment.user.profileImage,
-      },
+      // 댓글 작성자가 존재하지 않으면 기본값을 사용
+      author : comment.user
+      ? {
+          id: comment.user.id,
+          nickname: comment.user.nickname,
+          profileImage: comment.user.profileImage,
+        }
+      : null
+
+      // author: {
+      //   id: comment.user.id,
+      //   nickname: comment.user.nickname,
+      //   profileImage: comment.user.profileImage,
+      // },
     }));
 
     const processedFeed = {
@@ -142,7 +154,7 @@ export class FeedService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.error(error);
-      throw error; 
+      throw error;
     } finally {
       await queryRunner.release();
     }
@@ -192,7 +204,7 @@ export class FeedService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.log(error);
-      throw error; 
+      throw error;
     } finally {
       await queryRunner.release();
     }
@@ -252,13 +264,13 @@ export class FeedService {
         findFeed.bookmark.forEach(async (bookmark) => {
           await this.bookmarkRepository.deleteBookmark(bookmark.id);
         });
-      };
+      }
       // feedComment는 softDelete
       if (findFeed.feedComment) {
         findFeed.feedComment.forEach(async (comment) => {
-          await this.feedCommentRepository.deleteComment(comment.id);
+          await this.feedCommentRepository.deleteFeedComment(comment.id);
         });
-      };
+      }
       await this.feedRepository.deletedFeed(findFeed);
       await queryRunner.commitTransaction();
     } catch (error) {
@@ -270,7 +282,7 @@ export class FeedService {
     }
   }
 
-  async createComment(
+  async createFeedComment(
     loginUserId: number,
     feedId: number,
     content: string,
@@ -279,26 +291,48 @@ export class FeedService {
       await this.feedRepository.getFeedWithDetailsById(feedId);
     if (!existingFeed || existingFeed.deletedAt || !existingFeed.user)
       throw new HttpError(404, 'Feed does not exist');
-    await this.feedCommentRepository.createComment(
+    await this.feedCommentRepository.createFeedComment(
       loginUserId,
       feedId,
       content,
     );
   }
 
-  async deleteComment(
+  async updateFeedComment(
     loginUserId: number,
     feedId: number,
     commentId: number,
+    content: string,
   ): Promise<void> {
-    const existingFeedComment = await this.feedCommentRepository.getCommentById(commentId);
-    if(!existingFeedComment) throw new HttpError(404, 'Comment does not exist');
-    if(existingFeedComment.user.id !== loginUserId) throw new HttpError(403, 'Invalid User');
     const existingFeed =
       await this.feedRepository.getFeedWithDetailsById(feedId);
     if (!existingFeed || existingFeed.deletedAt || !existingFeed.user)
       throw new HttpError(404, 'Feed does not exist');
-    await this.feedCommentRepository.deleteComment(commentId);
+    const existingFeedComment =
+      await this.feedCommentRepository.getFeedCommentById(commentId);
+    if (!existingFeedComment || existingFeedComment.deletedAt || !existingFeedComment.user )
+      throw new HttpError(404, 'Comment does not exist');
+    if (existingFeedComment.user.id !== loginUserId)
+      throw new HttpError(403, 'Invalid User');
+    await this.feedCommentRepository.updateFeedComment(commentId, content);
+  }
+
+  async deleteFeedComment(
+    loginUserId: number,
+    feedId: number,
+    commentId: number,
+  ): Promise<void> {
+    const existingFeedComment =
+      await this.feedCommentRepository.getFeedCommentById(commentId);
+    if (!existingFeedComment)
+      throw new HttpError(404, 'Comment does not exist');
+    if (existingFeedComment.user.id !== loginUserId)
+      throw new HttpError(403, 'Invalid User');
+    const existingFeed =
+      await this.feedRepository.getFeedWithDetailsById(feedId);
+    if (!existingFeed || existingFeed.deletedAt || !existingFeed.user)
+      throw new HttpError(404, 'Feed does not exist');
+    await this.feedCommentRepository.deleteFeedComment(commentId);
   }
 
   // 북마크 상태 변경 api : 미사용중
@@ -338,7 +372,7 @@ export class FeedService {
   async createBookmark(loginUserId: number, feedId: number): Promise<void> {
     const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
     if (!findFeed || findFeed.deletedAt || !findFeed.user)
-    throw new HttpError(404, 'Feed does not exist');
+      throw new HttpError(404, 'Feed does not exist');
     const isBookmarked = await this.bookmarkRepository.isBookmarked(
       loginUserId,
       feedId,
@@ -350,7 +384,7 @@ export class FeedService {
   async deleteBookmark(loginUserId: number, feedId: number): Promise<void> {
     const findFeed = await this.feedRepository.getFeedWithDetailsById(feedId);
     if (!findFeed || findFeed.deletedAt || !findFeed.user)
-    throw new HttpError(404, 'Feed does not exist');
+      throw new HttpError(404, 'Feed does not exist');
     const isBookmarked = await this.bookmarkRepository.isBookmarked(
       loginUserId,
       feedId,
