@@ -3,13 +3,14 @@ import { FeedRepository } from './feed.repository';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 import { TagRepository } from './tag.repository';
 import { FeedTagRepository } from './feedTag.repository';
-import { DataSource } from 'typeorm';
+import { DataSource, MoreThan } from 'typeorm';
 import { FeedCommentRepository } from './feedComment.repository';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
 import { BookmarkList, FeedDatail, FeedListItem } from './feed.types';
 import { BookmarkRepository } from './bookmark.repository';
 import { FeedLikeRepository } from './feedLike.repository';
 import HttpError from 'src/utils/httpError';
+import { PaginateFeedDto } from './dto/paginate-feed.dto';
 
 @Injectable()
 export class FeedService {
@@ -67,6 +68,13 @@ export class FeedService {
         }),
     );
     return processedFeedList;
+  }
+
+  // 오름차순으로 정렬하는 pagination만 구현한다.
+  async paginateFeeds(dto: PaginateFeedDto){
+    const feeds = await this.feedRepository.paginateFeedList(dto);
+  
+    return feeds;
   }
 
   async getFeedDetails(userId: number, feedId: number): Promise<FeedDatail> {

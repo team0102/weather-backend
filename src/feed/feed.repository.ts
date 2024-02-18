@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FeedEntity } from '../entities/feeds.entity';
-import { Repository, Not } from 'typeorm';
+import { Repository, Not, MoreThan } from 'typeorm';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 import { FeedImageEntity } from 'src/entities/feedImages.entity';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
+import { PaginateFeedDto } from './dto/paginate-feed.dto';
 
 @Injectable()
 export class FeedRepository {
@@ -44,6 +45,22 @@ export class FeedRepository {
     });
     console.log(feedList);
     return feedList;
+  }
+
+  async paginateFeedList(dto: PaginateFeedDto): Promise<FeedEntity[]> {
+    const feeds = await this.feedRepository.find({
+      where: {
+       // id: MoreThan(dto.where__id_more_than),
+        id: dto.where__id_more_than ? MoreThan(dto.where__id_more_than) : undefined,
+      },
+      order: {
+        createdAt: dto.order__createdAt,
+      },
+      take: dto.take,
+    });
+    console.log(feeds)
+
+    return feeds;
   }
 
   async getFeedWithDetailsById(feedId: number): Promise<FeedEntity> {

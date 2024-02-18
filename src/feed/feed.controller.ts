@@ -8,6 +8,7 @@ import {
   Headers,
   Put,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { FeedService } from './feed.service';
 import { CreateFeedDTO } from './dto/create-feed.dto';
@@ -20,6 +21,7 @@ import {
   FeedListResponse,
 } from './feed.types';
 import HttpError from 'src/utils/httpError';
+import { PaginateFeedDto } from './dto/paginate-feed.dto';
 
 @Controller('feeds')
 export class FeedController {
@@ -28,15 +30,32 @@ export class FeedController {
     private readonly tokenService: TokenService,
   ) {}
 
+  // @Get()
+  // async getFeedList(
+  //   @Headers('Authorization') token: string | undefined,
+  // ): Promise<FeedListResponse> {
+  //   let loginUserId: number | null = null;
+  //   if (token) {
+  //     loginUserId = this.tokenService.audienceFromToken(token);
+  //   }
+  //   const feedDatas = await this.feedService.getFeedList(loginUserId);
+  //   return {
+  //     status: 200,
+  //     message: 'Successed to get feedList',
+  //     data: feedDatas,
+  //   };
+  // }
+
   @Get()
   async getFeedList(
     @Headers('Authorization') token: string | undefined,
-  ): Promise<FeedListResponse> {
+    @Query() query: PaginateFeedDto,
+  ) {
     let loginUserId: number | null = null;
     if (token) {
       loginUserId = this.tokenService.audienceFromToken(token);
     }
-    const feedDatas = await this.feedService.getFeedList(loginUserId);
+    const feedDatas = await this.feedService.paginateFeeds(query);
     return {
       status: 200,
       message: 'Successed to get feedList',
@@ -128,7 +147,12 @@ export class FeedController {
     @Body('content') content: string,
   ): Promise<ApiResponse> {
     const loginUserId = this.tokenService.audienceFromToken(token);
-    await this.feedService.updateFeedComment(loginUserId, feedId, commentId, content);
+    await this.feedService.updateFeedComment(
+      loginUserId,
+      feedId,
+      commentId,
+      content,
+    );
     return { status: 201, message: 'Comment updated successfully' };
   }
 
@@ -142,7 +166,6 @@ export class FeedController {
     await this.feedService.deleteFeedComment(loginUserId, feedId, commentId);
     return { status: 204, message: 'Comment deleted successfully' };
   }
-
 
   // === 좋아요 상태 변경 api ===
   @Post('/:feedId/like')
@@ -170,7 +193,6 @@ export class FeedController {
     return { status: 201, message: 'Bookmark created successfully' };
   }
 
-  
   @Delete('/:feedId/bookmark')
   async deleteBookmark(
     @Headers('Authorization') token: string,
