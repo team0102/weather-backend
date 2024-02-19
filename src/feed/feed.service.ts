@@ -99,10 +99,10 @@ export class FeedService {
     return {
       feeds,                      // Data[]
       cursor: {
-        after: lastItem?.id,      // 마지막 Data의 Id
+        after: lastItem?.id ?? null,      // 마지막 Data의 Id
       },
       count: feeds?.length,        // 응답할 데이터의 개수
-      next: nextUrl?.toString(),   // 다음 요청을 할 때 사용할 URL
+      next: nextUrl?.toString() ?? null,   // 다음 요청을 할 때 사용할 URL
     };
   }
 
