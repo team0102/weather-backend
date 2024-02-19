@@ -76,15 +76,20 @@ export class FeedService {
   async paginateFeeds(dto: PaginateFeedDto) {
     const feeds = await this.feedRepository.paginateFeedList(dto);
 
-    // 해당되는 포스트가 0개 이상이면 마지막 포스트를 가져오고 아니면 null을 반환
-    const lastItem = feeds.length > 0 ? feeds[feeds.length - 1] : null;
+    /* 
+      해당되는 포스트가 0개 이상이면 마지막 포스트를 가져오고 아니면 null을 반환
+      데이터의 개수와 take의 개수가 같을 경우에만 lastItem 생성
+    */
+    const lastItem = feeds.length > 0 && feeds.length === dto.take ? feeds[feeds.length - 1] : null;
     const nextUrl = lastItem && new URL(`${PROTOCOL}://${HOST}/feeds`);
     if (nextUrl) {
-      //dto의 벨류가 존재하면 param에 그대로 붙여넣는다.
-      // 단, where__id_more_than 값만 lastItem의 마지막 값으로 넣어준다.
+      /* 
+       dto의 key에 대한 value가 존재하면 param에 그대로 붙여넣는다.
+       단, where__id_more_than 값만 lastItem의 마지막 값으로 넣어준다.
+       */
       for (const key of Object.keys(dto)) {
         if (dto[key]) {
-          if (key !== 'where__id_more_than') {
+          if (key !== 'where__id_more_than') { // 해당 값이 없으면 제외
             nextUrl.searchParams.append(key, dto[key]);
           }
         }
