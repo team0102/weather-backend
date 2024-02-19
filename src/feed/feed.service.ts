@@ -80,7 +80,7 @@ export class FeedService {
       해당되는 포스트가 0개 이상이면 마지막 포스트를 가져오고 아니면 null을 반환
       데이터의 개수와 take의 개수가 같을 경우에만 lastItem 생성
     */
-    const lastItem = feeds.length > 0 && feeds.length === dto.take ? feeds[feeds.length - 1] : null;
+    const lastItem = feeds.length > 0 && feeds.length >= dto.take ? feeds[feeds.length - 1] : null;
     const nextUrl = lastItem && new URL(`${PROTOCOL}://${HOST}/feeds`);
     if (nextUrl) {
       /* 
