@@ -11,6 +11,8 @@ import { BookmarkRepository } from './bookmark.repository';
 import { FeedLikeRepository } from './feedLike.repository';
 import HttpError from 'src/utils/httpError';
 import { PaginateFeedDto } from './dto/paginate-feed.dto';
+import { HOST, PROTOCOL } from 'src/common/const/env.const';
+
 
 @Injectable()
 export class FeedService {
@@ -71,13 +73,33 @@ export class FeedService {
   }
 
   // 오름차순으로 정렬하는 pagination만 구현한다.
-  async paginateFeeds(dto: PaginateFeedDto){
+  async paginateFeeds(dto: PaginateFeedDto) {
     const feeds = await this.feedRepository.paginateFeedList(dto);
-  
-    return feeds;
+
+    // 해당되는 포스트가 0개 이상이면 마지막 포스트를 가져오고 아니면 null을 반환
+    const lastItem = feeds.length > 0 ? feeds[feeds.length - 1] : null;
+    const nextUrl = lastItem && new URL(`${PROTOCOL}://${HOST}/feeds`);
+    if (nextUrl) {
+      //dto의 벨류가 존재하면 param에 그대로 붙여넣는다.
+      // 단, where__id_more_than 값만 lastItem의 마지막 값으로 넣어준다.
+      for (const key of Object.keys(dto)) {
+        if (dto[key]) {
+          if (key !== 'where__id_more_than') {
+            nextUrl.searchParams.append(key, dto[key]);
+          }
+        }
+      };
+      nextUrl.searchParams.append('where__id_more_than', lastItem.id.toString());
+    }
+    return {
+      feeds,                      // Data[]
+      cursor: {
+        after: lastItem?.id,      // 마지막 Data의 Id
+      },
+      count: feeds?.length,        // 응답할 데이터의 개수
+      next: nextUrl?.toString(),   // 다음 요청을 할 때 사용할 URL
+    };
   }
-
-
 
   async getFeedDetails(userId: number, feedId: number): Promise<FeedDatail> {
     const feedDetails =
@@ -105,13 +127,13 @@ export class FeedService {
       updatedAt: comment.updatedAt,
       deletedAt: comment.deletedAt,
       // 댓글 작성자가 존재하지 않으면 기본값을 사용
-      author : comment.user
-      ? {
-          id: comment.user.id,
-          nickname: comment.user.nickname,
-          profileImage: comment.user.profileImage,
-        }
-      : null
+      author: comment.user
+        ? {
+            id: comment.user.id,
+            nickname: comment.user.nickname,
+            profileImage: comment.user.profileImage,
+          }
+        : null,
 
       // author: {
       //   id: comment.user.id,
@@ -320,7 +342,11 @@ export class FeedService {
       throw new HttpError(404, 'Feed does not exist');
     const existingFeedComment =
       await this.feedCommentRepository.getFeedCommentById(commentId);
-    if (!existingFeedComment || existingFeedComment.deletedAt || !existingFeedComment.user )
+    if (
+      !existingFeedComment ||
+      existingFeedComment.deletedAt ||
+      !existingFeedComment.user
+    )
       throw new HttpError(404, 'Comment does not exist');
     if (existingFeedComment.user.id !== loginUserId)
       throw new HttpError(403, 'Invalid User');

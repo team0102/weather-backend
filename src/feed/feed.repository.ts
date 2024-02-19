@@ -50,8 +50,8 @@ export class FeedRepository {
   async paginateFeedList(dto: PaginateFeedDto): Promise<FeedEntity[]> {
     const feeds = await this.feedRepository.find({
       where: {
-       // id: MoreThan(dto.where__id_more_than), -> 빈 배열 반환해서 아래와 같이 수정함
-        id: dto.where__id_more_than ? MoreThan(dto.where__id_more_than) : undefined,
+       //id: MoreThan(dto.where__id_more_than), 
+         id: dto.where__id_more_than ? MoreThan(dto.where__id_more_than) : undefined,
       },
       order: {
         createdAt: dto.order__createdAt,
@@ -59,9 +59,9 @@ export class FeedRepository {
       take: dto.take,
     });
     console.log(feeds)
-
     return feeds;
   }
+
 
   async getFeedWithDetailsById(feedId: number): Promise<FeedEntity> {
     const [feed] = await this.feedRepository.find({
