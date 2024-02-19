@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FeedEntity } from '../entities/feeds.entity';
-import { Repository, Not, MoreThan } from 'typeorm';
+import { Repository, MoreThan, FindOptionsWhere, LessThan } from 'typeorm';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 import { FeedImageEntity } from 'src/entities/feedImages.entity';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
@@ -48,11 +48,16 @@ export class FeedRepository {
   }
 
   async paginateFeedList(dto: PaginateFeedDto): Promise<FeedEntity[]> {
+    const where : FindOptionsWhere<FeedEntity> = {};
+    if(dto.where__id_less_than){
+      where.id = LessThan(dto.where__id_less_than);
+    } else if(dto.where__id_more_than){
+      where.id = MoreThan(dto.where__id_more_than);
+    }
     const feeds = await this.feedRepository.find({
-      where: {
+      where,
        //id: MoreThan(dto.where__id_more_than), 
-         id: dto.where__id_more_than ? MoreThan(dto.where__id_more_than) : undefined,
-      },
+         //id: dto.where__id_more_than ? MoreThan(dto.where__id_more_than) : undefined,
       order: {
         createdAt: dto.order__createdAt,
       },

@@ -9,11 +9,14 @@ export class PaginateFeedDto{
     @IsOptional()
     where__id_more_than?: number;
 
-    //정렬
-    //오름차순 디폴트로 가정
-    @IsIn(['ASC'])
+    @IsNumber()
     @IsOptional()
-    order__createdAt?: 'ASC' = 'ASC'; //기본값
+    where__id_less_than?: number;
+
+    //정렬
+    @IsIn(['ASC', 'DESC'])
+    @IsOptional()
+    order__createdAt?: 'ASC' | 'DESC' = 'ASC'; //기본값 : ASC
 
     take: number = 9;
 }

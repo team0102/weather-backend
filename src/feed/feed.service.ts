@@ -89,19 +89,25 @@ export class FeedService {
        */
       for (const key of Object.keys(dto)) {
         if (dto[key]) {
-          if (key !== 'where__id_more_than') { // 해당 값이 없으면 제외
+          if (key !== 'where__id_more_than' && key !== 'where__id_less_than') { // 해당 값이 없으면 제외
             nextUrl.searchParams.append(key, dto[key]);
           }
         }
       };
-      nextUrl.searchParams.append('where__id_more_than', lastItem.id.toString());
+      let key = null;
+      if(dto.order__createdAt === 'ASC'){
+        key = 'where__id_more_than'
+      } else {
+        key = 'where__id_less_than'
+      }
+      nextUrl.searchParams.append(key, lastItem.id.toString());
     }
     return {
-      feeds,                      // Data[]
+      feeds,                               // Data[]
       cursor: {
-        after: lastItem?.id ?? null,      // 마지막 Data의 Id
+        after: lastItem?.id ?? null,       // 마지막 Data의 Id
       },
-      count: feeds?.length,        // 응답할 데이터의 개수
+      count: feeds?.length,                // 응답할 데이터의 개수
       next: nextUrl?.toString() ?? null,   // 다음 요청을 할 때 사용할 URL
     };
   }
