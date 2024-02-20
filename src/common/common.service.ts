@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { BasePaginationDto } from './dto/base-pagination.dto';
-import { FindManyOptions, Repository } from 'typeorm';
+import {
+  FindManyOptions,
+  FindOptionsOrder,
+  FindOptionsWhere,
+  Repository,
+} from 'typeorm';
 
 @Injectable()
 export class CommonService {
@@ -30,8 +35,36 @@ export class CommonService {
      *    3-2) 2개의 값으로 나뉜다면 정확한 값을 필터하는 것이기 때문에 operator 없이 적용한다.
      *         where__id -> 그 id의 값만
      * 4) order의 경우 3-2와 같이 적용한다.
-     *
-     *
      */
+    let where: FindOptionsWhere<T> = {};
+    let order: FindOptionsOrder<T> = {};
+
+    for (const [key, value] of Object.entries(dto)) {
+      //dto의 모든 값을 looping
+      if (key.startsWith('where__')) {
+        where = {
+          ...where,
+          ...this.parseWhereFilter(key, value), //where 필터를 새로 만들 때마다 where에 추가
+        };
+      } else if (key.startsWith('order__')) {
+        order = {
+          ...order,
+          ...this.parseOrderFilter(key, value),
+        };
+      }
+    }
+    return {
+      where,
+      order,
+      take: dto.take,
+    };
+  }
+
+  private parseWhereFilter<T>(key: string, value: any): FindOptionsWhere<T> {
+    return;
+  }
+
+  private parseOrderFilter<T>(key: string, value: any): FindOptionsOrder<T> {
+    return;
   }
 }
