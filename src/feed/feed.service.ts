@@ -89,16 +89,16 @@ export class FeedService {
        */
       for (const key of Object.keys(dto)) {
         if (dto[key]) {
-          if (key !== 'where__id_more_than' && key !== 'where__id_less_than') { // 해당 값이 없으면 제외
+          if (key !== 'where__id__more_than' && key !== 'where__id__less_than') { // 해당 값이 없으면 제외
             nextUrl.searchParams.append(key, dto[key]);
           }
         }
       };
       let key = null;
       if(dto.order__createdAt === 'ASC'){
-        key = 'where__id_more_than'
+        key = 'where__id__more_than'
       } else {
-        key = 'where__id_less_than'
+        key = 'where__id__less_than'
       }
       nextUrl.searchParams.append(key, lastItem.id.toString());
     }
