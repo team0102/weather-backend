@@ -63,8 +63,15 @@ export class UserController {
   @Put('/logout')
   async userLogout(@Headers('authorization') token: string): Promise<void> {
     const userId = this.tokenService.audienceFromToken(token);
+    const exp = new Date(this.JwtService.verify(token).exp);
 
-    return;
+    console.log(userId);
+    console.log(`exp`);
+    console.log(exp);
+
+    const result = await this.userService.addTokenToBlacklist(token, exp);
+    console.log(result);
+    return this.userService.addTokenToBlacklist(token, exp);
   }
   // ★★★★★★★★★★★★★★★★조사 필요★★★★★★★★★★★★★★★★
 

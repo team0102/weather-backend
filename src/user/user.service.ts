@@ -21,6 +21,7 @@ import { UserRepository } from './user.repository';
 import { UserFollowEntity } from 'src/entities/userFollows.entity';
 import { UserFollowRepository } from './userFollow.repository';
 import { CityRepository } from './city.repository';
+import { RedisService } from './redis.service';
 
 @Injectable()
 export class UserService {
@@ -29,7 +30,37 @@ export class UserService {
     private readonly userRepository: UserRepository,
     private readonly userFollowRepository: UserFollowRepository,
     private readonly cityRepository: CityRepository,
+    private readonly redisService: RedisService,
   ) {}
+
+  // 로그아웃 테스트----------
+
+  // async addTokenToBlacklist(accessToken: string, exp: Date): Promise<void> {
+  //   // await this.redisService.set(accessToken, '', 'EX', exp.getTime() / 1000);
+  //   await this.redisService.set(
+  //     accessToken,
+  //     '',
+  //     'EX',
+  //     // `${exp.getTime() / 1000}`,
+  //     exp.getTime() / 1000,
+  //   );
+  //   // await this.redisService.set(accessToken, '', exp.getTime() / 1000);  // 'EX' 옵션은?
+  // }
+
+  async addTokenToBlacklist(accessToken: string, exp: Date): Promise<void> {
+    // await this.redisService.set(accessToken, '', exp.getTime() / 1000);
+
+    // const expirationTime = Math.floor((exp.getTime() - Date.now()) / 1000);
+    const expirationTime = Math.floor(exp.getTime());
+
+    await this.redisService.set(accessToken, expirationTime, '');
+  }
+
+  async checkTokenInBlacklist(accessToken: string): Promise<boolean> {
+    const result = await this.redisService.get(accessToken);
+    return result !== null;
+  }
+  // ----------
 
   // 닉네임 중복 체크 : O
   async getCheckNicknameOverlap(nickname: string): Promise<string> {

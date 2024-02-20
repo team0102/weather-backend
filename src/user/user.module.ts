@@ -10,6 +10,7 @@ import { UserFollowEntity } from 'src/entities/userFollows.entity';
 import { TokenService } from 'src/utils/verifyToken';
 import { CityRepository } from './city.repository';
 import { CityEntity } from 'src/entities/cities.entity';
+import { RedisService } from './redis.service';
 
 @Module({
   imports: [
@@ -22,7 +23,14 @@ import { CityEntity } from 'src/entities/cities.entity';
     UserFollowRepository,
     TokenService,
     CityRepository,
+    RedisService,
   ],
-  exports: [UserService, UserRepository, UserFollowRepository, CityRepository],
+  exports: [
+    UserService,
+    UserRepository,
+    UserFollowRepository,
+    CityRepository,
+    RedisService,
+  ],
 })
 export class UserModule {}
