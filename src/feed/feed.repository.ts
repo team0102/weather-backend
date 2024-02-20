@@ -79,8 +79,9 @@ export class FeedRepository {
   async createFeed(
     userId: number,
     feedData: CreateFeedDTO,
+    imageUrl: string
   ): Promise<FeedEntity> {
-    const { weatherConditionId, imageUrl } = feedData;
+    const { weatherConditionId } = feedData;
     const savedFeed = await this.feedRepository.save({
       user: { id: userId },
       weatherCondition: { id: weatherConditionId },

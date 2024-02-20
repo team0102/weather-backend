@@ -133,6 +133,7 @@ export class FeedService {
   async createFeed(
     loginUserId: number,
     feedData: CreateFeedDTO,
+    imageUrl: string,
   ): Promise<void> {
     const { content } = feedData;
     const tags = this.extractTagsFromContent(content);
@@ -143,6 +144,7 @@ export class FeedService {
       const savedFeed = await this.feedRepository.createFeed(
         loginUserId,
         feedData,
+        imageUrl,
       );
       const savedFeedId = savedFeed.id;
       const savedTagIds = await this.saveTagsAndGetIds(tags);
