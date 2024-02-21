@@ -1,5 +1,6 @@
 import { join } from 'path';
 
+
 // 서버 프로젝트의 루트 폴더
 export const PROJECT_ROOT_PATH = process.cwd();
 // 외부에서 접근 가능한 파일들을 모아둔 폴더 이름

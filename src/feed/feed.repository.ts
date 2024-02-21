@@ -42,7 +42,7 @@ export class FeedRepository {
         },
       },
     });
-    console.log(feedList);
+    //console.log(feedList);
     return feedList;
   }
 

@@ -10,6 +10,7 @@ import { BookmarkList, FeedDatail, FeedListItem } from './feed.types';
 import { BookmarkRepository } from './bookmark.repository';
 import { FeedLikeRepository } from './feedLike.repository';
 import HttpError from 'src/utils/httpError';
+import { FEED_PUBLIC_IMAGE_PATH } from 'src/common/const/path.const';
 
 @Injectable()
 export class FeedService {
@@ -50,7 +51,7 @@ export class FeedService {
           } = feed;
           return {
             id: feed.id,
-            imageUrl,
+            imageUrl : `/${FEED_PUBLIC_IMAGE_PATH}/${imageUrl}`,
             content,
             lowTemperature,
             highTemperature,
@@ -112,7 +113,7 @@ export class FeedService {
 
     const processedFeed = {
       id: feedDetails.id,
-      imageUrl,
+      imageUrl : `/${FEED_PUBLIC_IMAGE_PATH}/${imageUrl}`,
       content: feedDetails.content,
       weatherConditionId: feedDetails.weatherCondition.id,
       lowTemperature: feedDetails.lowTemperature,
@@ -415,7 +416,7 @@ export class FeedService {
           createdAt: bookmark.createdAt,
           feed: {
             id: bookmark.feed.id,
-            imageUrl,
+            imageUrl : `/${FEED_PUBLIC_IMAGE_PATH}/${imageUrl}`,
             content,
             lowTemperature,
             highTemperature,
