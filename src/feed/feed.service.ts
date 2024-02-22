@@ -11,6 +11,8 @@ import { BookmarkRepository } from './bookmark.repository';
 import { FeedLikeRepository } from './feedLike.repository';
 import HttpError from 'src/utils/httpError';
 import { FEED_PUBLIC_IMAGE_PATH } from 'src/common/const/path.const';
+import * as fs from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class FeedService {
@@ -167,6 +169,7 @@ export class FeedService {
     loginUserId: number,
     feedId: number,
     feedData: UpdateFeedDTO,
+    imageUrl: string,
   ) {
     const { content } = feedData;
     const tags = this.extractTagsFromContent(content);
@@ -184,8 +187,14 @@ export class FeedService {
       // 로그인유저=작성자 아닌 경우 에러핸들링
       if (existingFeed.user.id !== loginUserId)
         throw new HttpError(403, 'Invalid user');
+
+      // 기존 이미지 파일 
+      const previousImage = existingFeed.feedImage[0].imageUrl;
       // 피드, 피드 이미지 업데이트
-      const updateFeed = await this.feedRepository.updateFeed(feedId, feedData);
+      const updateFeed = await this.feedRepository.updateFeed(feedId, feedData, imageUrl);
+      // 기존 이미지 파일 삭제
+      fs.unlinkSync(join(FEED_PUBLIC_IMAGE_PATH,previousImage));
+
       // 존재하는 태그 id, 추가된 태그 id 배열
       const savedTagIds = await this.saveTagsAndGetIds(tags);
       // 기존 피드가 가지고 있던 FeedTag 엔터티들의 배열
@@ -203,6 +212,7 @@ export class FeedService {
       await this.feedTagRepository.createFeedTags(feedId, tagsToAdd);
       // 삭제된 feedTags 삭제
       await this.feedTagRepository.deleteFeedTags(feedTagsToDelete);
+
       await queryRunner.commitTransaction();
     } catch (error) {
       await queryRunner.rollbackTransaction();

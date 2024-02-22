@@ -79,7 +79,7 @@ export class FeedController {
   @UseInterceptors(FileInterceptor('imageUrl'))
   async createFeed(
     @Headers('Authorization') token: string,
-    @Body() feedData: CreateFeedDTO, //이미지 제외?
+    @Body() feedData: CreateFeedDTO,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<ApiResponse> {
     const loginUserId = this.tokenService.audienceFromToken(token);
@@ -98,16 +98,19 @@ export class FeedController {
   }
 
   @Put('/:feedId')
+  @UseInterceptors(FileInterceptor('imageUrl'))
   async updateFeed(
     @Headers('Authorization') token: string,
     @Param('feedId') feedId: number,
     @Body() feedData: UpdateFeedDTO,
+    @UploadedFile() file : Express.Multer.File,
   ): Promise<ApiResponse> {
     const loginUserId = this.tokenService.audienceFromToken(token);
     const updatedFeed = await this.feedService.updateFeed(
       loginUserId,
       feedId,
       feedData,
+      file.filename,
     );
     return {
       status: 201,
