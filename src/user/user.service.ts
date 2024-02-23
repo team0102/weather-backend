@@ -1,66 +1,97 @@
 import {
   BadRequestException,
-  HttpException,
-  HttpStatus,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 // import axios from 'axios';
-import * as qs from 'qs';
 import { JwtService } from '@nestjs/jwt';
 
 import {
-  GetCheckNicknameOverlapDto,
   LoginResponseDto,
+  LoginUserInfoDto,
+  SignUpUserInfoDto,
   UpdateUserInfoDto,
   UserFollowDto,
+  UserInfoDto,
 } from './dto/user.dto';
 import { UserEntity } from 'src/entities/users.entity';
 import { UserRepository } from './user.repository';
 import { UserFollowEntity } from 'src/entities/userFollows.entity';
 import { UserFollowRepository } from './userFollow.repository';
 import { CityRepository } from './city.repository';
-import { RedisService } from './redis.service';
+import { RedisUserService } from './redis/redis.user.service';
 
 @Injectable()
 export class UserService {
   constructor(
-    private readonly JwtService: JwtService,
+    private readonly jwtService: JwtService,
     private readonly userRepository: UserRepository,
     private readonly userFollowRepository: UserFollowRepository,
     private readonly cityRepository: CityRepository,
-    private readonly redisService: RedisService,
+    private readonly redisUserService: RedisUserService,
   ) {}
 
-  // 로그아웃 테스트----------
+  // 소셜로그인
+  async getToken(loginUserInfo: LoginUserInfoDto) {
+    const user = await this.kakaoValidateUser(loginUserInfo); // 카카오 정보 검증 및 회원가입 로직
 
-  // async addTokenToBlacklist(accessToken: string, exp: Date): Promise<void> {
-  //   // await this.redisService.set(accessToken, '', 'EX', exp.getTime() / 1000);
-  //   await this.redisService.set(
-  //     accessToken,
-  //     '',
-  //     'EX',
-  //     // `${exp.getTime() / 1000}`,
-  //     exp.getTime() / 1000,
-  //   );
-  //   // await this.redisService.set(accessToken, '', exp.getTime() / 1000);  // 'EX' 옵션은?
-  // }
+    const token = this.generateAccessToken(user); // accessToken 생성
 
-  async addTokenToBlacklist(accessToken: string, exp: Date): Promise<void> {
-    // await this.redisService.set(accessToken, '', exp.getTime() / 1000);
-
-    // const expirationTime = Math.floor((exp.getTime() - Date.now()) / 1000);
-    const expirationTime = Math.floor(exp.getTime());
-
-    await this.redisService.set(accessToken, expirationTime, '');
+    return token;
   }
 
-  async checkTokenInBlacklist(accessToken: string): Promise<boolean> {
-    const result = await this.redisService.get(accessToken);
-    return result !== null;
+  async kakaoValidateUser(
+    loginUserInfo: LoginUserInfoDto,
+  ): Promise<UserEntity> {
+    const { userId, userEmail, userNickname, userProfileImage } = loginUserInfo;
+
+    let user: UserEntity = await this.userRepository.findUserByKakaoId(userId); // 유저 조회
+
+    console.log(user);
+
+    // 회원 가입 로직
+    if (!user) {
+      const signUpUserInfo: SignUpUserInfoDto = {
+        socialAccountProvider: 1, // 1: KAKAO, 2: NAVER, 3: GOOGLE
+        socialAccountUid: userId,
+        email: userEmail,
+        nickname: userNickname,
+        profileImage: userProfileImage,
+      };
+
+      user = await this.userRepository.createUser(signUpUserInfo);
+    }
+
+    return user;
   }
-  // ----------
+
+  generateAccessToken(user: UserEntity): string {
+    const payload = {
+      userId: user.socialAccountUid,
+      userEmail: user.email,
+    };
+
+    return this.jwtService.sign(payload);
+  }
+
+  async getUserInfoBysocialAccountUid(
+    socialAccountUid: string,
+  ): Promise<UserInfoDto> {
+    const user = await this.userRepository.findUserByUid(socialAccountUid);
+    if (!user) throw new NotFoundException('USER_NOT_FOUND');
+
+    const { id, nickname, profileImage } =
+      await this.userRepository.findUserByUid(socialAccountUid);
+
+    const userInfo = {
+      id,
+      nickname,
+      profileImage,
+    };
+
+    return userInfo;
+  }
 
   // 닉네임 중복 체크 : O
   async getCheckNicknameOverlap(nickname: string): Promise<string> {
@@ -79,6 +110,26 @@ export class UserService {
     if (!user) throw new NotFoundException('USER_NOT_FOUND');
 
     return user;
+  }
+
+  // 로그아웃 : O
+  async userLogout(token: string): Promise<void> {
+    // redis DB 이용
+
+    const decodedToken = this.jwtService.verify(token);
+    const userId = decodedToken.aud;
+
+    const user = await this.userRepository.findOneById(userId);
+    if (!user) throw new NotFoundException('NOT_FOUND_USER');
+
+    const logoutCheck = await this.redisUserService.get(token);
+    if (logoutCheck !== null) throw new BadRequestException('LOGIN_REQUIRED');
+
+    const currentTime = Math.floor(new Date().getTime() / 1000.0); // UNIX TIME 기준(초)
+    const exp = Number(await decodedToken.exp); //  token.exp  =  .env.JWT_ACCESS_TOKEN_EXPIRATION_TIME
+    const remainedTime = exp - currentTime;
+
+    return await this.redisUserService.set(token, '', remainedTime); // exp에 도달하면 자동 삭제
   }
 
   // 회원탈퇴 : O
@@ -210,7 +261,9 @@ export class UserService {
   }
 
   // 유저 팔로잉 목록 : O / 내가 팔로우 한 = 내 id가 userId에 있고, followUserId를 찾아 출력
-  async followingList(userId: number): Promise<UserFollowEntity[] | null> {
+  async getUserFollowingList(
+    userId: number,
+  ): Promise<UserFollowEntity[] | null> {
     if (!userId) throw new NotFoundException('KEY_ERROR');
 
     const user = this.userRepository.findOneById(userId);
@@ -223,7 +276,9 @@ export class UserService {
   }
 
   //  유저 팔로워 목록 : O / 나를 팔로우 한 = 내 id가 followUserId에 있고, userId를 찾아 출력
-  async followerList(followUserId: number): Promise<UserFollowEntity[] | null> {
+  async getUserFollowerList(
+    followUserId: number,
+  ): Promise<UserFollowEntity[] | null> {
     if (!followUserId) throw new NotFoundException('KEY_ERROR');
 
     const followUser = this.userRepository.findOneById(followUserId);
@@ -268,7 +323,7 @@ export class UserService {
 
     const { ...userInfo } = user;
 
-    const token = await this.JwtService.signAsync({
+    const token = await this.jwtService.signAsync({
       aud: userInfo.id,
     });
 
