@@ -17,7 +17,7 @@ export const typeORMConfig: TypeOrmModuleAsyncOptions = {
     logging: false,
     cache: true,
   }),
-  
+
   dataSourceFactory: async (options) => {
     const dataSource = await new DataSource(options).initialize();
     return dataSource;

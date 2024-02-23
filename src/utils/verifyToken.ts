@@ -1,19 +1,27 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { RedisUserService } from 'src/user/redis/redis.user.service';
 
 @Injectable()
 export class TokenService {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly redisUserService: RedisUserService,
+  ) {}
 
-  verifyToken(token: string): { aud: number } {
-    const decodedToken = this.jwtService.verify(token);
+  async verifyToken(token: string): Promise<{ aud: number }> {
+    const logoutCheck = await this.redisUserService.get(token);
+    if (logoutCheck !== null) throw new BadRequestException('LOGIN_REQUIRED');
 
-    return decodedToken;
+    const decodedToken = await this.jwtService.verify(token);
+
+    return await decodedToken;
   }
 
-  audienceFromToken(token: string): number {
-    const decodedToken = this.jwtService.verify(token);
+  async audienceFromToken(token: string): Promise<number> {
+    const decodedToken = await this.verifyToken(token);
     const loginUserId = decodedToken.aud;
+
     return loginUserId;
   }
 }
