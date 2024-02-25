@@ -16,17 +16,18 @@ import { CityEntity } from 'src/entities/cities.entity';
 
 import { KakaoStrategy } from './strategy/kakao.strategy';
 import { JwtStrategy } from './strategy/jwt.strategy';
+import { RedisUserModule } from './redis/redis.user.module';
 import { UserBlockEntity } from 'src/entities/userBlocks.entity';
 import { UserBlockRepository } from './userBlock.repository';
 
 @Module({
   imports: [
+    RedisUserModule.register(),
     TypeOrmModule.forFeature([
       UserEntity,
       UserFollowEntity,
       UserBlockEntity,
       CityEntity,
-      // UserRepository,
     ]),
     ConfigModule,
     PassportModule,
@@ -43,12 +44,6 @@ import { UserBlockRepository } from './userBlock.repository';
       inject: [ConfigService],
     }),
     PassportModule.register({ defaultStrategy: 'kakao' }),
-    // JwtModule.register({
-    //   secret: 'test_secret_key',
-    //   signOptions: {
-    //     expiresIn: 3600,
-    //   },
-    // }),
   ],
   controllers: [UserController],
   providers: [

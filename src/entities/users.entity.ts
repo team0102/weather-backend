@@ -111,7 +111,7 @@ export class UserEntity {
     name: 'socialAccountProviderId',
     referencedColumnName: 'id',
   })
-  SocialAccountProvider: SocialAccountProviderEntity | number;
+  socialAccountProvider: SocialAccountProviderEntity | number;
 
   @OneToMany(() => UserFollowEntity, (userFollow) => userFollow.user)
   userFollow: UserFollowEntity[];
