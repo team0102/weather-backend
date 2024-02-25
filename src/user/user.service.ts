@@ -12,6 +12,7 @@ import {
   LoginUserInfoDto,
   SignUpUserInfoDto,
   UpdateUserInfoDto,
+  UserBlockDto,
   UserFollowDto,
   UserInfoDto,
 } from './dto/user.dto';
@@ -20,6 +21,9 @@ import { UserRepository } from './user.repository';
 import { UserFollowEntity } from 'src/entities/userFollows.entity';
 import { UserFollowRepository } from './userFollow.repository';
 import { CityRepository } from './city.repository';
+import { ConfigService } from '@nestjs/config';
+import { UserBlockRepository } from './userBlock.repository';
+import { UserBlockEntity } from 'src/entities/userBlocks.entity';
 import { RedisUserService } from './redis/redis.user.service';
 
 @Injectable()
@@ -29,7 +33,9 @@ export class UserService {
     private readonly userRepository: UserRepository,
     private readonly userFollowRepository: UserFollowRepository,
     private readonly cityRepository: CityRepository,
+    readonly configService: ConfigService,
     private readonly redisUserService: RedisUserService,
+    private readonly userBlockRepository: UserBlockRepository,
   ) {}
 
   // 소셜로그인
@@ -310,6 +316,15 @@ export class UserService {
     });
 
     return followerList;
+  } // 유저 차단(목록)
+
+  async getUserBlockList(userId: number): Promise<UserBlockEntity[] | null> {
+    if (!userId) throw new NotFoundException('KEY_ERROR');
+
+    const user = this.userRepository.findOneById(userId);
+    if (!user) throw new NotFoundException('USER_NOT_FOUND');
+
+    return this.userBlockRepository.findUserBlockList(userId);
   }
 
   // 테스트용 로그인 -----------------------------------------------

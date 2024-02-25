@@ -9,6 +9,11 @@ export type UserFollowDto = {
   followUserId: number;
 };
 
+export type UserBlockDto = {
+  userId: number;
+  blockUserId: number;
+};
+
 export type LoginUserInfoDto = {
   userId: string;
   userEmail: string;
