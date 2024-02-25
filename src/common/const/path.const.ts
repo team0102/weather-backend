@@ -1,4 +1,6 @@
 import { join } from 'path';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 // 서버 프로젝트의 루트 폴더
 export const PROJECT_ROOT_PATH = process.cwd();
@@ -17,11 +19,8 @@ export const FEED_IMAGE_PATH = join(PUBLIC_FOLDER_PATH, FEEDS_FOLDER_NAME);
 
 // 절대경로x /public/feeds/xxx.jpg
 export const FEED_PUBLIC_IMAGE_PATH = join(
-    PUBLIC_FOLDER_NAME,
-    FEEDS_FOLDER_NAME,
-)
+  PUBLIC_FOLDER_NAME,
+  FEEDS_FOLDER_NAME,
+);
 
-export const FEED_PUBLIC_IMAGE_URL = join(
- process.env.WEATHER_URL,
- FEED_PUBLIC_IMAGE_PATH
-)
+export const FEED_PUBLIC_IMAGE_URL = join(process.env.WEATHER_URL, FEED_PUBLIC_IMAGE_PATH);
