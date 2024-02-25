@@ -10,7 +10,7 @@ import { BookmarkList, FeedDatail, FeedListItem } from './feed.types';
 import { BookmarkRepository } from './bookmark.repository';
 import { FeedLikeRepository } from './feedLike.repository';
 import HttpError from 'src/utils/httpError';
-import { FEED_PUBLIC_IMAGE_PATH } from 'src/common/const/path.const';
+import { FEED_PUBLIC_IMAGE_PATH, FEED_PUBLIC_IMAGE_URL } from 'src/common/const/path.const';
 import * as fs from 'fs';
 import { join } from 'path';
 
@@ -53,7 +53,7 @@ export class FeedService {
           } = feed;
           return {
             id: feed.id,
-            imageUrl : `/${FEED_PUBLIC_IMAGE_PATH}/${imageUrl}`,
+            imageUrl : `/${FEED_PUBLIC_IMAGE_URL}/${imageUrl}`,
             content,
             lowTemperature,
             highTemperature,
@@ -115,7 +115,7 @@ export class FeedService {
 
     const processedFeed = {
       id: feedDetails.id,
-      imageUrl : `/${FEED_PUBLIC_IMAGE_PATH}/${imageUrl}`,
+      imageUrl : `/${FEED_PUBLIC_IMAGE_URL}/${imageUrl}`,
       content: feedDetails.content,
       weatherConditionId: feedDetails.weatherCondition.id,
       lowTemperature: feedDetails.lowTemperature,
@@ -193,7 +193,7 @@ export class FeedService {
       // 피드, 피드 이미지 업데이트
       const updateFeed = await this.feedRepository.updateFeed(feedId, feedData, imageUrl);
       // 기존 이미지 파일 삭제
-      fs.unlinkSync(join(FEED_PUBLIC_IMAGE_PATH,previousImage));
+      fs.unlinkSync(join(FEED_PUBLIC_IMAGE_URL,previousImage));
 
       // 존재하는 태그 id, 추가된 태그 id 배열
       const savedTagIds = await this.saveTagsAndGetIds(tags);
@@ -426,7 +426,7 @@ export class FeedService {
           createdAt: bookmark.createdAt,
           feed: {
             id: bookmark.feed.id,
-            imageUrl : `/${FEED_PUBLIC_IMAGE_PATH}/${imageUrl}`,
+            imageUrl : `/${FEED_PUBLIC_IMAGE_URL}/${imageUrl}`,
             content,
             lowTemperature,
             highTemperature,

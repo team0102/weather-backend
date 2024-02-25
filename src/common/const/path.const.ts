@@ -1,6 +1,5 @@
 import { join } from 'path';
 
-
 // 서버 프로젝트의 루트 폴더
 export const PROJECT_ROOT_PATH = process.cwd();
 // 외부에서 접근 가능한 파일들을 모아둔 폴더 이름
@@ -20,5 +19,9 @@ export const FEED_IMAGE_PATH = join(PUBLIC_FOLDER_PATH, FEEDS_FOLDER_NAME);
 export const FEED_PUBLIC_IMAGE_PATH = join(
     PUBLIC_FOLDER_NAME,
     FEEDS_FOLDER_NAME,
-    //파일이름추가
+)
+
+export const FEED_PUBLIC_IMAGE_URL = join(
+ process.env.WEATHER_URL,
+ FEED_PUBLIC_IMAGE_PATH
 )

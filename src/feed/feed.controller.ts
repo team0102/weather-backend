@@ -23,7 +23,6 @@ import {
 } from './feed.types';
 import HttpError from 'src/utils/httpError';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { FEED_PUBLIC_IMAGE_PATH } from 'src/common/const/path.const';
 
 @Controller('feeds')
 export class FeedController {
@@ -83,7 +82,7 @@ export class FeedController {
     @UploadedFile() file: Express.Multer.File,
   ): Promise<ApiResponse> {
     const loginUserId = await this.tokenService.audienceFromToken(token);
-    await this.feedService.createFeed(loginUserId, feedData, file.originalname);
+    await this.feedService.createFeed(loginUserId, feedData, file.filename);
     return { status: 201, message: 'Feed created successfully' };
   }
 
