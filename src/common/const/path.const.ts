@@ -23,4 +23,5 @@ export const FEED_PUBLIC_IMAGE_PATH = join(
   FEEDS_FOLDER_NAME,
 );
 
+// 절대경로 http://localhost:3000/publics/feeds/xxx.png
 export const FEED_PUBLIC_IMAGE_URL = join(process.env.WEATHER_URL, FEED_PUBLIC_IMAGE_PATH);

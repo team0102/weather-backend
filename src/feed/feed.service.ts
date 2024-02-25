@@ -10,7 +10,10 @@ import { BookmarkList, FeedDatail, FeedListItem } from './feed.types';
 import { BookmarkRepository } from './bookmark.repository';
 import { FeedLikeRepository } from './feedLike.repository';
 import HttpError from 'src/utils/httpError';
-import { FEED_PUBLIC_IMAGE_PATH, FEED_PUBLIC_IMAGE_URL } from 'src/common/const/path.const';
+import {
+  FEED_PUBLIC_IMAGE_PATH,
+  FEED_PUBLIC_IMAGE_URL,
+} from 'src/common/const/path.const';
 import * as fs from 'fs';
 import { join } from 'path';
 
@@ -53,7 +56,7 @@ export class FeedService {
           } = feed;
           return {
             id: feed.id,
-            imageUrl : `${FEED_PUBLIC_IMAGE_URL}/${imageUrl}`,
+            imageUrl: `${FEED_PUBLIC_IMAGE_URL}/${imageUrl}`,
             content,
             lowTemperature,
             highTemperature,
@@ -98,13 +101,13 @@ export class FeedService {
       updatedAt: comment.updatedAt,
       deletedAt: comment.deletedAt,
       // 댓글 작성자가 존재하지 않으면 기본값을 사용
-      author : comment.user
-      ? {
-          id: comment.user.id,
-          nickname: comment.user.nickname,
-          profileImage: comment.user.profileImage,
-        }
-      : null
+      author: comment.user
+        ? {
+            id: comment.user.id,
+            nickname: comment.user.nickname,
+            profileImage: comment.user.profileImage,
+          }
+        : null,
 
       // author: {
       //   id: comment.user.id,
@@ -115,7 +118,7 @@ export class FeedService {
 
     const processedFeed = {
       id: feedDetails.id,
-      imageUrl : `${FEED_PUBLIC_IMAGE_URL}/${imageUrl}`,
+      imageUrl: `${FEED_PUBLIC_IMAGE_URL}/${imageUrl}`,
       content: feedDetails.content,
       weatherConditionId: feedDetails.weatherCondition.id,
       lowTemperature: feedDetails.lowTemperature,
@@ -188,10 +191,14 @@ export class FeedService {
       if (existingFeed.user.id !== loginUserId)
         throw new HttpError(403, 'Invalid user');
 
-      // 기존 이미지 파일 
+      // 기존 이미지 파일
       const previousImage = existingFeed.feedImage[0].imageUrl;
       // 피드, 피드 이미지 업데이트
-      const updateFeed = await this.feedRepository.updateFeed(feedId, feedData, imageUrl);
+      const updateFeed = await this.feedRepository.updateFeed(
+        feedId,
+        feedData,
+        imageUrl,
+      );
       // 기존 이미지 파일 삭제
       fs.unlinkSync(join(FEED_PUBLIC_IMAGE_PATH, previousImage));
 
@@ -254,6 +261,10 @@ export class FeedService {
         throw new HttpError(404, 'Feed does not exist');
       if (!findFeed.user || findFeed.user.id !== loginUserId)
         throw new HttpError(403, 'Invalid User');
+      // 피드 이미지 파일
+      const previousImage = findFeed.feedImage[0].imageUrl;
+      // 피드 이미지 파일 삭제
+      fs.unlinkSync(join(FEED_PUBLIC_IMAGE_PATH, previousImage));
       // feedTag들 delete
       if (findFeed.feedTag) {
         findFeed.feedTag.forEach(async (feedTag) => {
@@ -323,7 +334,11 @@ export class FeedService {
       throw new HttpError(404, 'Feed does not exist');
     const existingFeedComment =
       await this.feedCommentRepository.getFeedCommentById(commentId);
-    if (!existingFeedComment || existingFeedComment.deletedAt || !existingFeedComment.user )
+    if (
+      !existingFeedComment ||
+      existingFeedComment.deletedAt ||
+      !existingFeedComment.user
+    )
       throw new HttpError(404, 'Comment does not exist');
     if (existingFeedComment.user.id !== loginUserId)
       throw new HttpError(403, 'Invalid User');
@@ -426,7 +441,7 @@ export class FeedService {
           createdAt: bookmark.createdAt,
           feed: {
             id: bookmark.feed.id,
-            imageUrl : `${FEED_PUBLIC_IMAGE_URL}/${imageUrl}`,
+            imageUrl: `${FEED_PUBLIC_IMAGE_URL}/${imageUrl}`,
             content,
             lowTemperature,
             highTemperature,
