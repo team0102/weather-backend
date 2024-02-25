@@ -16,15 +16,12 @@ import { CityEntity } from 'src/entities/cities.entity';
 
 import { KakaoStrategy } from './strategy/kakao.strategy';
 import { JwtStrategy } from './strategy/jwt.strategy';
+import { RedisUserModule } from './redis/redis.user.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      UserEntity,
-      UserFollowEntity,
-      CityEntity,
-      // UserRepository,
-    ]),
+    TypeOrmModule.forFeature([UserEntity, UserFollowEntity, CityEntity]),
+    RedisUserModule.register(),
     ConfigModule,
     PassportModule,
     JwtModule.registerAsync({
@@ -40,12 +37,6 @@ import { JwtStrategy } from './strategy/jwt.strategy';
       inject: [ConfigService],
     }),
     PassportModule.register({ defaultStrategy: 'kakao' }),
-    // JwtModule.register({
-    //   secret: 'test_secret_key',
-    //   signOptions: {
-    //     expiresIn: 3600,
-    //   },
-    // }),
   ],
   controllers: [UserController],
   providers: [

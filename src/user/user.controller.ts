@@ -33,7 +33,7 @@ import { TokenService } from 'src/utils/verifyToken';
 import { UserFollowEntity } from 'src/entities/userFollows.entity';
 import { UserEntity } from 'src/entities/users.entity';
 
-// 회원가입 : 회원가입 상세, 로그아웃, 회원탈퇴, 회원 정보 수정(O), 닉네임 중복 체크(O)
+// 회원가입 : 회원가입 상세, 로그아웃(O), 회원탈퇴(O), 회원 정보 수정(O), 닉네임 중복 체크(O)
 // 유저 팔로우 : 목록(O), 생성(O), 삭제(O)
 // 유저 차단 : 목록, 생성, 삭제
 
@@ -41,7 +41,7 @@ import { UserEntity } from 'src/entities/users.entity';
 export class UserController {
   constructor(
     private readonly userService: UserService,
-    private readonly JwtService: JwtService,
+    private readonly jwtService: JwtService,
     private readonly tokenService: TokenService,
     readonly configService: ConfigService,
   ) {}
@@ -95,19 +95,25 @@ export class UserController {
     return await this.userService.getCheckNicknameOverlap(nickname);
   }
 
-  // 마이페이지 입장시 유저 정보 get
+  // 유저 정보 조회 : O
   @Get() async getUserInfo(
     @Headers('authorization') token: string,
   ): Promise<UserEntity | null> {
-    const userId = this.tokenService.audienceFromToken(token);
+    const userId = await this.tokenService.audienceFromToken(token);
 
     return await this.userService.getUserInfo(userId);
   }
 
-  // 회원탈퇴_ing
+  // 로그아웃 : O
+  @Put('/logout')
+  async userLogout(@Headers('authorization') token: string): Promise<void> {
+    return await this.userService.userLogout(token);
+  }
+
+  // 회원탈퇴 : O
   @Delete()
   async deleteUser(@Headers('authorization') token: string): Promise<void> {
-    const userId = this.tokenService.audienceFromToken(token);
+    const userId = await this.tokenService.audienceFromToken(token);
 
     return await this.userService.deleteUser(userId);
   }
@@ -129,7 +135,7 @@ export class UserController {
       city,
     } = body;
 
-    const userId = this.tokenService.audienceFromToken(token);
+    const userId = await this.tokenService.audienceFromToken(token);
 
     const updateUserInfoDto: UpdateUserInfoDto = {
       id: Number(userId),
@@ -152,7 +158,7 @@ export class UserController {
     @Headers('authorization') token: string,
     @Param('followUserId') followUserId: number,
   ): Promise<void> {
-    const userId = this.tokenService.audienceFromToken(token);
+    const userId = await this.tokenService.audienceFromToken(token);
 
     const userFollowDto: UserFollowDto = {
       userId: Number(userId),
@@ -168,7 +174,7 @@ export class UserController {
     @Headers('authorization') token: string,
     @Param('followUserId') followUserId: number,
   ): Promise<void> {
-    const userID = this.tokenService.audienceFromToken(token);
+    const userID = await this.tokenService.audienceFromToken(token);
 
     const userFollowDto: UserFollowDto = {
       userId: Number(userID),
@@ -183,9 +189,9 @@ export class UserController {
   async getUserFollowingList(
     @Headers('authorization') token: string,
   ): Promise<UserFollowEntity[] | null> {
-    const userId = this.tokenService.audienceFromToken(token);
+    const userId = await this.tokenService.audienceFromToken(token);
 
-    return await this.userService.followingList(userId);
+    return await this.userService.getUserFollowingList(userId);
   }
 
   //  유저 팔로워 목록 : O / 나를 팔로우 한 = 내 id가 followUserId에 있고, userId를 찾아 출력
@@ -193,9 +199,9 @@ export class UserController {
   async getUserFollowerList(
     @Headers('authorization') token: string,
   ): Promise<UserFollowEntity[] | null> {
-    const followUserId = this.tokenService.audienceFromToken(token);
+    const followUserId = await this.tokenService.audienceFromToken(token);
 
-    return await this.userService.followerList(followUserId);
+    return await this.userService.getUserFollowerList(followUserId);
   }
 
   // 테스트용 로그인 -----------------------------------------------
@@ -210,15 +216,17 @@ export class UserController {
 
   @Post('/logintokencheck') // 카카오 로그인 토큰 내용 확인 테스트
   @HttpCode(200)
-  async loginsss(@Body('token') token: string): Promise<LoginResponseDto> {
-    const decodedToken = this.JwtService.verify(token);
+  async loginTokenTest(
+    @Body('token') token: string,
+  ): Promise<LoginResponseDto> {
+    const decodedToken = await this.jwtService.verify(token);
 
     return decodedToken;
   }
 
   // -----------------------------------------------------------------
   // verifyToken(token: string): { aud: number } {
-  //   const decodedToken = this.JwtService.verify(token);
+  //   const decodedToken = this.jwtService.verify(token);
 
   //   return decodedToken;
   // }
