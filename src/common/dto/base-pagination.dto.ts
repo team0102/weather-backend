@@ -15,7 +15,7 @@ export class BasePaginationDto {
   //정렬
   @IsIn(['ASC', 'DESC'])
   @IsOptional()
-  order__createdAt?: 'ASC' | 'DESC' = 'ASC'; //기본값 : ASC
+  order__createdAt?: 'ASC' | 'DESC' = 'DESC'; //기본값 : DESC
 
-  take: number = 9;
+  take: number = 12;
 }
