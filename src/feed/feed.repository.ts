@@ -43,16 +43,16 @@ export class FeedRepository {
         },
       },
     });
-    console.log(feedList);
+    //console.log(feedList);
     return feedList;
   }
 
   async paginateFeedList(dto: PaginateFeedDto): Promise<FeedEntity[]> {
     const where : FindOptionsWhere<FeedEntity> = {};
-    if(dto.where__id_less_than){
-      where.id = LessThan(dto.where__id_less_than);
-    } else if(dto.where__id_more_than){
-      where.id = MoreThan(dto.where__id_more_than);
+    if(dto.where__id__less_than){
+      where.id = LessThan(dto.where__id__less_than);
+    } else if(dto.where__id__more_than){
+      where.id = MoreThan(dto.where__id__more_than);
     }
     const feeds = await this.feedRepository.find({
       where,
@@ -63,10 +63,9 @@ export class FeedRepository {
       },
       take: dto.take,
     });
-    console.log(feeds)
+    //console.log(feeds)
     return feeds;
   }
-
 
   async getFeedWithDetailsById(feedId: number): Promise<FeedEntity> {
     const [feed] = await this.feedRepository.find({
