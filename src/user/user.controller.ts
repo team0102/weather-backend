@@ -27,11 +27,13 @@ import {
   UserFollowDto,
   UpdateUserInfoDto,
   LoginUserInfoDto,
+  UserBlockDto,
 } from './dto/user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { TokenService } from 'src/utils/verifyToken';
 import { UserFollowEntity } from 'src/entities/userFollows.entity';
 import { UserEntity } from 'src/entities/users.entity';
+import { UserBlockEntity } from 'src/entities/userBlocks.entity';
 
 // 회원가입 : 회원가입 상세, 로그아웃(O), 회원탈퇴(O), 회원 정보 수정(O), 닉네임 중복 체크(O)
 // 유저 팔로우 : 목록(O), 생성(O), 삭제(O)
@@ -174,10 +176,10 @@ export class UserController {
     @Headers('authorization') token: string,
     @Param('followUserId') followUserId: number,
   ): Promise<void> {
-    const userID = await this.tokenService.audienceFromToken(token);
+    const userId = await this.tokenService.audienceFromToken(token);
 
     const userFollowDto: UserFollowDto = {
-      userId: Number(userID),
+      userId: Number(userId),
       followUserId: Number(followUserId),
     };
 
@@ -204,8 +206,23 @@ export class UserController {
     return await this.userService.getUserFollowerList(followUserId);
   }
 
-  // 테스트용 로그인 -----------------------------------------------
+  // 유저 차단(생성)
+  @Post('/block/:blockUserId')
+  async createUserBlock(
+    @Headers('authorization') token: string,
+    @Param('blockUserId') blockUserId: number,
+  ): Promise<void> {
+    const userId = await this.tokenService.audienceFromToken(token);
 
+    const userBlockDto: UserBlockDto = {
+      userId: Number(userId),
+      blockUserId: Number(blockUserId),
+    };
+
+    return await this.userService.createUserBlock(userBlockDto);
+  }
+
+  // 테스트용 로그인 -----------------------------------------------
   @Post('/login')
   @HttpCode(200)
   async login(@Req() req: Request): Promise<LoginResponseDto> {

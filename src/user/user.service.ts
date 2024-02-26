@@ -12,6 +12,7 @@ import {
   LoginUserInfoDto,
   SignUpUserInfoDto,
   UpdateUserInfoDto,
+  UserBlockDto,
   UserFollowDto,
   UserInfoDto,
 } from './dto/user.dto';
@@ -20,6 +21,9 @@ import { UserRepository } from './user.repository';
 import { UserFollowEntity } from 'src/entities/userFollows.entity';
 import { UserFollowRepository } from './userFollow.repository';
 import { CityRepository } from './city.repository';
+import { ConfigService } from '@nestjs/config';
+import { UserBlockRepository } from './userBlock.repository';
+import { UserBlockEntity } from 'src/entities/userBlocks.entity';
 import { RedisUserService } from './redis/redis.user.service';
 
 @Injectable()
@@ -29,7 +33,9 @@ export class UserService {
     private readonly userRepository: UserRepository,
     private readonly userFollowRepository: UserFollowRepository,
     private readonly cityRepository: CityRepository,
+    readonly configService: ConfigService,
     private readonly redisUserService: RedisUserService,
+    private readonly userBlockRepository: UserBlockRepository,
   ) {}
 
   // 소셜로그인
@@ -253,9 +259,7 @@ export class UserService {
       throw new BadRequestException('NOT_FOLLOWING');
 
     const followRelation =
-      await this.userFollowRepository.findFollowRelationByUserIdAndFollowUserId(
-        userFollowDto,
-      );
+      await this.userFollowRepository.findFollowRelation(userFollowDto);
 
     return await this.userFollowRepository.deleteUserFollow(followRelation);
   }
@@ -310,6 +314,31 @@ export class UserService {
     });
 
     return followerList;
+  }
+
+  // 유저 차단(생성)
+  async createUserBlock(userBlockDto: UserBlockDto): Promise<void> {
+    const { userId, blockUserId } = userBlockDto;
+
+    if (!userId || !blockUserId) throw new NotFoundException('KEY_ERROR');
+
+    if (userId === blockUserId)
+      throw new BadRequestException('SAME_ID_REQUESTED');
+
+    const user = await this.userRepository.findOneById(userId);
+    if (!user) throw new NotFoundException('USER_NOT_FOUND');
+    const blockUser = await this.userRepository.findOneById(blockUserId);
+    if (!blockUser) throw new NotFoundException('BLOCK_USER_NOT_FOUND');
+
+    const isBlocked =
+      await this.userBlockRepository.findBlockRelation(userBlockDto);
+    if (isBlocked) throw new BadRequestException('ALREADY_BLOCK');
+
+    const userBlock = new UserBlockEntity();
+    userBlock.user = userId;
+    userBlock.blockUser = blockUserId;
+
+    return await this.userBlockRepository.createUserBlock(userBlock);
   }
 
   // 테스트용 로그인 -----------------------------------------------
