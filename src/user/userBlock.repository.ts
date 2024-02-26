@@ -23,6 +23,10 @@ export class UserBlockRepository {
     });
   }
 
+  async createUserBlock(userBlock: UserBlockEntity): Promise<void> {
+    await this.userBlockTypeormRepository.save(userBlock);
+  }
+  
   async deleteUserBlock(isBlocked: UserBlockEntity): Promise<void> {
     await this.userBlockTypeormRepository.remove(isBlocked);
   }

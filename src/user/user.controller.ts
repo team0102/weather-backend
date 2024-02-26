@@ -206,6 +206,22 @@ export class UserController {
     return await this.userService.getUserFollowerList(followUserId);
   }
 
+  // 유저 차단(생성)
+  @Post('/block/:blockUserId')
+  async createUserBlock(
+    @Headers('authorization') token: string,
+    @Param('blockUserId') blockUserId: number,
+  ): Promise<void> {
+    const userId = await this.tokenService.audienceFromToken(token);
+
+    const userBlockDto: UserBlockDto = {
+      userId: Number(userId),
+      blockUserId: Number(blockUserId),
+    };
+
+    return await this.userService.createUserBlock(userBlockDto);
+  }
+  
   // 유저 차단(삭제)
   @Delete('/block/:blockUserId')
   async deleteUserBlock(
@@ -221,9 +237,8 @@ export class UserController {
 
     return this.userService.deleteUserBlock(userBlockDto);
   }
-
+  
   // 테스트용 로그인 -----------------------------------------------
-
   @Post('/login')
   @HttpCode(200)
   async login(@Req() req: Request): Promise<LoginResponseDto> {
