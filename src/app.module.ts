@@ -9,6 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from './user/user.module';
 import { FeedModule } from './feed/feed.module';
 import { ClothesModule } from './clothes/clothes.module';
+import { ChatsModule } from './chats/chats.module';
 import CatchException from './utils/CatchException';
 
 @Module({
@@ -26,6 +27,7 @@ import CatchException from './utils/CatchException';
     UserModule,
     FeedModule,
     ClothesModule,
+    ChatsModule,
   ],
   providers: [
     {
