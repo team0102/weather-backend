@@ -22,13 +22,13 @@ import { UserBlockRepository } from './userBlock.repository';
 
 @Module({
   imports: [
-    RedisUserModule.register(),
     TypeOrmModule.forFeature([
       UserEntity,
       UserFollowEntity,
       UserBlockEntity,
       CityEntity,
     ]),
+    RedisUserModule.register(),
     ConfigModule,
     PassportModule,
     JwtModule.registerAsync({

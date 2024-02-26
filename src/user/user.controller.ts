@@ -221,7 +221,23 @@ export class UserController {
 
     return await this.userService.createUserBlock(userBlockDto);
   }
+  
+  // 유저 차단(삭제)
+  @Delete('/block/:blockUserId')
+  async deleteUserBlock(
+    @Headers('authorization') token: string,
+    @Param('blockUserId') blockUserId: number,
+  ): Promise<void> {
+    const userId = await this.tokenService.audienceFromToken(token);
 
+    const userBlockDto: UserBlockDto = {
+      userId: Number(userId),
+      blockUserId: Number(blockUserId),
+    };
+
+    return this.userService.deleteUserBlock(userBlockDto);
+  }
+  
   // 테스트용 로그인 -----------------------------------------------
   @Post('/login')
   @HttpCode(200)
