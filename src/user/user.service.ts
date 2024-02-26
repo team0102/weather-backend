@@ -314,6 +314,15 @@ export class UserService {
     });
 
     return followerList;
+  } // 유저 차단(목록)
+
+  async getUserBlockList(userId: number): Promise<UserBlockEntity[] | null> {
+    if (!userId) throw new NotFoundException('KEY_ERROR');
+
+    const user = this.userRepository.findOneById(userId);
+    if (!user) throw new NotFoundException('USER_NOT_FOUND');
+
+    return this.userBlockRepository.findUserBlockList(userId);
   }
   
   // 유저 차단(생성)

@@ -11,7 +11,7 @@ export class UserBlockRepository {
     @InjectRepository(UserBlockEntity)
     private readonly userBlockTypeormRepository: Repository<UserBlockEntity>,
   ) {}
-
+  
   async findBlockRelation(
     userBlock: UserBlockDto,
   ): Promise<UserBlockEntity | null> {
@@ -29,5 +29,21 @@ export class UserBlockRepository {
   
   async deleteUserBlock(isBlocked: UserBlockEntity): Promise<void> {
     await this.userBlockTypeormRepository.remove(isBlocked);
+  }
+  
+  async findUserBlockList(userId: number): Promise<UserBlockEntity[] | null> {
+    return await this.userBlockTypeormRepository.find({
+      select: {
+        id: true,
+        blockUser: { id: true },
+        createdAt: true,
+      },
+      where: {
+        user: { id: userId },
+      },
+      relations: {
+        blockUser: true,
+      },
+    });
   }
 }
