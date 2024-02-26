@@ -259,9 +259,7 @@ export class UserService {
       throw new BadRequestException('NOT_FOLLOWING');
 
     const followRelation =
-      await this.userFollowRepository.findFollowRelationByUserIdAndFollowUserId(
-        userFollowDto,
-      );
+      await this.userFollowRepository.findFollowRelation(userFollowDto);
 
     return await this.userFollowRepository.deleteUserFollow(followRelation);
   }
@@ -326,7 +324,53 @@ export class UserService {
 
     return this.userBlockRepository.findUserBlockList(userId);
   }
+  
+  // 유저 차단(생성)
+  async createUserBlock(userBlockDto: UserBlockDto): Promise<void> {
+    const { userId, blockUserId } = userBlockDto;
 
+    if (!userId || !blockUserId) throw new NotFoundException('KEY_ERROR');
+
+    if (userId === blockUserId)
+      throw new BadRequestException('SAME_ID_REQUESTED');
+
+    const user = await this.userRepository.findOneById(userId);
+    if (!user) throw new NotFoundException('USER_NOT_FOUND');
+    const blockUser = await this.userRepository.findOneById(blockUserId);
+    if (!blockUser) throw new NotFoundException('BLOCK_USER_NOT_FOUND');
+
+    const isBlocked =
+      await this.userBlockRepository.findBlockRelation(userBlockDto);
+    if (isBlocked) throw new BadRequestException('ALREADY_BLOCK');
+
+    const userBlock = new UserBlockEntity();
+    userBlock.user = userId;
+    userBlock.blockUser = blockUserId;
+
+    return await this.userBlockRepository.createUserBlock(userBlock);
+  }
+  
+  // 유저 차단(삭제)
+  async deleteUserBlock(userBlockDto: UserBlockDto): Promise<void> {
+    const { userId, blockUserId } = userBlockDto;
+
+    if (!userId || !blockUserId) throw new NotFoundException('KEY_ERROR');
+
+    if (userId === blockUserId)
+      throw new BadRequestException('SAME_ID_REQUESTED');
+
+    const user = await this.userRepository.findOneById(userId);
+    if (!user) throw new NotFoundException('USER_NOT_FOUND');
+    const blockUser = await this.userRepository.findOneById(blockUserId);
+    if (!blockUser) throw new NotFoundException('BLOCK_USER_NOT_FOUND');
+
+    const isBlocked =
+      await this.userBlockRepository.findBlockRelation(userBlockDto);
+    if (!isBlocked) throw new BadRequestException('NOT_BLOCKED_USER');
+
+    return await this.userBlockRepository.deleteUserBlock(isBlocked);
+  }
+  
   // 테스트용 로그인 -----------------------------------------------
 
   async login(socialAccountUid: string): Promise<LoginResponseDto | null> {

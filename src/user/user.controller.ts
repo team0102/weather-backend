@@ -27,6 +27,7 @@ import {
   UserFollowDto,
   UpdateUserInfoDto,
   LoginUserInfoDto,
+  UserBlockDto,
 } from './dto/user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { TokenService } from 'src/utils/verifyToken';
@@ -175,10 +176,10 @@ export class UserController {
     @Headers('authorization') token: string,
     @Param('followUserId') followUserId: number,
   ): Promise<void> {
-    const userID = await this.tokenService.audienceFromToken(token);
+    const userId = await this.tokenService.audienceFromToken(token);
 
     const userFollowDto: UserFollowDto = {
-      userId: Number(userID),
+      userId: Number(userId),
       followUserId: Number(followUserId),
     };
 
@@ -204,6 +205,38 @@ export class UserController {
 
     return await this.userService.getUserFollowerList(followUserId);
   }
+  
+  // 유저 차단(생성)
+  @Post('/block/:blockUserId')
+  async createUserBlock(
+    @Headers('authorization') token: string,
+    @Param('blockUserId') blockUserId: number,
+  ): Promise<void> {
+    const userId = await this.tokenService.audienceFromToken(token);
+
+    const userBlockDto: UserBlockDto = {
+      userId: Number(userId),
+      blockUserId: Number(blockUserId),
+    };
+
+    return await this.userService.createUserBlock(userBlockDto);
+  }
+  
+  // 유저 차단(삭제)
+  @Delete('/block/:blockUserId')
+  async deleteUserBlock(
+    @Headers('authorization') token: string,
+    @Param('blockUserId') blockUserId: number,
+  ): Promise<void> {
+    const userId = await this.tokenService.audienceFromToken(token);
+
+    const userBlockDto: UserBlockDto = {
+      userId: Number(userId),
+      blockUserId: Number(blockUserId),
+    };
+
+    return this.userService.deleteUserBlock(userBlockDto);
+  }
 
   // 유저 차단(목록)  :  추후 수정 예정 = city entity의 eager 옵션으로 유저 차단 목록에 차단된 유저의 city도 같이 전송
   @Get('/block')
@@ -216,7 +249,6 @@ export class UserController {
   }
 
   // 테스트용 로그인 -----------------------------------------------
-
   @Post('/login')
   @HttpCode(200)
   async login(@Req() req: Request): Promise<LoginResponseDto> {
