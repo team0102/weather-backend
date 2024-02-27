@@ -33,12 +33,12 @@ export class UserBlockEntity {
     name: 'userId',
     referencedColumnName: 'id',
   })
-  user: UserEntity;
+  user: UserEntity | number;
 
   @ManyToOne(() => UserEntity)
   @JoinColumn({
     name: 'blockUserId',
     referencedColumnName: 'id',
   })
-  blockUser: UserEntity;
+  blockUser: UserEntity | number;
 }

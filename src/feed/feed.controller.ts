@@ -34,7 +34,7 @@ export class FeedController {
   ): Promise<FeedListResponse> {
     let loginUserId: number | null = null;
     if (token) {
-      loginUserId = this.tokenService.audienceFromToken(token);
+      loginUserId = await this.tokenService.audienceFromToken(token);
     }
     const feedDatas = await this.feedService.getFeedList(loginUserId);
     return {
@@ -48,7 +48,7 @@ export class FeedController {
   async getBookmarkList(
     @Headers('Authorization') token: string,
   ): Promise<BookmarkListResponse> {
-    const loginUserId = this.tokenService.audienceFromToken(token);
+    const loginUserId = await this.tokenService.audienceFromToken(token);
     const bookmarkList = await this.feedService.getBookmarkList(loginUserId);
     return {
       status: 201,
@@ -62,7 +62,7 @@ export class FeedController {
     @Headers('Authorization') token: string,
     @Param('feedId', ParseIntPipe) feedId: number,
   ): Promise<FeedDetailResponse> {
-    const loginUserId = this.tokenService.audienceFromToken(token);
+    const loginUserId = await this.tokenService.audienceFromToken(token);
     const feedData = await this.feedService.getFeedDetails(loginUserId, feedId);
     return {
       status: 200,
@@ -76,7 +76,7 @@ export class FeedController {
     @Headers('Authorization') token: string,
     @Body() feedData: CreateFeedDTO,
   ): Promise<ApiResponse> {
-    const loginUserId = this.tokenService.audienceFromToken(token);
+    const loginUserId = await this.tokenService.audienceFromToken(token);
     await this.feedService.createFeed(loginUserId, feedData);
     return { status: 201, message: 'Feed created successfully' };
   }
@@ -86,7 +86,7 @@ export class FeedController {
     @Headers('Authorization') token: string,
     @Param('feedId', ParseIntPipe) feedId: number,
   ): Promise<ApiResponse> {
-    const loginUserId = this.tokenService.audienceFromToken(token);
+    const loginUserId = await this.tokenService.audienceFromToken(token);
     await this.feedService.deleteFeed(loginUserId, feedId);
     return { status: 204, message: 'Feed deledted successfully' };
   }
@@ -97,7 +97,7 @@ export class FeedController {
     @Param('feedId') feedId: number,
     @Body() feedData: UpdateFeedDTO,
   ): Promise<ApiResponse> {
-    const loginUserId = this.tokenService.audienceFromToken(token);
+    const loginUserId = await this.tokenService.audienceFromToken(token);
     const updatedFeed = await this.feedService.updateFeed(
       loginUserId,
       feedId,
@@ -110,27 +110,45 @@ export class FeedController {
   }
 
   @Post('/:feedId/comment')
-  async createComment(
+  async createFeedComment(
     @Headers('Authorization') token: string,
     @Param('feedId', ParseIntPipe) feedId: number,
     @Body('content') content: string,
   ): Promise<ApiResponse> {
-    const loginUserId = this.tokenService.audienceFromToken(token);
-    await this.feedService.createComment(loginUserId, feedId, content);
+    const loginUserId = await this.tokenService.audienceFromToken(token);
+    await this.feedService.createFeedComment(loginUserId, feedId, content);
     return { status: 201, message: 'Comment created successfully' };
   }
 
+  @Put('/:feedId/comment/:commentId')
+  async updateFeedComment(
+    @Headers('Authorization') token: string,
+    @Param('commentId', ParseIntPipe) commentId: number,
+    @Param('feedId', ParseIntPipe) feedId: number,
+    @Body('content') content: string,
+  ): Promise<ApiResponse> {
+    const loginUserId = await this.tokenService.audienceFromToken(token);
+    await this.feedService.updateFeedComment(
+      loginUserId,
+      feedId,
+      commentId,
+      content,
+    );
+    return { status: 201, message: 'Comment updated successfully' };
+  }
+
   @Delete('/:feedId/comment/:commentId')
-  async deleteComment(
+  async deleteFeedComment(
     @Headers('Authorization') token: string,
     @Param('commentId', ParseIntPipe) commentId: number,
     @Param('feedId', ParseIntPipe) feedId: number,
   ): Promise<ApiResponse> {
-    const loginUserId = this.tokenService.audienceFromToken(token);
-    await this.feedService.deleteComment(loginUserId, feedId, commentId);
+    const loginUserId = await this.tokenService.audienceFromToken(token);
+    await this.feedService.deleteFeedComment(loginUserId, feedId, commentId);
     return { status: 204, message: 'Comment deleted successfully' };
   }
 
+  // === 좋아요 상태 변경 api ===
   @Post('/:feedId/like')
   async handleFeedLike(
     @Headers('Authorization') token: string,
@@ -141,34 +159,32 @@ export class FeedController {
       //isLiked가 boolean이 아니거나 빈 값이라면 에러 발생
       throw new HttpError(400, 'Invalid value for isLiked');
     }
-    const loginUserId = this.tokenService.audienceFromToken(token);
+    const loginUserId = await this.tokenService.audienceFromToken(token);
     await this.feedService.handleFeedLike(isLiked, loginUserId, feedId);
     return { status: 201, message: 'FeedLike changed successfully' };
   }
 
-  // 북마크 추가 요청
   @Post('/:feedId/bookmark')
   async createBookmark(
     @Headers('Authorization') token: string,
     @Param('feedId', ParseIntPipe) feedId: number,
   ): Promise<ApiResponse> {
-    const loginUserId = this.tokenService.audienceFromToken(token);
+    const loginUserId = await this.tokenService.audienceFromToken(token);
     await this.feedService.createBookmark(loginUserId, feedId);
     return { status: 201, message: 'Bookmark created successfully' };
   }
 
-  
   @Delete('/:feedId/bookmark')
   async deleteBookmark(
     @Headers('Authorization') token: string,
     @Param('feedId', ParseIntPipe) feedId: number,
   ): Promise<ApiResponse> {
-    const loginUserId = this.tokenService.audienceFromToken(token);
+    const loginUserId = await this.tokenService.audienceFromToken(token);
     await this.feedService.deleteBookmark(loginUserId, feedId);
     return { status: 204, message: 'Bookmark deleted successfully' };
   }
 
-  // 북마크 상태 변경 api : 미사용중
+  // === 북마크 상태 변경 api : 미사용중 ===
   @Post('/bookmark/:feedId')
   async handleBookmark(
     @Headers('Authorization') token: string,
@@ -179,7 +195,7 @@ export class FeedController {
       //isBookmarked boolean이 아니거나 빈 값이라면 에러 발생
       throw new HttpError(400, 'Invalid value for isBookmarked');
     }
-    const loginUserId = this.tokenService.audienceFromToken(token);
+    const loginUserId = await this.tokenService.audienceFromToken(token);
     await this.feedService.handleBookmark(loginUserId, feedId, isBookmarked);
     return { status: 201, message: 'Bookmark changed successfully' };
   }

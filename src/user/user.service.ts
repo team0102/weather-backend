@@ -1,13 +1,10 @@
 import {
   BadRequestException,
-  HttpException,
-  HttpStatus,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 // import axios from 'axios';
-import * as qs from 'qs';
 import { JwtService } from '@nestjs/jwt';
 
 import {
@@ -15,6 +12,7 @@ import {
   LoginUserInfoDto,
   SignUpUserInfoDto,
   UpdateUserInfoDto,
+  UserBlockDto,
   UserFollowDto,
   UserInfoDto,
 } from './dto/user.dto';
@@ -24,19 +22,23 @@ import { UserFollowEntity } from 'src/entities/userFollows.entity';
 import { UserFollowRepository } from './userFollow.repository';
 import { CityRepository } from './city.repository';
 import { ConfigService } from '@nestjs/config';
+import { UserBlockRepository } from './userBlock.repository';
+import { UserBlockEntity } from 'src/entities/userBlocks.entity';
+import { RedisUserService } from './redis/redis.user.service';
 
 @Injectable()
 export class UserService {
   constructor(
-    private readonly JwtService: JwtService,
+    private readonly jwtService: JwtService,
     private readonly userRepository: UserRepository,
     private readonly userFollowRepository: UserFollowRepository,
     private readonly cityRepository: CityRepository,
     readonly configService: ConfigService,
+    private readonly redisUserService: RedisUserService,
+    private readonly userBlockRepository: UserBlockRepository,
   ) {}
 
   // 소셜로그인
-
   async getToken(loginUserInfo: LoginUserInfoDto) {
     const user = await this.kakaoValidateUser(loginUserInfo); // 카카오 정보 검증 및 회원가입 로직
 
@@ -76,7 +78,7 @@ export class UserService {
       userEmail: user.email,
     };
 
-    return this.JwtService.sign(payload);
+    return this.jwtService.sign(payload);
   }
 
   async getUserInfoBysocialAccountUid(
@@ -107,7 +109,7 @@ export class UserService {
       : 'USER_EXIST';
   }
 
-  // 유저 정보 get : 마이페이지 입장시 필요
+  // 유저 정보 조회 : O
   async getUserInfo(userId: number): Promise<UserEntity | null> {
     const user = await this.userRepository.findOneById(userId);
 
@@ -116,7 +118,27 @@ export class UserService {
     return user;
   }
 
-  // 회원탈퇴_ing
+  // 로그아웃 : O
+  async userLogout(token: string): Promise<void> {
+    // redis DB 이용
+
+    const decodedToken = this.jwtService.verify(token);
+    const userId = decodedToken.aud;
+
+    const user = await this.userRepository.findOneById(userId);
+    if (!user) throw new NotFoundException('NOT_FOUND_USER');
+
+    const logoutCheck = await this.redisUserService.get(token);
+    if (logoutCheck !== null) throw new BadRequestException('LOGIN_REQUIRED');
+
+    const currentTime = Math.floor(new Date().getTime() / 1000.0); // UNIX TIME 기준(초)
+    const exp = Number(await decodedToken.exp); //  token.exp  =  .env.JWT_ACCESS_TOKEN_EXPIRATION_TIME
+    const remainedTime = exp - currentTime;
+
+    return await this.redisUserService.set(token, '', remainedTime); // exp에 도달하면 자동 삭제
+  }
+
+  // 회원탈퇴 : O
   async deleteUser(id: number): Promise<void> {
     const user = this.userRepository.findOneById(id);
 
@@ -237,15 +259,15 @@ export class UserService {
       throw new BadRequestException('NOT_FOLLOWING');
 
     const followRelation =
-      await this.userFollowRepository.findFollowRelationByUserIdAndFollowUserId(
-        userFollowDto,
-      );
+      await this.userFollowRepository.findFollowRelation(userFollowDto);
 
     return await this.userFollowRepository.deleteUserFollow(followRelation);
   }
 
   // 유저 팔로잉 목록 : O / 내가 팔로우 한 = 내 id가 userId에 있고, followUserId를 찾아 출력
-  async followingList(userId: number): Promise<UserFollowEntity[] | null> {
+  async getUserFollowingList(
+    userId: number,
+  ): Promise<UserFollowEntity[] | null> {
     if (!userId) throw new NotFoundException('KEY_ERROR');
 
     const user = this.userRepository.findOneById(userId);
@@ -258,7 +280,9 @@ export class UserService {
   }
 
   //  유저 팔로워 목록 : O / 나를 팔로우 한 = 내 id가 followUserId에 있고, userId를 찾아 출력
-  async followerList(followUserId: number): Promise<UserFollowEntity[] | null> {
+  async getUserFollowerList(
+    followUserId: number,
+  ): Promise<UserFollowEntity[] | null> {
     if (!followUserId) throw new NotFoundException('KEY_ERROR');
 
     const followUser = this.userRepository.findOneById(followUserId);
@@ -290,8 +314,63 @@ export class UserService {
     });
 
     return followerList;
-  }
+  } // 유저 차단(목록)
 
+  async getUserBlockList(userId: number): Promise<UserBlockEntity[] | null> {
+    if (!userId) throw new NotFoundException('KEY_ERROR');
+
+    const user = this.userRepository.findOneById(userId);
+    if (!user) throw new NotFoundException('USER_NOT_FOUND');
+
+    return this.userBlockRepository.findUserBlockList(userId);
+  }
+  
+  // 유저 차단(생성)
+  async createUserBlock(userBlockDto: UserBlockDto): Promise<void> {
+    const { userId, blockUserId } = userBlockDto;
+
+    if (!userId || !blockUserId) throw new NotFoundException('KEY_ERROR');
+
+    if (userId === blockUserId)
+      throw new BadRequestException('SAME_ID_REQUESTED');
+
+    const user = await this.userRepository.findOneById(userId);
+    if (!user) throw new NotFoundException('USER_NOT_FOUND');
+    const blockUser = await this.userRepository.findOneById(blockUserId);
+    if (!blockUser) throw new NotFoundException('BLOCK_USER_NOT_FOUND');
+
+    const isBlocked =
+      await this.userBlockRepository.findBlockRelation(userBlockDto);
+    if (isBlocked) throw new BadRequestException('ALREADY_BLOCK');
+
+    const userBlock = new UserBlockEntity();
+    userBlock.user = userId;
+    userBlock.blockUser = blockUserId;
+
+    return await this.userBlockRepository.createUserBlock(userBlock);
+  }
+  
+  // 유저 차단(삭제)
+  async deleteUserBlock(userBlockDto: UserBlockDto): Promise<void> {
+    const { userId, blockUserId } = userBlockDto;
+
+    if (!userId || !blockUserId) throw new NotFoundException('KEY_ERROR');
+
+    if (userId === blockUserId)
+      throw new BadRequestException('SAME_ID_REQUESTED');
+
+    const user = await this.userRepository.findOneById(userId);
+    if (!user) throw new NotFoundException('USER_NOT_FOUND');
+    const blockUser = await this.userRepository.findOneById(blockUserId);
+    if (!blockUser) throw new NotFoundException('BLOCK_USER_NOT_FOUND');
+
+    const isBlocked =
+      await this.userBlockRepository.findBlockRelation(userBlockDto);
+    if (!isBlocked) throw new BadRequestException('NOT_BLOCKED_USER');
+
+    return await this.userBlockRepository.deleteUserBlock(isBlocked);
+  }
+  
   // 테스트용 로그인 -----------------------------------------------
 
   async login(socialAccountUid: string): Promise<LoginResponseDto | null> {
@@ -303,7 +382,7 @@ export class UserService {
 
     const { ...userInfo } = user;
 
-    const token = await this.JwtService.signAsync({
+    const token = await this.jwtService.signAsync({
       aud: userInfo.id,
     });
 

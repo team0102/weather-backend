@@ -29,7 +29,7 @@ export class ClothesController {
     // 토큰이 존재하면 사용자 확인
     if (token) {
       try {
-        loginUserId = this.tokenService.audienceFromToken(token);
+        loginUserId = await this.tokenService.audienceFromToken(token);
       } catch (error) {
         throw new UnauthorizedException('Invalid token');
       }
