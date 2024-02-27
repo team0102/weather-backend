@@ -8,22 +8,83 @@ import {
 } from 'typeorm';
 import HttpError from 'src/utils/httpError';
 import { FILTER_MAPPER } from './const/filter-mapper.const';
+import { HOST, PROTOCOL } from './const/env.const';
+import { BaseModel } from './entities/base.entity';
 
 @Injectable()
 export class CommonService {
-  paginate<T>(
+  paginate<T extends BaseModel>(
     dto: BasePaginationDto,
     repository: Repository<T>,
     overrideFindOptions: FindManyOptions<T> = {},
     path: string,
-  ) {}
+  ) {
+    // if(dto.page) {
+    //   return this.pagePaginate(dto, repository, overrideFindOptions)
+    // } else {
+      return this.cursorPaginate(dto, repository, overrideFindOptions, path)
+    
+  }
 
-  private async cursorPaginate<T>(
+  //추후 필요시
+  private async pagePaginate<T>(
+    to: BasePaginationDto,
+    repository: Repository<T>,
+    overrideFindOptions: FindManyOptions<T> = {},
+  ){}
+
+  private async cursorPaginate<T extends BaseModel>(
     dto: BasePaginationDto,
     repository: Repository<T>,
     overrideFindOptions: FindManyOptions<T> = {},
     path: string,
-  ) {}
+  ) {
+    /**
+     * where__likeCount__more_than
+     * where__title__ilike
+     */
+    const findOptions = this.composeFindOptions<T>(dto);
+    const results = await repository.find({
+      ...findOptions,
+      ...overrideFindOptions,
+    });
+
+    const lastItem =
+      results.length > 0 && results.length >= dto.take
+        ? results[results.length - 1]
+        : null;
+    const nextUrl = lastItem && new URL(`${PROTOCOL}://${HOST}/feeds`);
+    if (nextUrl) {
+      for (const key of Object.keys(dto)) {
+        if (dto[key]) {
+          if (
+            key !== 'where__id__more_than' &&
+            key !== 'where__id__less_than'
+          ) {
+            // 해당 값이 없으면 제외
+            nextUrl.searchParams.append(key, dto[key]);
+          }
+        }
+      }
+      let key = null;
+      if (dto.order__createdAt === 'ASC') {
+        key = 'where__id__more_than';
+      } else {
+        key = 'where__id__less_than';
+      }
+      
+      nextUrl.searchParams.append(key, lastItem.id.toString());
+    }
+
+    return {
+      data: results,
+      cursor: {
+        after: lastItem?.id ?? null,
+      },
+      count: results.length,
+      next: nextUrl?.toString() ?? null,
+    };
+  }
 
   private composeFindOptions<T>(dto: BasePaginationDto): FindManyOptions<T> {
     /**
@@ -51,7 +112,7 @@ export class CommonService {
       } else if (key.startsWith('order__')) {
         order = {
           ...order,
-          ...this.parseOrderFilter(key, value),
+          ...this.parseWhereFilter(key, value),
         };
       }
     }
@@ -62,7 +123,10 @@ export class CommonService {
     };
   }
 
-  private parseWhereFilter<T>(key: string, value: any): FindOptionsWhere<T> {
+  private parseWhereFilter<T>(
+    key: string,
+    value: any,
+  ): FindOptionsWhere<T> | FindOptionsOrder<T> {
     const options: FindOptionsWhere<T> = {};
 
     /**
@@ -129,9 +193,5 @@ export class CommonService {
     }
 
     return options;
-  }
-
-  private parseOrderFilter<T>(key: string, value: any): FindOptionsOrder<T> {
-    return;
   }
 }

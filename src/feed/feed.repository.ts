@@ -8,7 +8,7 @@ import { UpdateFeedDTO } from './dto/update-feed.dto';
 import { PaginateFeedDto } from './dto/paginate-feed.dto';
 
 @Injectable()
-export class FeedRepository {
+export class FeedRepository{
   constructor(
     @InjectRepository(FeedEntity)
     private readonly feedRepository: Repository<FeedEntity>,

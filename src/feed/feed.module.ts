@@ -16,6 +16,7 @@ import { TokenService } from 'src/utils/verifyToken';
 import { BookmarkEntity } from 'src/entities/bookmarks.entity';
 import { BookmarkRepository } from './bookmark.repository';
 import { FeedLikeRepository } from './feedLike.repository';
+import { CommonModule } from 'src/common/common.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { FeedLikeRepository } from './feedLike.repository';
       TagEntity,
       BookmarkEntity,
     ]),
+    CommonModule,
   ],
   controllers: [FeedController],
   providers: [

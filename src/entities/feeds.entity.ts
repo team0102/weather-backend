@@ -16,15 +16,16 @@ import { FeedTagEntity } from './feedTags.entity';
 import { FeedLikeEntity } from './feedLikes.entity';
 import { BookmarkEntity } from './bookmarks.entity';
 import { WeatherConditionEntity } from './weatherCondition.entity';
+import { BaseModel } from 'src/common/entities/base.entity';
 
 @Entity({
   name: 'feeds',
 })
-export class FeedEntity {
-  @PrimaryGeneratedColumn({
-    type: 'int',
-  })
-  id: number;
+export class FeedEntity extends BaseModel {
+  // @PrimaryGeneratedColumn({
+  //   type: 'int',
+  // })
+  // id: number;
 
   @Column({
     type: 'varchar',
@@ -42,18 +43,18 @@ export class FeedEntity {
   })
   highTemperature: number; // 최고기온, 프론트에서 받아서 저장
 
-  @CreateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
-  })
-  createdAt: Date;
+  // @CreateDateColumn({
+  //   type: 'timestamp',
+  //   default: () => 'CURRENT_TIMESTAMP(6)',
+  // })
+  // createdAt: Date;
 
-  @UpdateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
-    onUpdate: 'CURRENT_TIMESTAMP(6)',
-  })
-  updatedAt: Date;
+  // @UpdateDateColumn({
+  //   type: 'timestamp',
+  //   default: () => 'CURRENT_TIMESTAMP(6)',
+  //   onUpdate: 'CURRENT_TIMESTAMP(6)',
+  // })
+  // updatedAt: Date;
 
   @DeleteDateColumn({
     type: 'timestamp',
