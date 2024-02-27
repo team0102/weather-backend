@@ -50,12 +50,15 @@ export class FeedController {
   async getFeedList(
     @Headers('Authorization') token: string | undefined,
     @Query() query: PaginateFeedDto,
-  ) {
+  ): Promise<FeedListResponse> {
     let loginUserId: number | null = null;
     if (token) {
       loginUserId = await this.tokenService.audienceFromToken(token);
     }
-    const feedDatas = await this.feedService.paginateFeeds(query);
+    const feedDatas = await this.feedService.getFeedListWithPagination(
+      query,
+      loginUserId,
+    );
     return {
       status: 200,
       message: 'Successed to get feedList',
@@ -148,13 +151,9 @@ export class FeedController {
   ): Promise<ApiResponse> {
     const loginUserId = await this.tokenService.audienceFromToken(token);
     await this.feedService.updateFeedComment(
-      
       loginUserId,
-     
       feedId,
-     
       commentId,
-
       content,
     );
     return { status: 201, message: 'Comment updated successfully' };

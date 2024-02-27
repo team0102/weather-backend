@@ -55,9 +55,29 @@ export class FeedRepository{
       where.id = MoreThan(dto.where__id__more_than);
     }
     const feeds = await this.feedRepository.find({
-      where,
-       //id: MoreThan(dto.where__id_more_than), 
-         //id: dto.where__id_more_than ? MoreThan(dto.where__id_more_than) : undefined,
+      relations: {
+        user: true,
+        feedImage: true,
+        feedComment: {
+          user:true,
+        },
+        feedLike: {
+          user : true
+        },
+        weatherCondition: true,
+        bookmark: {
+          user: true,
+        },
+        feedTag: {
+          tag: true,
+        },
+      },
+      where : {
+        deletedAt: null,
+        user: {
+          deletedAt: null,
+        },
+      },
       order: {
         createdAt: dto.order__createdAt,
       },

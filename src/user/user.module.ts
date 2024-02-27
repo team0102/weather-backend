@@ -17,10 +17,17 @@ import { CityEntity } from 'src/entities/cities.entity';
 import { KakaoStrategy } from './strategy/kakao.strategy';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { RedisUserModule } from './redis/redis.user.module';
+import { UserBlockEntity } from 'src/entities/userBlocks.entity';
+import { UserBlockRepository } from './userBlock.repository';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, UserFollowEntity, CityEntity]),
+    TypeOrmModule.forFeature([
+      UserEntity,
+      UserFollowEntity,
+      UserBlockEntity,
+      CityEntity,
+    ]),
     RedisUserModule.register(),
     ConfigModule,
     PassportModule,
@@ -43,6 +50,7 @@ import { RedisUserModule } from './redis/redis.user.module';
     UserService,
     UserRepository,
     UserFollowRepository,
+    UserBlockRepository,
     TokenService,
     CityRepository,
     KakaoStrategy,
@@ -52,6 +60,7 @@ import { RedisUserModule } from './redis/redis.user.module';
     UserService,
     UserRepository,
     UserFollowRepository,
+    UserBlockRepository,
     CityRepository,
     KakaoStrategy,
     JwtStrategy,

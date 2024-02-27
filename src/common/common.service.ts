@@ -8,9 +8,9 @@ import {
 } from 'typeorm';
 import HttpError from 'src/utils/httpError';
 import { FILTER_MAPPER } from './const/filter-mapper.const';
-import { HOST, PROTOCOL } from './const/env.const';
 import { BaseModel } from './entities/base.entity';
 
+// 적용 전
 @Injectable()
 export class CommonService {
   paginate<T extends BaseModel>(
@@ -53,7 +53,7 @@ export class CommonService {
       results.length > 0 && results.length >= dto.take
         ? results[results.length - 1]
         : null;
-    const nextUrl = lastItem && new URL(`${PROTOCOL}://${HOST}/feeds`);
+    const nextUrl = lastItem && new URL(`${process.env.WEATHER_URL}/feeds`);
     if (nextUrl) {
       for (const key of Object.keys(dto)) {
         if (dto[key]) {

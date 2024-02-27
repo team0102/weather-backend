@@ -3,15 +3,14 @@ import { FeedRepository } from './feed.repository';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 import { TagRepository } from './tag.repository';
 import { FeedTagRepository } from './feedTag.repository';
-import { DataSource, MoreThan } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { FeedCommentRepository } from './feedComment.repository';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
-import { BookmarkList, FeedDatail, FeedListItem } from './feed.types';
+import { BookmarkList, FeedDatail, FeedList, FeedListItem } from './feed.types';
 import { BookmarkRepository } from './bookmark.repository';
 import { FeedLikeRepository } from './feedLike.repository';
 import HttpError from 'src/utils/httpError';
 import { PaginateFeedDto } from './dto/paginate-feed.dto';
-import { HOST, PROTOCOL } from 'src/common/const/env.const';
 import { CommonService } from 'src/common/common.service';
 
 
@@ -74,50 +73,82 @@ export class FeedService {
     return processedFeedList;
   }
 
-  // 오름차순으로 정렬하는 pagination만 구현한다.
-  async paginateFeeds(dto: PaginateFeedDto) {
-    return this.commonService.paginate(
-      dto,
-      this.feedRepository,
-      {},
-      'feeds'
-    )
-    // const feeds = await this.feedRepository.paginateFeedList(dto);
+  async getFeedListWithPagination(dto: PaginateFeedDto, userId: number | null ):Promise<FeedList>  {
+    const feedList = await this.feedRepository.paginateFeedList(dto);
 
-    // /* 
-    //   해당되는 포스트가 0개 이상이면 마지막 포스트를 가져오고 아니면 null을 반환
-    //   데이터의 개수와 take의 개수가 같을 경우에만 lastItem 생성
-    // */
-    // const lastItem = feeds.length > 0 && feeds.length >= dto.take ? feeds[feeds.length - 1] : null;
-    // const nextUrl = lastItem && new URL(`${PROTOCOL}://${HOST}/feeds`);
-    // if (nextUrl) {
-    //   /* 
-    //    dto의 key에 대한 value가 존재하면 param에 그대로 붙여넣는다.
-    //    단, where__id_more_than 값만 lastItem의 마지막 값으로 넣어준다.
-    //    */
-    //   for (const key of Object.keys(dto)) {
-    //     if (dto[key]) {
-    //       if (key !== 'where__id__more_than' && key !== 'where__id__less_than') { // 해당 값이 없으면 제외
-    //         nextUrl.searchParams.append(key, dto[key]);
-    //       }
-    //     }
-    //   };
-    //   let key = null;
-    //   if(dto.order__createdAt === 'ASC'){
-    //     key = 'where__id__more_than'
-    //   } else {
-    //     key = 'where__id__less_than'
-    //   }
-    //   nextUrl.searchParams.append(key, lastItem.id.toString());
-    // }
-    // return {
-    //   feeds,                               // Data[]
-    //   cursor: {
-    //     after: lastItem?.id ?? null,       // 마지막 Data의 Id
-    //   },
-    //   count: feeds?.length,                // 응답할 데이터의 개수
-    //   next: nextUrl?.toString() ?? null,   // 다음 요청을 할 때 사용할 URL
-    // };
+    const lastItem = feedList.length > 0 && feedList.length >= dto.take ? feedList[feedList.length - 1] : null;
+    const nextUrl = lastItem && new URL(`${process.env.WEATHER_URL}/feeds`);
+    if (nextUrl) {
+      /* 
+       dto의 key에 대한 value가 존재하면 param에 그대로 붙여넣는다.
+       단, where__id_more_than 값만 lastItem의 마지막 값으로 넣어준다.
+       */
+      for (const key of Object.keys(dto)) {
+        if (dto[key]) {
+          if (key !== 'where__id__more_than' && key !== 'where__id__less_than') { // 해당 값이 없으면 제외
+            nextUrl.searchParams.append(key, dto[key]);
+          }
+        }
+      };
+      let key = null;
+      if(dto.order__createdAt === 'ASC'){
+        key = 'where__id__more_than'
+      } else {
+        key = 'where__id__less_than'
+      }
+      nextUrl.searchParams.append(key, lastItem.id.toString());
+    }
+
+    const processedFeedList = await Promise.all(
+      feedList
+        .filter((feed) => feed.user !== null)
+        .map(async (feed) => {
+          const isAuthor = userId && feed.user.id === userId;
+          const likeCount = feed.feedLike.length;
+          const commentCount = feed.feedComment.length;
+          const isLiked = feed.feedLike.some(
+            (like) => like.user && like.user.id === userId,
+          );
+          const isBookmarked = feed.bookmark.some(
+            (bookmark) => bookmark.user && bookmark.user.id === userId,
+          );
+          const { id, nickname, profileImage } = feed.user;
+          const imageUrl =
+            feed.feedImage.length > 0 ? feed.feedImage[0].imageUrl : null;
+          const {
+            content,
+            lowTemperature,
+            highTemperature,
+            createdAt,
+            updatedAt,
+          } = feed;
+          return {
+            id: feed.id,
+            imageUrl,
+            content,
+            lowTemperature,
+            highTemperature,
+            weatherConditionId: feed.weatherCondition.id,
+            createdAt,
+            updatedAt,
+            author: { id, nickname, profileImage },
+            isAuthor,
+            likeCount,
+            commentCount,
+            isLiked,
+            isBookmarked,
+          };
+        }),
+    );
+
+    return {
+      feeds : processedFeedList,           // Data[]
+      cursor: {
+        after: lastItem?.id ?? null,       // 마지막 Data의 Id
+      },
+      count: feedList?.length,             // 응답할 데이터의 개수
+      next: nextUrl?.toString() ?? null,   // 다음 요청을 할 때 사용할 URL
+    };
   }
 
   async getFeedDetails(userId: number, feedId: number): Promise<FeedDatail> {
