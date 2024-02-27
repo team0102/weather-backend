@@ -42,7 +42,7 @@ export class FeedRepository {
         },
       },
     });
-    console.log(feedList);
+    //console.log(feedList);
     return feedList;
   }
 
@@ -79,8 +79,9 @@ export class FeedRepository {
   async createFeed(
     userId: number,
     feedData: CreateFeedDTO,
+    imageUrl: string
   ): Promise<FeedEntity> {
-    const { weatherConditionId, imageUrl } = feedData;
+    const { weatherConditionId } = feedData;
     const savedFeed = await this.feedRepository.save({
       user: { id: userId },
       weatherCondition: { id: weatherConditionId },
@@ -108,8 +109,8 @@ export class FeedRepository {
     });
   }
 
-  async updateFeed(feedId: number, feedData: UpdateFeedDTO) {
-    const { weatherConditionId, imageUrl, ...updateData } = feedData;
+  async updateFeed(feedId: number, feedData: UpdateFeedDTO, imageUrl: string) {
+    const { weatherConditionId, ...updateData } = feedData;
     if (weatherConditionId) {
       await this.feedRepository.update(
         { id: feedId },
@@ -127,19 +128,4 @@ export class FeedRepository {
     );
     return updateFeed;
   }
-
-  // ==================생략 예정===================
-  // async findFeedById(feedId: number): Promise<FeedEntity> {
-  //     const result = await this.feedRepository.findOne({
-  //       where: {
-  //         id: feedId,
-  //         user: {
-  //           deletedAt: null,
-  //         },
-  //       },
-  //       relations: ['user', 'feedTag', 'feedImage', 'bookmark'],
-  //     });
-  //     return result;
-  //   }
-  // }
 }

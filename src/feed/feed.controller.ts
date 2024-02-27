@@ -8,6 +8,8 @@ import {
   Headers,
   Put,
   Delete,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { FeedService } from './feed.service';
 import { CreateFeedDTO } from './dto/create-feed.dto';
@@ -20,6 +22,7 @@ import {
   FeedListResponse,
 } from './feed.types';
 import HttpError from 'src/utils/httpError';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('feeds')
 export class FeedController {
@@ -72,12 +75,14 @@ export class FeedController {
   }
 
   @Post()
+  @UseInterceptors(FileInterceptor('imageUrl'))
   async createFeed(
     @Headers('Authorization') token: string,
     @Body() feedData: CreateFeedDTO,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<ApiResponse> {
     const loginUserId = await this.tokenService.audienceFromToken(token);
-    await this.feedService.createFeed(loginUserId, feedData);
+    await this.feedService.createFeed(loginUserId, feedData, file.filename);
     return { status: 201, message: 'Feed created successfully' };
   }
 
@@ -92,16 +97,19 @@ export class FeedController {
   }
 
   @Put('/:feedId')
+  @UseInterceptors(FileInterceptor('imageUrl'))
   async updateFeed(
     @Headers('Authorization') token: string,
     @Param('feedId') feedId: number,
     @Body() feedData: UpdateFeedDTO,
+    @UploadedFile() file : Express.Multer.File,
   ): Promise<ApiResponse> {
     const loginUserId = await this.tokenService.audienceFromToken(token);
     const updatedFeed = await this.feedService.updateFeed(
       loginUserId,
       feedId,
       feedData,
+      file.filename,
     );
     return {
       status: 201,

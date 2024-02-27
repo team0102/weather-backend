@@ -9,6 +9,9 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { FeedEntity } from './feeds.entity';
+import { Transform } from 'class-transformer';
+import { FEED_PUBLIC_IMAGE_PATH } from 'src/common/const/path.const';
+import { join } from 'path';
 
 @Entity({
   name: 'feed_images',
@@ -44,7 +47,7 @@ export class FeedImageEntity {
   })
   deletedAt: Date; // 데이터는 삭제하지 않고, 삭제한 날짜만 입력
 
-  @ManyToOne(() => FeedEntity, { cascade: true})
+  @ManyToOne(() => FeedEntity, { cascade: true })
   @JoinColumn({
     name: 'feedId',
     referencedColumnName: 'id',
