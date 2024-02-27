@@ -16,6 +16,12 @@ import { TokenService } from 'src/utils/verifyToken';
 import { BookmarkEntity } from 'src/entities/bookmarks.entity';
 import { BookmarkRepository } from './bookmark.repository';
 import { FeedLikeRepository } from './feedLike.repository';
+import { MulterModule } from '@nestjs/platform-express';
+import { extname } from 'path';
+import HttpError from 'src/utils/httpError';
+import * as multer from 'multer';
+import { v4 as uuid } from 'uuid';
+import { FEED_IMAGE_PATH } from 'src/common/const/path.const';
 
 @Module({
   imports: [
@@ -28,6 +34,35 @@ import { FeedLikeRepository } from './feedLike.repository';
       TagEntity,
       BookmarkEntity,
     ]),
+    MulterModule.register({
+      limits: {
+        // 바이트 단위로 입력
+        fileSize: 10000000, //10MB
+      },
+      fileFilter: (req, file, cb) => {
+        /**
+         * cb(에러, boolean)
+         *
+         * 첫번째 파라미터에는 에러가 있을 경우 에러 정보를 넣어준다.
+         * 두번째 파라미터는 파일을 받을지 말지 boolean을 넣어준다.
+         */
+        // xxx.jpg -> .jpg
+        const ext = extname(file.originalname);
+        if (ext !== '.jpg' && ext !== '.jpeg' && ext !== '.png') {
+          return cb(new HttpError(403, 'Not in JPG, JPEG, PNG format'), false);
+        }
+        return cb(null, true);
+      },
+      storage: multer.diskStorage({
+        destination: function (req, res, cb) {
+          cb(null, FEED_IMAGE_PATH); // 저장 위치
+        },
+        filename: function (req, file, cb) {
+          // uuid: 랜덤값 12310-24234-234
+          cb(null, `${uuid()}${extname(file.originalname)}`);
+        },
+      }),
+    }),
   ],
   controllers: [FeedController],
   providers: [
