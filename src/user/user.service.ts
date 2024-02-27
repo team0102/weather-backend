@@ -314,8 +314,9 @@ export class UserService {
     });
 
     return followerList;
-  } // 유저 차단(목록)
+  }
 
+  // 유저 차단(목록)
   async getUserBlockList(userId: number): Promise<UserBlockEntity[] | null> {
     if (!userId) throw new NotFoundException('KEY_ERROR');
 
