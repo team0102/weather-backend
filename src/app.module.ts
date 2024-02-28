@@ -11,6 +11,8 @@ import { FeedModule } from './feed/feed.module';
 import { ClothesModule } from './clothes/clothes.module';
 import { ChatsModule } from './chats/chats.module';
 import CatchException from './utils/CatchException';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { PUBLIC_FOLDER_PATH } from './common/const/path.const';
 
 @Module({
   imports: [
@@ -28,6 +30,10 @@ import CatchException from './utils/CatchException';
     FeedModule,
     ClothesModule,
     ChatsModule,
+    ServeStaticModule.forRoot({
+      rootPath: PUBLIC_FOLDER_PATH,
+      serveRoot: '/public'
+    }),
   ],
   providers: [
     {
