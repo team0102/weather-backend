@@ -8,7 +8,7 @@ import { UpdateFeedDTO } from './dto/update-feed.dto';
 import { PaginateFeedDto } from './dto/paginate-feed.dto';
 
 @Injectable()
-export class FeedRepository{
+export class FeedRepository {
   constructor(
     @InjectRepository(FeedEntity)
     private readonly feedRepository: Repository<FeedEntity>,
@@ -22,10 +22,10 @@ export class FeedRepository{
         user: true,
         feedImage: true,
         feedComment: {
-          user:true,
+          user: true,
         },
         feedLike: {
-          user : true
+          user: true,
         },
         weatherCondition: true,
         bookmark: {
@@ -48,10 +48,15 @@ export class FeedRepository{
   }
 
   async paginateFeedList(dto: PaginateFeedDto): Promise<FeedEntity[]> {
-    const where : FindOptionsWhere<FeedEntity> = {};
-    if(dto.where__id__less_than){
+    const where: FindOptionsWhere<FeedEntity> = {
+      deletedAt: null,
+      user: {
+        deletedAt: null,
+      },
+    };
+    if (dto.where__id__less_than) {
       where.id = LessThan(dto.where__id__less_than);
-    } else if(dto.where__id__more_than){
+    } else if (dto.where__id__more_than) {
       where.id = MoreThan(dto.where__id__more_than);
     }
     const feeds = await this.feedRepository.find({
@@ -59,10 +64,10 @@ export class FeedRepository{
         user: true,
         feedImage: true,
         feedComment: {
-          user:true,
+          user: true,
         },
         feedLike: {
-          user : true
+          user: true,
         },
         weatherCondition: true,
         bookmark: {
@@ -72,12 +77,7 @@ export class FeedRepository{
           tag: true,
         },
       },
-      where : {
-        deletedAt: null,
-        user: {
-          deletedAt: null,
-        },
-      },
+      where,
       order: {
         createdAt: dto.order__createdAt,
       },
@@ -120,7 +120,7 @@ export class FeedRepository{
   async createFeed(
     userId: number,
     feedData: CreateFeedDTO,
-    imageUrl: string
+    imageUrl: string,
   ): Promise<FeedEntity> {
     const { weatherConditionId } = feedData;
     const savedFeed = await this.feedRepository.save({
