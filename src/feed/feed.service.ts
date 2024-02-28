@@ -10,6 +10,12 @@ import { BookmarkList, FeedDatail, FeedList, FeedListItem } from './feed.types';
 import { BookmarkRepository } from './bookmark.repository';
 import { FeedLikeRepository } from './feedLike.repository';
 import HttpError from 'src/utils/httpError';
+import {
+  FEED_PUBLIC_IMAGE_PATH,
+  FEED_PUBLIC_IMAGE_URL,
+} from 'src/common/const/path.const';
+import * as fs from 'fs';
+import { join } from 'path';
 import { PaginateFeedDto } from './dto/paginate-feed.dto';
 import { CommonService } from 'src/common/common.service';
 
@@ -54,7 +60,7 @@ export class FeedService {
           } = feed;
           return {
             id: feed.id,
-            imageUrl,
+            imageUrl: `${FEED_PUBLIC_IMAGE_URL}/${imageUrl}`,
             content,
             lowTemperature,
             highTemperature,
@@ -194,7 +200,7 @@ export class FeedService {
 
     const processedFeed = {
       id: feedDetails.id,
-      imageUrl,
+      imageUrl: `${FEED_PUBLIC_IMAGE_URL}/${imageUrl}`,
       content: feedDetails.content,
       weatherConditionId: feedDetails.weatherCondition.id,
       lowTemperature: feedDetails.lowTemperature,
@@ -215,6 +221,7 @@ export class FeedService {
   async createFeed(
     loginUserId: number,
     feedData: CreateFeedDTO,
+    imageUrl: string,
   ): Promise<void> {
     const { content } = feedData;
     const tags = this.extractTagsFromContent(content);
@@ -225,6 +232,7 @@ export class FeedService {
       const savedFeed = await this.feedRepository.createFeed(
         loginUserId,
         feedData,
+        imageUrl,
       );
       const savedFeedId = savedFeed.id;
       const savedTagIds = await this.saveTagsAndGetIds(tags);
@@ -246,6 +254,7 @@ export class FeedService {
     loginUserId: number,
     feedId: number,
     feedData: UpdateFeedDTO,
+    imageUrl: string,
   ) {
     const { content } = feedData;
     const tags = this.extractTagsFromContent(content);
@@ -263,8 +272,18 @@ export class FeedService {
       // 로그인유저=작성자 아닌 경우 에러핸들링
       if (existingFeed.user.id !== loginUserId)
         throw new HttpError(403, 'Invalid user');
+
+      // 기존 이미지 파일
+      const previousImage = existingFeed.feedImage[0].imageUrl;
       // 피드, 피드 이미지 업데이트
-      const updateFeed = await this.feedRepository.updateFeed(feedId, feedData);
+      const updateFeed = await this.feedRepository.updateFeed(
+        feedId,
+        feedData,
+        imageUrl,
+      );
+      // 기존 이미지 파일 삭제
+      fs.unlinkSync(join(FEED_PUBLIC_IMAGE_PATH, previousImage));
+
       // 존재하는 태그 id, 추가된 태그 id 배열
       const savedTagIds = await this.saveTagsAndGetIds(tags);
       // 기존 피드가 가지고 있던 FeedTag 엔터티들의 배열
@@ -282,6 +301,7 @@ export class FeedService {
       await this.feedTagRepository.createFeedTags(feedId, tagsToAdd);
       // 삭제된 feedTags 삭제
       await this.feedTagRepository.deleteFeedTags(feedTagsToDelete);
+
       await queryRunner.commitTransaction();
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -323,6 +343,10 @@ export class FeedService {
         throw new HttpError(404, 'Feed does not exist');
       if (!findFeed.user || findFeed.user.id !== loginUserId)
         throw new HttpError(403, 'Invalid User');
+      // 피드 이미지 파일
+      const previousImage = findFeed.feedImage[0].imageUrl;
+      // 피드 이미지 파일 삭제
+      fs.unlinkSync(join(FEED_PUBLIC_IMAGE_PATH, previousImage));
       // feedTag들 delete
       if (findFeed.feedTag) {
         findFeed.feedTag.forEach(async (feedTag) => {
@@ -499,7 +523,7 @@ export class FeedService {
           createdAt: bookmark.createdAt,
           feed: {
             id: bookmark.feed.id,
-            imageUrl,
+            imageUrl: `${FEED_PUBLIC_IMAGE_URL}/${imageUrl}`,
             content,
             lowTemperature,
             highTemperature,
