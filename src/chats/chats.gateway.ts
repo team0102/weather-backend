@@ -8,7 +8,6 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { CreateChatDto } from './dto/create-chat.dto';
 
 @WebSocketGateway({
   // ws://localhost:3000/chats
@@ -27,6 +26,7 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleConnection(socket: Socket) {
     this.connectedUser[socket.id] = true;
+    console.log(`on connect called : ${socket.id}`);
   }
 
   handleDisconnect(socket: Socket) {
@@ -51,16 +51,20 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('enter_chat')
   enterChat(
     // 방의 지역 코드를 숫자로 받음
-    @MessageBody() cityId: number,
+    @MessageBody() cityId: number[],
     @ConnectedSocket() socket: Socket,
+    // socket: Socket, cityId: number
   ) {
     //숫자를 문자로 변환
     const room = cityId.toString();
+    console.log(room);
+    
     //이미 접속한 방인지 확인
     if (socket.rooms.has(room)) {
       return;
     }
     socket.join(room);
+    console.log(cityId, room);
   }
 
   @SubscribeMessage('send_message')
@@ -71,6 +75,9 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     socket
       .to(message.cityId.toString())
       .emit('receive_message', message.message);
+
+      console.log(message);
+      
 
   }
 }
