@@ -59,6 +59,7 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const room = cityId.toString();
     console.log(room);
     
+    
     //이미 접속한 방인지 확인
     if (socket.rooms.has(room)) {
       return;
