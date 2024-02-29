@@ -22,6 +22,7 @@ import HttpError from 'src/utils/httpError';
 import * as multer from 'multer';
 import { v4 as uuid } from 'uuid';
 import { FEED_IMAGE_PATH } from 'src/common/const/path.const';
+import { CommonModule } from 'src/common/common.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { FEED_IMAGE_PATH } from 'src/common/const/path.const';
         },
       }),
     }),
+    CommonModule,
   ],
   controllers: [FeedController],
   providers: [

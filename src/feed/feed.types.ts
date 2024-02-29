@@ -6,7 +6,16 @@ export type ApiResponse = {
 export type FeedListResponse = {
   status: number;
   message: string;
-  data?: FeedListItem[];
+  data: FeedList
+};
+
+export type FeedList = {
+  feeds: FeedListItem[];
+    cursor: {
+      after: number | null;
+    };
+    count: number;
+    next: string | null;
 };
 
 export type FeedListItem = {
@@ -86,10 +95,10 @@ export type BookmarkList = {
     weatherConditionId: number;
     createdAt: Date;
     updatedAt: Date;
-  }
+  };
   author: {
     id: number;
     nickname: string;
     profileImage: string | null;
-  }
+  };
 };
