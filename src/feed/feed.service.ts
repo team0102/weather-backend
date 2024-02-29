@@ -6,7 +6,7 @@ import { FeedTagRepository } from './feedTag.repository';
 import { DataSource } from 'typeorm';
 import { FeedCommentRepository } from './feedComment.repository';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
-import { BookmarkList, FeedDatail, FeedListItem } from './feed.types';
+import { BookmarkList, FeedDatail, FeedList, FeedListItem } from './feed.types';
 import { BookmarkRepository } from './bookmark.repository';
 import { FeedLikeRepository } from './feedLike.repository';
 import HttpError from 'src/utils/httpError';
@@ -16,11 +16,15 @@ import {
 } from 'src/common/const/path.const';
 import * as fs from 'fs';
 import { join } from 'path';
+import { PaginateFeedDto } from './dto/paginate-feed.dto';
+import { CommonService } from 'src/common/common.service';
+
 
 @Injectable()
 export class FeedService {
   constructor(
     private readonly feedRepository: FeedRepository,
+    private readonly commonService: CommonService,
     private readonly tagRepository: TagRepository,
     private readonly feedTagRepository: FeedTagRepository,
     private readonly feedCommentRepository: FeedCommentRepository,
@@ -73,6 +77,84 @@ export class FeedService {
         }),
     );
     return processedFeedList;
+  }
+
+  async getFeedListWithPagination(dto: PaginateFeedDto, userId: number | null ):Promise<FeedList>  {
+    const feedList = await this.feedRepository.paginateFeedList(dto);
+
+    const lastItem = feedList.length > 0 && feedList.length >= dto.take ? feedList[feedList.length - 1] : null;
+    const nextUrl = lastItem && new URL(`${process.env.WEATHER_URL}/feeds`);
+    if (nextUrl) {
+      /* 
+       dto의 key에 대한 value가 존재하면 param에 그대로 붙여넣는다.
+       단, where__id_more_than 값만 lastItem의 마지막 값으로 넣어준다.
+       */
+      for (const key of Object.keys(dto)) {
+        if (dto[key]) {
+          if (key !== 'where__id__more_than' && key !== 'where__id__less_than') { // 해당 값이 없으면 제외
+            nextUrl.searchParams.append(key, dto[key]);
+          }
+        }
+      };
+      let key = null;
+      if(dto.order__createdAt === 'ASC'){
+        key = 'where__id__more_than'
+      } else {
+        key = 'where__id__less_than'
+      }
+      nextUrl.searchParams.append(key, lastItem.id.toString());
+    }
+
+    const processedFeedList = await Promise.all(
+      feedList
+        .filter((feed) => feed.user !== null)
+        .map(async (feed) => {
+          const isAuthor = userId && feed.user.id === userId;
+          const likeCount = feed.feedLike.length;
+          const commentCount = feed.feedComment.length;
+          const isLiked = feed.feedLike.some(
+            (like) => like.user && like.user.id === userId,
+          );
+          const isBookmarked = feed.bookmark.some(
+            (bookmark) => bookmark.user && bookmark.user.id === userId,
+          );
+          const { id, nickname, profileImage } = feed.user;
+          const imageUrl =
+            feed.feedImage.length > 0 ? feed.feedImage[0].imageUrl : null;
+          const {
+            content,
+            lowTemperature,
+            highTemperature,
+            createdAt,
+            updatedAt,
+          } = feed;
+          return {
+            id: feed.id,
+            imageUrl,
+            content,
+            lowTemperature,
+            highTemperature,
+            weatherConditionId: feed.weatherCondition.id,
+            createdAt,
+            updatedAt,
+            author: { id, nickname, profileImage },
+            isAuthor,
+            likeCount,
+            commentCount,
+            isLiked,
+            isBookmarked,
+          };
+        }),
+    );
+
+    return {
+      feeds : processedFeedList,           // Data[]
+      cursor: {
+        after: lastItem?.id ?? null,       // 마지막 Data의 Id
+      },
+      count: feedList?.length,             // 응답할 데이터의 개수
+      next: nextUrl?.toString() ?? null,   // 다음 요청을 할 때 사용할 URL
+    };
   }
 
   async getFeedDetails(userId: number, feedId: number): Promise<FeedDatail> {

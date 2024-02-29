@@ -10,6 +10,7 @@ import {
   Delete,
   UseInterceptors,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { FeedService } from './feed.service';
 import { CreateFeedDTO } from './dto/create-feed.dto';
@@ -23,6 +24,7 @@ import {
 } from './feed.types';
 import HttpError from 'src/utils/httpError';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { PaginateFeedDto } from './dto/paginate-feed.dto';
 
 @Controller('feeds')
 export class FeedController {
@@ -31,15 +33,35 @@ export class FeedController {
     private readonly tokenService: TokenService,
   ) {}
 
+  // @Get()
+  // async getFeedList(
+  //   @Headers('Authorization') token: string | undefined,
+  // ): Promise<FeedListResponse> {
+  //   let loginUserId: number | null = null;
+  //   if (token) {
+  //     loginUserId = this.tokenService.audienceFromToken(token);
+  //   }
+  //   const feedDatas = await this.feedService.getFeedList(loginUserId);
+  //   return {
+  //     status: 200,
+  //     message: 'Successed to get feedList',
+  //     data: feedDatas,
+  //   };
+  // }
+
   @Get()
   async getFeedList(
     @Headers('Authorization') token: string | undefined,
+    @Query() query: PaginateFeedDto,
   ): Promise<FeedListResponse> {
     let loginUserId: number | null = null;
     if (token) {
       loginUserId = await this.tokenService.audienceFromToken(token);
     }
-    const feedDatas = await this.feedService.getFeedList(loginUserId);
+    const feedDatas = await this.feedService.getFeedListWithPagination(
+      query,
+      loginUserId,
+    );
     return {
       status: 200,
       message: 'Successed to get feedList',
