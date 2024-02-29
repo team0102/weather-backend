@@ -17,7 +17,7 @@ export class ClothesRepository {
     const clothEntities = await this.clothRepository
       .createQueryBuilder('cloth')
       .where(
-        ':perceivedTemperature BETWEEN cloth.lowPerceivedTemperature AND cloth.highPerceivedTemperature',
+        ':perceivedTemperature >= cloth.lowPerceivedTemperature AND :perceivedTemperature < cloth.highPerceivedTemperature',
         { perceivedTemperature },
       )
       .leftJoinAndSelect('cloth.clothesTopId', 'clothesTop')
