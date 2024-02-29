@@ -9,10 +9,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from './user/user.module';
 import { FeedModule } from './feed/feed.module';
 import { ClothesModule } from './clothes/clothes.module';
-import { ChatsModule } from './chats/chats.module';
 import CatchException from './utils/CatchException';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { PUBLIC_FOLDER_PATH } from './common/const/path.const';
+import { ChatsGateway } from './chats/chats.gateway';
 
 @Module({
   imports: [
@@ -29,7 +29,6 @@ import { PUBLIC_FOLDER_PATH } from './common/const/path.const';
     UserModule,
     FeedModule,
     ClothesModule,
-    ChatsModule,
     ServeStaticModule.forRoot({
       rootPath: PUBLIC_FOLDER_PATH,
       serveRoot: '/public'
@@ -40,6 +39,7 @@ import { PUBLIC_FOLDER_PATH } from './common/const/path.const';
       provide: APP_FILTER,
       useClass: CatchException,
     },
+    ChatsGateway
   ],
 })
 export class AppModule {}

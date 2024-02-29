@@ -57,15 +57,12 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     //숫자를 문자로 변환
     const room = cityId.toString();
-    console.log(room);
-    
-    
+
     //이미 접속한 방인지 확인
     if (socket.rooms.has(room)) {
       return;
     }
     socket.join(room);
-    console.log(cityId, room);
   }
 
   @SubscribeMessage('send_message')
@@ -76,9 +73,6 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     socket
       .to(message.cityId.toString())
       .emit('receive_message', message.message);
-
-      console.log(message);
       
-
   }
 }
