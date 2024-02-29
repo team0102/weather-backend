@@ -1,8 +1,6 @@
-import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 
 export class CreateFeedDTO {
-  @IsNumber()
-  readonly userId: number;
 
   @IsNumber()
   readonly weatherConditionId: number;
@@ -19,8 +17,4 @@ export class CreateFeedDTO {
   @IsString()
   readonly content: string;
 
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  readonly tag: string[];
 }
