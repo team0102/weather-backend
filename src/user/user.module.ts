@@ -16,7 +16,7 @@ import { CityEntity } from 'src/entities/cities.entity';
 
 import { KakaoStrategy } from './strategy/kakao.strategy';
 import { JwtStrategy } from './strategy/jwt.strategy';
-import { RedisUserModule } from './redis/redis.user.module';
+// import { RedisUserModule } from './redis/redis.user.module';
 import { UserBlockEntity } from 'src/entities/userBlocks.entity';
 import { UserBlockRepository } from './userBlock.repository';
 
@@ -28,7 +28,7 @@ import { UserBlockRepository } from './userBlock.repository';
       UserBlockEntity,
       CityEntity,
     ]),
-    RedisUserModule.register(),
+    // RedisUserModule.register(),
     ConfigModule,
     PassportModule,
     JwtModule.registerAsync({
