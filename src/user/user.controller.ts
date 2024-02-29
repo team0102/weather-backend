@@ -205,7 +205,7 @@ export class UserController {
 
     return await this.userService.getUserFollowerList(followUserId);
   }
-  
+
   // 유저 차단(생성)
   @Post('/block/:blockUserId')
   async createUserBlock(
@@ -221,7 +221,7 @@ export class UserController {
 
     return await this.userService.createUserBlock(userBlockDto);
   }
-  
+
   // 유저 차단(삭제)
   @Delete('/block/:blockUserId')
   async deleteUserBlock(

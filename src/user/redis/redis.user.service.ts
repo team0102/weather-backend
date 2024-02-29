@@ -14,7 +14,7 @@ export class RedisUserService {
     this.client = new Redis({
       host: this.REDIS_HOST,
       port: this.REDIS_PORT,
-      // password: this.REDIS_PASSWORD,  // 설정시 사용으로 전환
+      password: this.REDIS_PASSWORD, // 설정시 사용으로 전환
     });
   }
 

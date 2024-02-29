@@ -1,0 +1,35 @@
+import { FeedRepository } from './feed.repository';
+import { CreateFeedDTO } from './dto/create-feed.dto';
+import { TagRepository } from './tag.repository';
+import { FeedTagRepository } from './feedTag.repository';
+import { DataSource } from 'typeorm';
+import { FeedCommentRepository } from './feedComment.repository';
+import { UpdateFeedDTO } from './dto/update-feed.dto';
+import { BookmarkList, FeedDatail, FeedListItem } from './feed.types';
+import { BookmarkRepository } from './bookmark.repository';
+import { FeedLikeRepository } from './feedLike.repository';
+export declare class FeedService {
+    private readonly feedRepository;
+    private readonly tagRepository;
+    private readonly feedTagRepository;
+    private readonly feedCommentRepository;
+    private readonly feedLikeRepository;
+    private readonly bookmarkRepository;
+    private readonly dataSource;
+    constructor(feedRepository: FeedRepository, tagRepository: TagRepository, feedTagRepository: FeedTagRepository, feedCommentRepository: FeedCommentRepository, feedLikeRepository: FeedLikeRepository, bookmarkRepository: BookmarkRepository, dataSource: DataSource);
+    getFeedList(userId: number | null): Promise<FeedListItem[]>;
+    getFeedDetails(userId: number, feedId: number): Promise<FeedDatail>;
+    createFeed(loginUserId: number, feedData: CreateFeedDTO): Promise<void>;
+    updateFeed(loginUserId: number, feedId: number, feedData: UpdateFeedDTO): Promise<void>;
+    private saveTagsAndGetIds;
+    extractTagsFromContent(content: string): string[];
+    deleteFeed(loginUserId: number, feedId: number): Promise<void>;
+    createFeedComment(loginUserId: number, feedId: number, content: string): Promise<void>;
+    updateFeedComment(loginUserId: number, feedId: number, commentId: number, content: string): Promise<void>;
+    deleteFeedComment(loginUserId: number, feedId: number, commentId: number): Promise<void>;
+    handleBookmark(loginUserId: number, feedId: number, isBookmarked: boolean): Promise<void>;
+    createBookmark(loginUserId: number, feedId: number): Promise<void>;
+    deleteBookmark(loginUserId: number, feedId: number): Promise<void>;
+    getBookmarkList(loginUserId: number): Promise<BookmarkList[]>;
+    handleFeedLike(isLiked: boolean, loginUserId: number, feedId: number): Promise<void>;
+}

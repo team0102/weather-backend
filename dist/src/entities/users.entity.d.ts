@@ -1,0 +1,31 @@
+import { CityEntity } from './cities.entity';
+import { SocialAccountProviderEntity } from './socialAccountProviders.entity';
+import { UserFollowEntity } from './userFollows.entity';
+import { UserBlockEntity } from './userBlocks.entity';
+import { FeedEntity } from './feeds.entity';
+import { FeedCommentEntity } from './feedComments.entity';
+import { FeedLikeEntity } from './feedLikes.entity';
+import { BookmarkEntity } from './bookmarks.entity';
+export declare class UserEntity {
+    id: number;
+    nickname: string;
+    email: string;
+    gender: number;
+    locationInformationAgree: number;
+    socialAccountUid: string;
+    profileImage: string;
+    temperatureSensitivity: number;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date;
+    city: CityEntity | number;
+    socialAccountProvider: SocialAccountProviderEntity | number;
+    userFollow: UserFollowEntity[];
+    userFollower: UserFollowEntity[];
+    userBlock: UserBlockEntity[];
+    userBlocker: UserBlockEntity[];
+    feed: FeedEntity[];
+    fefeedCommented: FeedCommentEntity[];
+    feedLike: FeedLikeEntity[];
+    bookmark: BookmarkEntity[];
+}

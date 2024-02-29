@@ -1,0 +1,38 @@
+import { JwtService } from '@nestjs/jwt';
+import { LoginResponseDto, LoginUserInfoDto, UpdateUserInfoDto, UserBlockDto, UserFollowDto, UserInfoDto } from './dto/user.dto';
+import { UserEntity } from 'src/entities/users.entity';
+import { UserRepository } from './user.repository';
+import { UserFollowEntity } from 'src/entities/userFollows.entity';
+import { UserFollowRepository } from './userFollow.repository';
+import { CityRepository } from './city.repository';
+import { ConfigService } from '@nestjs/config';
+import { UserBlockRepository } from './userBlock.repository';
+import { UserBlockEntity } from 'src/entities/userBlocks.entity';
+import { RedisUserService } from './redis/redis.user.service';
+export declare class UserService {
+    private readonly jwtService;
+    private readonly userRepository;
+    private readonly userFollowRepository;
+    private readonly cityRepository;
+    readonly configService: ConfigService;
+    private readonly redisUserService;
+    private readonly userBlockRepository;
+    constructor(jwtService: JwtService, userRepository: UserRepository, userFollowRepository: UserFollowRepository, cityRepository: CityRepository, configService: ConfigService, redisUserService: RedisUserService, userBlockRepository: UserBlockRepository);
+    getToken(loginUserInfo: LoginUserInfoDto): Promise<string>;
+    kakaoValidateUser(loginUserInfo: LoginUserInfoDto): Promise<UserEntity>;
+    generateAccessToken(user: UserEntity): string;
+    getUserInfoBysocialAccountUid(socialAccountUid: string): Promise<UserInfoDto>;
+    getCheckNicknameOverlap(nickname: string): Promise<string>;
+    getUserInfo(userId: number): Promise<UserEntity | null>;
+    userLogout(token: string): Promise<void>;
+    deleteUser(id: number): Promise<void>;
+    updateUserInfo(updateUserInfoDto: UpdateUserInfoDto): Promise<void>;
+    createUserFollow(userFollowDto: UserFollowDto): Promise<void>;
+    deleteUserFollow(userFollowDto: UserFollowDto): Promise<void>;
+    getUserFollowingList(userId: number): Promise<UserFollowEntity[] | null>;
+    getUserFollowerList(followUserId: number): Promise<UserFollowEntity[] | null>;
+    getUserBlockList(userId: number): Promise<UserBlockEntity[] | null>;
+    createUserBlock(userBlockDto: UserBlockDto): Promise<void>;
+    deleteUserBlock(userBlockDto: UserBlockDto): Promise<void>;
+    login(socialAccountUid: string): Promise<LoginResponseDto | null>;
+}

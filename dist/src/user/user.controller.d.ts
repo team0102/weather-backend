@@ -1,0 +1,31 @@
+import { Request } from 'express';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { UserService } from './user.service';
+import { LoginResponseDto, UpdateUserInfoDto } from './dto/user.dto';
+import { TokenService } from 'src/utils/verifyToken';
+import { UserFollowEntity } from 'src/entities/userFollows.entity';
+import { UserEntity } from 'src/entities/users.entity';
+import { UserBlockEntity } from 'src/entities/userBlocks.entity';
+export declare class UserController {
+    private readonly userService;
+    private readonly jwtService;
+    private readonly tokenService;
+    readonly configService: ConfigService;
+    constructor(userService: UserService, jwtService: JwtService, tokenService: TokenService, configService: ConfigService);
+    kakaoLogin(req: Request, code: string): Promise<LoginResponseDto>;
+    getCheckNicknameOverlap(nickname: string): Promise<string>;
+    getUserInfo(token: string): Promise<UserEntity | null>;
+    userLogout(token: string): Promise<void>;
+    deleteUser(token: string): Promise<void>;
+    updateUserInfo(token: string, body: UpdateUserInfoDto): Promise<void>;
+    createUserFollow(token: string, followUserId: number): Promise<void>;
+    deleteUserFollow(token: string, followUserId: number): Promise<void>;
+    getUserFollowingList(token: string): Promise<UserFollowEntity[] | null>;
+    getUserFollowerList(token: string): Promise<UserFollowEntity[] | null>;
+    createUserBlock(token: string, blockUserId: number): Promise<void>;
+    deleteUserBlock(token: string, blockUserId: number): Promise<void>;
+    getUserBlockList(token: string): Promise<UserBlockEntity[] | null>;
+    login(req: Request): Promise<LoginResponseDto>;
+    loginTokenTest(token: string): Promise<LoginResponseDto>;
+}
