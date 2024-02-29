@@ -32,10 +32,28 @@ export class ClothesRepository {
 
     const clothesDtoArray: ClothesDto[] = clothEntities.map((cloth) => ({
       id: cloth.id,
-      clothesTopId: cloth.clothesTopId,
-      clothesBottomId: cloth.clothesBottomId,
-      clothesCoatId: cloth.clothesCoatId,
-      clothesAccessoryId: cloth.clothesAccessoryId,
+      clothesTopId: {
+        id: cloth.clothesTopId.id,
+        type: cloth.clothesTopId.type,
+        imageUrl: cloth.clothesTopId.image,
+      },
+      clothesBottomId: {
+        id: cloth.clothesBottomId.id,
+        type: cloth.clothesBottomId.type,
+        imageUrl: cloth.clothesBottomId.image,
+      },
+      clothesCoatId: {
+        id: cloth.clothesCoatId.id,
+        type: cloth.clothesCoatId.type,
+        imageUrl: cloth.clothesCoatId.image,
+      },
+      clothesAccessoryId: cloth.clothesAccessoryId
+        ? {
+            id: cloth.clothesAccessoryId.id,
+            type: cloth.clothesAccessoryId.type,
+            imageUrl: cloth.clothesAccessoryId.image,
+          }
+        : null,
     }));
 
     return { status: 200, message: 'Success', data: clothesDtoArray };
