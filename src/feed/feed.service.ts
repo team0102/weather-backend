@@ -130,7 +130,7 @@ export class FeedService {
           } = feed;
           return {
             id: feed.id,
-            imageUrl,
+            imageUrl: `${FEED_PUBLIC_IMAGE_URL}/${imageUrl}`,
             content,
             lowTemperature,
             highTemperature,
