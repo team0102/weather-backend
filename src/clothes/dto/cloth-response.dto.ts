@@ -1,36 +1,36 @@
-export type ClothesTopDto = {
+export class ClothesTopDto {
   readonly id: number;
 
   readonly type: string;
 
-  readonly image: string;
-};
+  readonly imageUrl: string;
+}
 
-export type ClothesBottomDto = {
+export class ClothesBottomDto {
   readonly id: number;
 
   readonly type: string;
 
-  readonly image: string;
-};
+  readonly imageUrl: string;
+}
 
-export type ClothesCoatDto = {
+export class ClothesCoatDto {
   readonly id: number;
 
   readonly type: string;
 
-  readonly image: string;
-};
+  readonly imageUrl: string;
+}
 
-export type ClothesAccessoryDto = {
+export class ClothesAccessoryDto {
   readonly id: number;
 
   readonly type: string;
 
-  readonly image: string;
-};
+  readonly imageUrl: string;
+}
 
-export type ClothesDto = {
+export class ClothesDto {
   readonly id: number;
 
   readonly clothesTopId: ClothesTopDto;
@@ -40,10 +40,10 @@ export type ClothesDto = {
   readonly clothesCoatId: ClothesCoatDto;
 
   readonly clothesAccessoryId: ClothesAccessoryDto;
-};
+}
 
-export type ClothesResponseDto = {
+export class ClothesResponseDto {
   status: number;
   message: string;
   data?: ClothesDto[];
-};
+}
