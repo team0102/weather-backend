@@ -13,12 +13,15 @@ async function bootstrap() {
       callback(null, true);
     },
   });
-  app.useGlobalPipes(new ValidationPipe({
-    transform: true,
-    transformOptions: {
-      enableImplicitConversion: true,
-    }
-  }))
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+        //excludeExtraneousValues: true, // 파일 업로드 시에 필드에 대한 유효성 검사 제외
+      },
+    }),
+  );
   await app.listen(process.env.PORT);
 }
 bootstrap();
