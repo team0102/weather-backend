@@ -49,7 +49,6 @@ export class FeedRepository {
         },
       },
     });
-    //console.log(feedList);
     return feedList;
   }
 
@@ -68,7 +67,7 @@ export class FeedRepository {
         ? blockedUser.blockUser
         : blockedUser.blockUser.id
         );
-        
+
       const blockedUserWhere: FindOptionsWhere<UserEntity> = {
         id: Not(In(blockedUserIds)),
       };
@@ -79,7 +78,7 @@ export class FeedRepository {
       where.id = LessThan(dto.where__id__less_than);
     } else if (dto.where__id__more_than) {
       where.id = MoreThan(dto.where__id__more_than);
-    }
+    };
 
     const feeds = await this.feedRepository.find({
       relations: {

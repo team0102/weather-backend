@@ -84,27 +84,7 @@ export class FeedService {
     dto: PaginateFeedDto,
     userId: number | null,
   ): Promise<FeedList> {
-    // console.log(userId);
-    // let feedList: FeedEntity[];
-    // if (userId) {
-    //   const blockUser =
-    //     await this.userBlockRepository.findUserBlockList(userId);
-    //   console.log(blockUser);
-    //   feedList = await this.feedRepository.paginateFeedList(dto);
-    //   feedList = feedList.filter((feed) => {
-    //     const blockUserIds = blockUser.map((blockedUser) =>
-    //       typeof blockedUser.blockUser === 'number'
-    //         ? blockedUser.blockUser
-    //         : blockedUser.blockUser.id,
-    //     );
-    //     return !blockUserIds.includes(feed.user.id);
-    //   });
-    // } else {
-    //   feedList = await this.feedRepository.paginateFeedList(dto);
-    // }
-
     const feedList = await this.feedRepository.paginateFeedList(dto, userId);
-
     const lastItem =
       feedList.length > 0 && feedList.length >= dto.take
         ? feedList[feedList.length - 1]
@@ -125,7 +105,7 @@ export class FeedService {
             nextUrl.searchParams.append(key, dto[key]);
           }
         }
-      }
+      };
       let key = null;
       if (dto.order__createdAt === 'ASC') {
         key = 'where__id__more_than';
