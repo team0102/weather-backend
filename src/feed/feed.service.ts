@@ -84,16 +84,26 @@ export class FeedService {
     dto: PaginateFeedDto,
     userId: number | null,
   ): Promise<FeedList> {
-    const blockUser = await this.userBlockRepository.findUserBlockList(userId);
-    let feedList = await this.feedRepository.paginateFeedList(dto);
-    feedList = feedList.filter((feed) => {
-      const blockUserIds = blockUser.map((blockedUser) =>
-        typeof blockedUser.blockUser === 'number'
-          ? blockedUser.blockUser
-          : blockedUser.blockUser.id,
-      );
-      return !blockUserIds.includes(feed.user.id);
-    });
+    // console.log(userId);
+    // let feedList: FeedEntity[];
+    // if (userId) {
+    //   const blockUser =
+    //     await this.userBlockRepository.findUserBlockList(userId);
+    //   console.log(blockUser);
+    //   feedList = await this.feedRepository.paginateFeedList(dto);
+    //   feedList = feedList.filter((feed) => {
+    //     const blockUserIds = blockUser.map((blockedUser) =>
+    //       typeof blockedUser.blockUser === 'number'
+    //         ? blockedUser.blockUser
+    //         : blockedUser.blockUser.id,
+    //     );
+    //     return !blockUserIds.includes(feed.user.id);
+    //   });
+    // } else {
+    //   feedList = await this.feedRepository.paginateFeedList(dto);
+    // }
+
+    const feedList = await this.feedRepository.paginateFeedList(dto, userId);
 
     const lastItem =
       feedList.length > 0 && feedList.length >= dto.take

@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FeedEntity } from '../entities/feeds.entity';
-import { Repository, MoreThan, FindOptionsWhere, LessThan } from 'typeorm';
+import { Repository, MoreThan, FindOptionsWhere, LessThan, Not, In } from 'typeorm';
 import { CreateFeedDTO } from './dto/create-feed.dto';
 import { FeedImageEntity } from 'src/entities/feedImages.entity';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
 import { PaginateFeedDto } from './dto/paginate-feed.dto';
+import { UserBlockEntity } from 'src/entities/userBlocks.entity';
+import { UserBlockRepository } from 'src/user/userBlock.repository';
+import { UserEntity } from 'src/entities/users.entity';
+
 
 @Injectable()
 export class FeedRepository {
@@ -14,6 +18,8 @@ export class FeedRepository {
     private readonly feedRepository: Repository<FeedEntity>,
     @InjectRepository(FeedImageEntity)
     private readonly feedImageRepository: Repository<FeedImageEntity>,
+    
+    private readonly userBlockRepository: UserBlockRepository
   ) {}
 
   async getFeedListWithDetails(): Promise<FeedEntity[]> {
@@ -47,18 +53,34 @@ export class FeedRepository {
     return feedList;
   }
 
-  async paginateFeedList(dto: PaginateFeedDto): Promise<FeedEntity[]> {
+  async paginateFeedList(dto: PaginateFeedDto, userId: number): Promise<FeedEntity[]> {
     const where: FindOptionsWhere<FeedEntity> = {
       deletedAt: null,
       user: {
         deletedAt: null,
       },
     };
+    
+    if(userId) {
+      const blockUser = await this.userBlockRepository.findUserBlockList(userId);
+      const blockedUserIds = blockUser.map(blockedUser => 
+        typeof blockedUser.blockUser === 'number'
+        ? blockedUser.blockUser
+        : blockedUser.blockUser.id
+        );
+        
+      const blockedUserWhere: FindOptionsWhere<UserEntity> = {
+        id: Not(In(blockedUserIds)),
+      };
+      where.user = blockedUserWhere;
+    };
+
     if (dto.where__id__less_than) {
       where.id = LessThan(dto.where__id__less_than);
     } else if (dto.where__id__more_than) {
       where.id = MoreThan(dto.where__id__more_than);
     }
+
     const feeds = await this.feedRepository.find({
       relations: {
         user: true,
@@ -83,7 +105,6 @@ export class FeedRepository {
       },
       take: dto.take,
     });
-    //console.log(feeds)
     return feeds;
   }
 
