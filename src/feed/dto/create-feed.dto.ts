@@ -11,8 +11,7 @@ export class CreateFeedDTO {
   @IsNumber()
   readonly lowTemperature: number;
 
-  @IsString()
-  readonly imageUrl: string;
+  imageUrl: string | Express.Multer.File;
 
   @IsString()
   readonly content: string;
