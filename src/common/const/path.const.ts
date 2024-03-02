@@ -25,4 +25,3 @@ export const FEED_PUBLIC_IMAGE_PATH = join(
 
 // 절대경로 http://localhost:3000/publics/feeds/xxx.png
 export const FEED_PUBLIC_IMAGE_URL = new URL(FEED_PUBLIC_IMAGE_PATH, process.env.WEATHER_URL).toString();
-
