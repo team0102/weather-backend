@@ -18,7 +18,7 @@ import * as fs from 'fs';
 import { join } from 'path';
 import { PaginateFeedDto } from './dto/paginate-feed.dto';
 import { CommonService } from 'src/common/common.service';
-
+import { UserBlockRepository } from 'src/user/userBlock.repository';
 
 @Injectable()
 export class FeedService {
@@ -30,6 +30,7 @@ export class FeedService {
     private readonly feedCommentRepository: FeedCommentRepository,
     private readonly feedLikeRepository: FeedLikeRepository,
     private readonly bookmarkRepository: BookmarkRepository,
+    private readonly userBlockRepository: UserBlockRepository,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -79,10 +80,15 @@ export class FeedService {
     return processedFeedList;
   }
 
-  async getFeedListWithPagination(dto: PaginateFeedDto, userId: number | null ):Promise<FeedList>  {
-    const feedList = await this.feedRepository.paginateFeedList(dto);
-
-    const lastItem = feedList.length > 0 && feedList.length >= dto.take ? feedList[feedList.length - 1] : null;
+  async getFeedListWithPagination(
+    dto: PaginateFeedDto,
+    userId: number | null,
+  ): Promise<FeedList> {
+    const feedList = await this.feedRepository.paginateFeedList(dto, userId);
+    const lastItem =
+      feedList.length > 0 && feedList.length >= dto.take
+        ? feedList[feedList.length - 1]
+        : null;
     const nextUrl = lastItem && new URL(`${process.env.WEATHER_URL}/feeds`);
     if (nextUrl) {
       /* 
@@ -91,16 +97,20 @@ export class FeedService {
        */
       for (const key of Object.keys(dto)) {
         if (dto[key]) {
-          if (key !== 'where__id__more_than' && key !== 'where__id__less_than') { // 해당 값이 없으면 제외
+          if (
+            key !== 'where__id__more_than' &&
+            key !== 'where__id__less_than'
+          ) {
+            // 해당 값이 없으면 제외
             nextUrl.searchParams.append(key, dto[key]);
           }
         }
       };
       let key = null;
-      if(dto.order__createdAt === 'ASC'){
-        key = 'where__id__more_than'
+      if (dto.order__createdAt === 'ASC') {
+        key = 'where__id__more_than';
       } else {
-        key = 'where__id__less_than'
+        key = 'where__id__less_than';
       }
       nextUrl.searchParams.append(key, lastItem.id.toString());
     }
@@ -148,12 +158,12 @@ export class FeedService {
     );
 
     return {
-      feeds : processedFeedList,           // Data[]
+      feeds: processedFeedList, // Data[]
       cursor: {
-        after: lastItem?.id ?? null,       // 마지막 Data의 Id
+        after: lastItem?.id ?? null, // 마지막 Data의 Id
       },
-      count: feedList?.length,             // 응답할 데이터의 개수
-      next: nextUrl?.toString() ?? null,   // 다음 요청을 할 때 사용할 URL
+      count: feedList?.length, // 응답할 데이터의 개수
+      next: nextUrl?.toString() ?? null, // 다음 요청을 할 때 사용할 URL
     };
   }
 
