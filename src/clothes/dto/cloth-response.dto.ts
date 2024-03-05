@@ -4,7 +4,7 @@ export class ClothesTopDto {
   readonly type: string;
 
   readonly imageUrl: string;
-};
+}
 
 export class ClothesBottomDto {
   readonly id: number;
@@ -12,7 +12,7 @@ export class ClothesBottomDto {
   readonly type: string;
 
   readonly imageUrl: string;
-};
+}
 
 export class ClothesCoatDto {
   readonly id: number;
@@ -20,7 +20,7 @@ export class ClothesCoatDto {
   readonly type: string;
 
   readonly imageUrl: string;
-};
+}
 
 export class ClothesAccessoryDto {
   readonly id: number;
@@ -28,7 +28,7 @@ export class ClothesAccessoryDto {
   readonly type: string;
 
   readonly imageUrl: string;
-};
+}
 
 export class ClothesDto {
   readonly id: number;
@@ -40,10 +40,10 @@ export class ClothesDto {
   readonly clothesCoatId: ClothesCoatDto;
 
   readonly clothesAccessoryId: ClothesAccessoryDto;
-};
+}
 
 export class ClothesResponseDto {
   status: number;
   message: string;
   data?: ClothesDto[];
-};
+}

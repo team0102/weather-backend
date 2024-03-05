@@ -38,3 +38,6 @@ lerna-debug.log*
 *.env
 *.env.dev
 
+# public 디렉터리 안의 모든 파일 및 하위 디렉터리 제외
+/public/*
+

@@ -23,6 +23,8 @@ import * as multer from 'multer';
 import { v4 as uuid } from 'uuid';
 import { FEED_IMAGE_PATH } from 'src/common/const/path.const';
 import { CommonModule } from 'src/common/common.module';
+import { UserBlockRepository } from 'src/user/userBlock.repository';
+import { UserBlockEntity } from 'src/entities/userBlocks.entity';
 
 @Module({
   imports: [
@@ -34,6 +36,7 @@ import { CommonModule } from 'src/common/common.module';
       FeedLikeEntity,
       TagEntity,
       BookmarkEntity,
+      UserBlockEntity,
     ]),
     MulterModule.register({
       limits: {
@@ -76,6 +79,7 @@ import { CommonModule } from 'src/common/common.module';
     FeedCommentRepository,
     FeedLikeRepository,
     BookmarkRepository,
+    UserBlockRepository,
   ],
   exports: [TypeOrmModule],
 })
