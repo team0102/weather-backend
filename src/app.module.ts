@@ -12,7 +12,8 @@ import { ClothesModule } from './clothes/clothes.module';
 import CatchException from './utils/CatchException';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { PUBLIC_FOLDER_PATH } from './common/const/path.const';
-import { ChatsGateway } from './chats/chats.gateway';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ChatsModule } from './chats/chats.module';
 
 @Module({
   imports: [
@@ -31,15 +32,16 @@ import { ChatsGateway } from './chats/chats.gateway';
     ClothesModule,
     ServeStaticModule.forRoot({
       rootPath: PUBLIC_FOLDER_PATH,
-      serveRoot: '/public'
+      serveRoot: '/public',
     }),
+    MongooseModule.forRoot(process.env.MONGO_URI),
+    ChatsModule,
   ],
   providers: [
     {
       provide: APP_FILTER,
       useClass: CatchException,
     },
-    ChatsGateway
   ],
 })
 export class AppModule {}

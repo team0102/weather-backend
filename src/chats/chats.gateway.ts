@@ -8,12 +8,15 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { ChatsService } from './chats.service';
 
 @WebSocketGateway({
   // ws://localhost:3000/chats
   namespace: 'chats',
 })
 export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  constructor(private chatsService: ChatsService) {}
+
   @WebSocketServer()
   server: Server;
 
@@ -43,8 +46,16 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
+  //닉네임 생성
   @SubscribeMessage('createUserNickname')
-  createUserNickname(socket: Socket, userNickname: string): void {
+  createUserNickname(
+    @MessageBody() userNickname: string,
+    @ConnectedSocket() socket: Socket,
+  ): void {
+    if (!userNickname) {
+      throw new Error('required nickname');
+    }
+
     this.userNickname[socket.id] = userNickname;
   }
 
@@ -72,7 +83,15 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     socket
       .to(message.cityId.toString())
-      .emit('receive_message', message.message);
-      
+      .emit('receive_message', {
+        message: message.message,
+        userNickname: Object.values(this.userNickname[socket.id])[0],
+      });
+
+    return this.chatsService.createChat(
+      this.userNickname[socket.id],
+      message.cityId,
+      message.message,
+    );
   }
 }
