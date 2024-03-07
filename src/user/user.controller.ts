@@ -106,11 +106,11 @@ export class UserController {
     return await this.userService.getUserInfo(userId);
   }
 
-  // // 로그아웃 : O
-  // @Put('/logout')
-  // async userLogout(@Headers('authorization') token: string): Promise<void> {
-  //   return await this.userService.userLogout(token);
-  // }
+  // 로그아웃 : O
+  @Put('/logout')
+  async userLogout(@Headers('authorization') token: string): Promise<void> {
+    return await this.userService.userLogout(token);
+  }
 
   // 회원탈퇴 : O
   @Delete()

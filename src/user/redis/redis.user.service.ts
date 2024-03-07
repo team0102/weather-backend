@@ -1,36 +1,36 @@
-// import { Injectable, Inject } from '@nestjs/common';
-// // import * as Redis from 'ioredis';
-// import { Redis } from 'ioredis';
+import { Injectable, Inject } from '@nestjs/common';
+// import * as Redis from 'ioredis';
+import { Redis } from 'ioredis';
 
-// @Injectable()
-// export class RedisUserService {
-//   private readonly client: Redis;
+@Injectable()
+export class RedisUserService {
+  private readonly client: Redis;
 
-//   constructor(
-//     @Inject('REDIS_HOST') private readonly REDIS_HOST: string,
-//     @Inject('REDIS_PORT') private readonly REDIS_PORT: number,
-//     @Inject('REDIS_PASSWORD') private readonly REDIS_PASSWORD: string,
-//   ) {
-//     this.client = new Redis({
-//       host: this.REDIS_HOST,
-//       port: this.REDIS_PORT,
-//       // password: this.REDIS_PASSWORD,  // 설정시 사용으로 전환
-//     });
-//   }
+  constructor(
+    @Inject('REDIS_HOST') private readonly REDIS_HOST: string,
+    @Inject('REDIS_PORT') private readonly REDIS_PORT: number,
+    @Inject('REDIS_PASSWORD') private readonly REDIS_PASSWORD: string,
+  ) {
+    this.client = new Redis({
+      host: this.REDIS_HOST,
+      port: this.REDIS_PORT,
+      // password: this.REDIS_PASSWORD,  // 설정시 사용으로 전환
+    });
+  }
 
-//   getClient(): Redis {
-//     return this.client;
-//   }
+  getClient(): Redis {
+    return this.client;
+  }
 
-//   async set(key: string, value: string, expirationTime: number): Promise<void> {
-//     await this.client.set(key, value, 'EX', expirationTime);
-//   }
+  async set(key: string, value: string, expirationTime: number): Promise<void> {
+    await this.client.set(key, value, 'EX', expirationTime);
+  }
 
-//   async get(key: string): Promise<string | null> {
-//     const result = await this.client.get(key);
-//     return result as string | null;
-//   }
-// }
+  async get(key: string): Promise<string | null> {
+    const result = await this.client.get(key);
+    return result as string | null;
+  }
+}
 
 // // test_1--------------------------------------------------------------------------------------
 
