@@ -314,8 +314,9 @@ export class UserService {
     });
 
     return followerList;
-  } // 유저 차단(목록)
+  }
 
+  // 유저 차단(목록)
   async getUserBlockList(userId: number): Promise<UserBlockEntity[] | null> {
     if (!userId) throw new NotFoundException('KEY_ERROR');
 
@@ -324,7 +325,7 @@ export class UserService {
 
     return this.userBlockRepository.findUserBlockList(userId);
   }
-  
+
   // 유저 차단(생성)
   async createUserBlock(userBlockDto: UserBlockDto): Promise<void> {
     const { userId, blockUserId } = userBlockDto;
@@ -349,7 +350,7 @@ export class UserService {
 
     return await this.userBlockRepository.createUserBlock(userBlock);
   }
-  
+
   // 유저 차단(삭제)
   async deleteUserBlock(userBlockDto: UserBlockDto): Promise<void> {
     const { userId, blockUserId } = userBlockDto;
@@ -370,7 +371,7 @@ export class UserService {
 
     return await this.userBlockRepository.deleteUserBlock(isBlocked);
   }
-  
+
   // 테스트용 로그인 -----------------------------------------------
 
   async login(socialAccountUid: string): Promise<LoginResponseDto | null> {

@@ -154,6 +154,48 @@ export class UserController {
     return await this.userService.updateUserInfo(updateUserInfoDto);
   }
 
+  // 유저 차단(목록)  :  추후 수정 예정 = city entity의 eager 옵션으로 유저 차단 목록에 차단된 유저의 city도 같이 전송
+  @Get('/block')
+  async getUserBlockList(
+    @Headers('authorization') token: string,
+  ): Promise<UserBlockEntity[] | null> {
+    const userId = await this.tokenService.audienceFromToken(token);
+
+    return this.userService.getUserBlockList(userId);
+  }
+
+  // 유저 차단(생성)
+  @Post('/block/:blockUserId')
+  async createUserBlock(
+    @Headers('authorization') token: string,
+    @Param('blockUserId') blockUserId: number,
+  ): Promise<void> {
+    const userId = await this.tokenService.audienceFromToken(token);
+
+    const userBlockDto: UserBlockDto = {
+      userId: Number(userId),
+      blockUserId: Number(blockUserId),
+    };
+
+    return await this.userService.createUserBlock(userBlockDto);
+  }
+
+  // 유저 차단(삭제)
+  @Delete('/block/:blockUserId')
+  async deleteUserBlock(
+    @Headers('authorization') token: string,
+    @Param('blockUserId') blockUserId: number,
+  ): Promise<void> {
+    const userId = await this.tokenService.audienceFromToken(token);
+
+    const userBlockDto: UserBlockDto = {
+      userId: Number(userId),
+      blockUserId: Number(blockUserId),
+    };
+
+    return this.userService.deleteUserBlock(userBlockDto);
+  }
+
   // 유저 팔로우(생성) : O
   @Post('/follow/:followUserId')
   async createUserFollow(
@@ -204,48 +246,6 @@ export class UserController {
     const followUserId = await this.tokenService.audienceFromToken(token);
 
     return await this.userService.getUserFollowerList(followUserId);
-  }
-  
-  // 유저 차단(생성)
-  @Post('/block/:blockUserId')
-  async createUserBlock(
-    @Headers('authorization') token: string,
-    @Param('blockUserId') blockUserId: number,
-  ): Promise<void> {
-    const userId = await this.tokenService.audienceFromToken(token);
-
-    const userBlockDto: UserBlockDto = {
-      userId: Number(userId),
-      blockUserId: Number(blockUserId),
-    };
-
-    return await this.userService.createUserBlock(userBlockDto);
-  }
-  
-  // 유저 차단(삭제)
-  @Delete('/block/:blockUserId')
-  async deleteUserBlock(
-    @Headers('authorization') token: string,
-    @Param('blockUserId') blockUserId: number,
-  ): Promise<void> {
-    const userId = await this.tokenService.audienceFromToken(token);
-
-    const userBlockDto: UserBlockDto = {
-      userId: Number(userId),
-      blockUserId: Number(blockUserId),
-    };
-
-    return this.userService.deleteUserBlock(userBlockDto);
-  }
-
-  // 유저 차단(목록)  :  추후 수정 예정 = city entity의 eager 옵션으로 유저 차단 목록에 차단된 유저의 city도 같이 전송
-  @Get('/block')
-  async getUserBlockList(
-    @Headers('authorization') token: string,
-  ): Promise<UserBlockEntity[] | null> {
-    const userId = await this.tokenService.audienceFromToken(token);
-
-    return this.userService.getUserBlockList(userId);
   }
 
   // 테스트용 로그인 -----------------------------------------------
