@@ -24,7 +24,7 @@ import { CityRepository } from './city.repository';
 import { ConfigService } from '@nestjs/config';
 import { UserBlockRepository } from './userBlock.repository';
 import { UserBlockEntity } from 'src/entities/userBlocks.entity';
-// import { RedisUserService } from './redis/redis.user.service';
+import { RedisUserService } from './redis/redis.user.service';
 
 @Injectable()
 export class UserService {
@@ -34,7 +34,7 @@ export class UserService {
     private readonly userFollowRepository: UserFollowRepository,
     private readonly cityRepository: CityRepository,
     readonly configService: ConfigService,
-    // private readonly redisUserService: RedisUserService,
+    private readonly redisUserService: RedisUserService,
     private readonly userBlockRepository: UserBlockRepository,
   ) {}
 
@@ -118,25 +118,25 @@ export class UserService {
     return user;
   }
 
-  // // 로그아웃 : O
-  // async userLogout(token: string): Promise<void> {
-  //   // redis DB 이용
+  // 로그아웃 : O
+  async userLogout(token: string): Promise<void> {
+    // redis DB 이용
 
-  //   const decodedToken = this.jwtService.verify(token);
-  //   const userId = decodedToken.aud;
+    const decodedToken = this.jwtService.verify(token);
+    const userId = decodedToken.aud;
 
-  //   const user = await this.userRepository.findOneById(userId);
-  //   if (!user) throw new NotFoundException('NOT_FOUND_USER');
+    const user = await this.userRepository.findOneById(userId);
+    if (!user) throw new NotFoundException('NOT_FOUND_USER');
 
-  //   const logoutCheck = await this.redisUserService.get(token);
-  //   if (logoutCheck !== null) throw new BadRequestException('LOGIN_REQUIRED');
+    const logoutCheck = await this.redisUserService.get(token);
+    if (logoutCheck !== null) throw new BadRequestException('LOGIN_REQUIRED');
 
-  //   const currentTime = Math.floor(new Date().getTime() / 1000.0); // UNIX TIME 기준(초)
-  //   const exp = Number(await decodedToken.exp); //  token.exp  =  .env.JWT_ACCESS_TOKEN_EXPIRATION_TIME
-  //   const remainedTime = exp - currentTime;
+    const currentTime = Math.floor(new Date().getTime() / 1000.0); // UNIX TIME 기준(초)
+    const exp = Number(await decodedToken.exp); //  token.exp  =  .env.JWT_ACCESS_TOKEN_EXPIRATION_TIME
+    const remainedTime = exp - currentTime;
 
-  //   return await this.redisUserService.set(token, '', remainedTime); // exp에 도달하면 자동 삭제
-  // }
+    return await this.redisUserService.set(token, '', remainedTime); // exp에 도달하면 자동 삭제
+  }
 
   // 회원탈퇴 : O
   async deleteUser(id: number): Promise<void> {

@@ -1,39 +1,39 @@
-// // redis/redis.module.ts
-// import { Module, Global, DynamicModule } from '@nestjs/common';
-// import { RedisUserService } from './redis.user.service';
-// import { ConfigService } from '@nestjs/config';
+// redis/redis.module.ts
+import { Module, Global, DynamicModule } from '@nestjs/common';
+import { RedisUserService } from './redis.user.service';
+import { ConfigService } from '@nestjs/config';
 
-// @Global()
-// @Module({})
-// export class RedisUserModule {
-//   static register(): DynamicModule {
-//     return {
-//       module: RedisUserModule,
-//       providers: [
-//         RedisUserService,
-//         {
-//           provide: 'REDIS_HOST',
-//           useFactory: (configService: ConfigService) =>
-//             configService.get('REDIS_HOST'),
-//           inject: [ConfigService],
-//         },
-//         {
-//           provide: 'REDIS_PORT',
-//           useFactory: (configService: ConfigService) =>
-//             configService.get('REDIS_PORT'),
-//           inject: [ConfigService],
-//         },
-//         {
-//           provide: 'REDIS_PASSWORD',
-//           useFactory: (configService: ConfigService) =>
-//             configService.get('REDIS_PASSWORD'),
-//           inject: [ConfigService],
-//         },
-//       ],
-//       exports: [RedisUserService],
-//     };
-//   }
-// }
+@Global()
+@Module({})
+export class RedisUserModule {
+  static register(): DynamicModule {
+    return {
+      module: RedisUserModule,
+      providers: [
+        RedisUserService,
+        {
+          provide: 'REDIS_HOST',
+          useFactory: (configService: ConfigService) =>
+            configService.get('REDIS_HOST'),
+          inject: [ConfigService],
+        },
+        {
+          provide: 'REDIS_PORT',
+          useFactory: (configService: ConfigService) =>
+            configService.get('REDIS_PORT'),
+          inject: [ConfigService],
+        },
+        {
+          provide: 'REDIS_PASSWORD',
+          useFactory: (configService: ConfigService) =>
+            configService.get('REDIS_PASSWORD'),
+          inject: [ConfigService],
+        },
+      ],
+      exports: [RedisUserService],
+    };
+  }
+}
 
 // // test_1--------------------------------------------------------------------------------------
 
