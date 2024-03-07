@@ -74,6 +74,10 @@ export class FeedRepository {
       where.user = blockedUserWhere;
     };
 
+    // if(dto.wheatherConditonId) {
+    //   where.weatherCondition = dto.wheatherConditonId;
+    // }
+
     if (dto.where__id__less_than) {
       where.id = LessThan(dto.where__id__less_than);
     } else if (dto.where__id__more_than) {
