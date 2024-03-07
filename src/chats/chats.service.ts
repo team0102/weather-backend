@@ -9,11 +9,11 @@ export class ChatsService {
     @InjectModel(Chats.name) private chatsModel: Model<ChatsDocument>,
   ) {}
 
-  async createChat(name, cityId: number, content: string): Promise<Chats> {
+  async createChat(name, cityId: number, message: string): Promise<Chats> {
     const createChat = new this.chatsModel({
       userNickname: name.userNickname,
       cityId,
-      content,
+      message,
     });
 
     return createChat.save();

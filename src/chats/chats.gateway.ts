@@ -23,7 +23,7 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   //연결된 유저의 상태
   connectedUser: { [socketId: string]: boolean } = {};
   //유저의 닉네임
-  userNickname: { [socketId: string]: string } = {};
+  userNickname: { [socketId: string]: any } = {};
   //해당 방의 유저 배열
   roomParticipant: { [key: string]: string[] } = {};
 
@@ -81,15 +81,14 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() message: { message: string; cityId: number },
     @ConnectedSocket() socket: Socket,
   ) {
-    socket
-      .to(message.cityId.toString())
-      .emit('receive_message', {
-        message: message.message,
-        userNickname: Object.values(this.userNickname[socket.id])[0],
-      });
+    const userNickname = this.userNickname[socket.id].userNickname;
+    socket.to(message.cityId.toString()).emit('receive_message', {
+      message: message.message,
+      userNickname,
+    });
 
     return this.chatsService.createChat(
-      this.userNickname[socket.id],
+      userNickname,
       message.cityId,
       message.message,
     );

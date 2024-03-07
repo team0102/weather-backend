@@ -18,7 +18,7 @@ export class Chats {
   cityId: number;
 
   @Prop()
-  content: string;
+  message: string;
 }
 
 export const ChatsSchema = SchemaFactory.createForClass(Chats);
