@@ -30,31 +30,9 @@ export class ClothesRepository {
       throw new NotFoundException('주어진 온도에 해당하는 옷 세트가 없습니다');
     }
 
-    const clothesDtoArray: ClothesDto[] = clothEntities.map((cloth) => ({
-      id: cloth.id,
-      clothesTopId: {
-        id: cloth.clothesTopId.id,
-        type: cloth.clothesTopId.type,
-        imageUrl: cloth.clothesTopId.image,
-      },
-      clothesBottomId: {
-        id: cloth.clothesBottomId.id,
-        type: cloth.clothesBottomId.type,
-        imageUrl: cloth.clothesBottomId.image,
-      },
-      clothesCoatId: {
-        id: cloth.clothesCoatId.id,
-        type: cloth.clothesCoatId.type,
-        imageUrl: cloth.clothesCoatId.image,
-      },
-      clothesAccessoryId: cloth.clothesAccessoryId
-        ? {
-            id: cloth.clothesAccessoryId.id,
-            type: cloth.clothesAccessoryId.type,
-            imageUrl: cloth.clothesAccessoryId.image,
-          }
-        : null,
-    }));
+    const clothesDtoArray: ClothesDto[] = clothEntities.map(
+      (cloth) => new ClothesDto(cloth),
+    );
 
     return { status: 200, message: 'Success', data: clothesDtoArray };
   }
