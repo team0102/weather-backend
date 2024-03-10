@@ -9,7 +9,7 @@ export class PaginateFeedDto extends BasePaginationDto {
   
     @IsBoolean()
     @IsOptional()
-    followedUser?: boolean;
+    followingUser?: boolean;
   
     //기온 추가
 }

@@ -88,10 +88,10 @@ export class FeedRepository {
     }
 
     // 팔로우한 유저
-    if (dto.followedUser && userId) {
-      const followedUser =
+    if (dto.followingUser && userId) {
+      const followingUser =
         await this.userFollowRepository.findFollowingList(userId);
-      const followedUserIds = followedUser.map((followUser) =>
+      const followedUserIds = followingUser.map((followUser) =>
         typeof followUser.followUser === 'number'
           ? followUser.followUser
           : followUser.followUser.id,
