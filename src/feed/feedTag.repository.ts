@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FeedTagEntity } from 'src/entities/feedTags.entity';
-import { Repository, QueryRunner, In } from 'typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class FeedTagRepository {
