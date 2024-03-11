@@ -1,13 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BookmarkEntity } from 'src/entities/bookmarks.entity';
-import { Repository } from 'typeorm';
+import { FeedEntity } from 'src/entities/feeds.entity';
+import { UserEntity } from 'src/entities/users.entity';
+import { UserBlockRepository } from 'src/user/userBlock.repository';
+import { FindOptionsWhere, In, Not, Repository } from 'typeorm';
 
 @Injectable()
 export class BookmarkRepository {
   constructor(
     @InjectRepository(BookmarkEntity)
     private readonly bookmarkRepository: Repository<BookmarkEntity>,
+
+    private readonly userBlockRepository: UserBlockRepository,
   ) {}
 
   async isBookmarked(userId: number, feedId: number): Promise<BookmarkEntity> {
@@ -33,10 +38,29 @@ export class BookmarkRepository {
 
   async deleteBookmark(id: number): Promise<void> {
     const result = await this.bookmarkRepository.delete({ id });
-    console.log(result)
+    console.log(result);
   }
 
   async getBookmarkList(userId: number): Promise<BookmarkEntity[]> {
+    const where: FindOptionsWhere<FeedEntity> = {
+      deletedAt: null,
+      user: {
+        id: userId,
+        deletedAt: null,
+      },
+    };
+
+    const blockUser = await this.userBlockRepository.findUserBlockList(userId);
+    const blockedUserIds = blockUser.map((blockedUser) =>
+      typeof blockedUser.blockUser === 'number'
+        ? blockedUser.blockUser
+        : blockedUser.blockUser.id,
+    );
+    const blockedUserWhere: FindOptionsWhere<UserEntity> = {
+      id: Not(In(blockedUserIds)),
+    };
+    where.user = blockedUserWhere;
+
     const result = await this.bookmarkRepository.find({
       relations: {
         feed: {
@@ -46,17 +70,7 @@ export class BookmarkRepository {
         },
       },
       order: { createdAt: 'DESC' },
-      where: {
-        feed: {
-          deletedAt: null,
-          user: {
-            deletedAt: null,
-          },
-        },
-        user: {
-          id: userId,
-        },
-      },
+      where,
     });
     return result;
   }
