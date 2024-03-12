@@ -25,6 +25,8 @@ import { FEED_IMAGE_PATH } from 'src/common/const/path.const';
 import { CommonModule } from 'src/common/common.module';
 import { UserBlockRepository } from 'src/user/userBlock.repository';
 import { UserBlockEntity } from 'src/entities/userBlocks.entity';
+import { UserFollowEntity } from 'src/entities/userFollows.entity';
+import { UserFollowRepository } from 'src/user/userFollow.repository';
 
 @Module({
   imports: [
@@ -37,6 +39,7 @@ import { UserBlockEntity } from 'src/entities/userBlocks.entity';
       TagEntity,
       BookmarkEntity,
       UserBlockEntity,
+      UserFollowEntity,
     ]),
     MulterModule.register({
       limits: {
@@ -80,6 +83,7 @@ import { UserBlockEntity } from 'src/entities/userBlocks.entity';
     FeedLikeRepository,
     BookmarkRepository,
     UserBlockRepository,
+    UserFollowRepository,
   ],
   exports: [TypeOrmModule],
 })
