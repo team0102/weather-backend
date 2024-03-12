@@ -42,25 +42,26 @@ export class BookmarkRepository {
   }
 
   async getBookmarkList(userId: number): Promise<BookmarkEntity[]> {
-    const where: FindOptionsWhere<FeedEntity> = {
-      deletedAt: null,
+    const where: FindOptionsWhere<BookmarkEntity> = {
       user: {
         id: userId,
         deletedAt: null,
       },
     };
-
     const blockUser = await this.userBlockRepository.findUserBlockList(userId);
     const blockedUserIds = blockUser.map((blockedUser) =>
       typeof blockedUser.blockUser === 'number'
         ? blockedUser.blockUser
         : blockedUser.blockUser.id,
     );
-    const blockedUserWhere: FindOptionsWhere<UserEntity> = {
-      id: Not(In(blockedUserIds)),
+    const feedWhere: FindOptionsWhere<FeedEntity> = {
+      deletedAt: null,
+      user: {
+        id: Not(In(blockedUserIds)),
+        deletedAt: null,
+      },
     };
-    where.user = blockedUserWhere;
-
+    where.feed = feedWhere;
     const result = await this.bookmarkRepository.find({
       relations: {
         feed: {

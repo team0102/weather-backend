@@ -170,7 +170,6 @@ export class FeedRepository {
         },
       },
     });
-    console.log(feed);
     return feed;
   }
 
