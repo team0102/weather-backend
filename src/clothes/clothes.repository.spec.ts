@@ -1,21 +1,30 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ClothesRepository } from './clothes.repository';
-import { ClothEntity } from 'src/entities/clothes.entity';
 
 describe('ClothesRepository', () => {
-  let repository: ClothesRepository;
-  let mockClothEntities: ClothEntity[];
-  
+  let clothesRepository: ClothesRepository;
+
+  const mockEntity = {
+    id: 1,
+    lowPerceivedTemperature: 0,
+    highPerceivedTemperature: 5,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ClothesRepository],
+      providers: [
+        ClothesRepository,
+      ],
     }).compile();
 
-    repository = module.get<ClothesRepository>(ClothesRepository);
+    clothesRepository = module.get<ClothesRepository>(ClothesRepository);
   });
 
-  it('should be defined', () => {
-    expect(repository).toBeDefined();
+  describe('getClothesSetIdByTemperature', () => {
+    it('getClothesSetIdByTemperature 성공', async () => {
+   
+    });
   });
 });

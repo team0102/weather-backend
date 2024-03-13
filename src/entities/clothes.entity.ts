@@ -8,7 +8,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-// import { ClothSetEntity } from './clothesSet.entity';
 import { ClothTopEntity } from './clothesTop.entity';
 import { ClothBottomEntity } from './clothesBottom.entity';
 import { ClothCoatEntity } from './clothesCoat.entity';

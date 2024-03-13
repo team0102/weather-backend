@@ -8,16 +8,16 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { UserFollowRepository } from './userFollow.repository';
-import { UserEntity } from 'src/entities/users.entity';
-import { UserFollowEntity } from 'src/entities/userFollows.entity';
-import { TokenService } from 'src/utils/verifyToken';
+import { UserEntity } from './../entities/users.entity';
+import { UserFollowEntity } from './../entities/userFollows.entity';
+import { TokenService } from './../utils/verifyToken';
 import { CityRepository } from './city.repository';
-import { CityEntity } from 'src/entities/cities.entity';
+import { CityEntity } from './../entities/cities.entity';
 
 import { KakaoStrategy } from './strategy/kakao.strategy';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { RedisUserModule } from './redis/redis.user.module';
-import { UserBlockEntity } from 'src/entities/userBlocks.entity';
+import { UserBlockEntity } from './../entities/userBlocks.entity';
 import { UserBlockRepository } from './userBlock.repository';
 
 @Module({

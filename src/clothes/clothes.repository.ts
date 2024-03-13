@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ClothEntity } from 'src/entities/clothes.entity';
+import { ClothEntity } from './../entities/clothes.entity';
 import { Repository } from 'typeorm';
 import { ClothesDto, ClothesResponseDto } from './dto/cloth-response.dto';
 

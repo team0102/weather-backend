@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { UserBlockEntity } from 'src/entities/userBlocks.entity';
+import { UserBlockEntity } from './../entities/userBlocks.entity';
 import { UserBlockDto } from './dto/user.dto';
 
 @Injectable()

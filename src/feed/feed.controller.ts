@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { FeedService } from './feed.service';
 import { CreateFeedDTO } from './dto/create-feed.dto';
-import { TokenService } from 'src/utils/verifyToken';
+import { TokenService } from '../utils/verifyToken';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
 import {
   ApiResponse,
@@ -22,7 +22,7 @@ import {
   FeedDetailResponse,
   FeedListResponse,
 } from './feed.types';
-import HttpError from 'src/utils/httpError';
+import HttpError from '../utils/httpError';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PaginateFeedDto } from './dto/paginate-feed.dto';
 

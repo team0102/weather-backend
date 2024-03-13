@@ -3,12 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FeedEntity } from '../entities/feeds.entity';
 import { Repository, MoreThan, FindOptionsWhere, LessThan, Not, In } from 'typeorm';
 import { CreateFeedDTO } from './dto/create-feed.dto';
-import { FeedImageEntity } from 'src/entities/feedImages.entity';
+import { FeedImageEntity } from './../entities/feedImages.entity';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
 import { PaginateFeedDto } from './dto/paginate-feed.dto';
-import { UserBlockEntity } from 'src/entities/userBlocks.entity';
-import { UserBlockRepository } from 'src/user/userBlock.repository';
-import { UserEntity } from 'src/entities/users.entity';
+import { UserBlockEntity } from './../entities/userBlocks.entity';
+import { UserBlockRepository } from './../user/userBlock.repository';
+import { UserEntity } from './../entities/users.entity';
 
 
 @Injectable()

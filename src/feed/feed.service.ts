@@ -9,16 +9,16 @@ import { UpdateFeedDTO } from './dto/update-feed.dto';
 import { BookmarkList, FeedDatail, FeedList, FeedListItem } from './feed.types';
 import { BookmarkRepository } from './bookmark.repository';
 import { FeedLikeRepository } from './feedLike.repository';
-import HttpError from 'src/utils/httpError';
+import HttpError from './../utils/httpError';
 import {
   FEED_PUBLIC_IMAGE_PATH,
   FEED_PUBLIC_IMAGE_URL,
-} from 'src/common/const/path.const';
+} from './../common/const/path.const';
 import * as fs from 'fs';
 import { join } from 'path';
 import { PaginateFeedDto } from './dto/paginate-feed.dto';
-import { CommonService } from 'src/common/common.service';
-import { UserBlockRepository } from 'src/user/userBlock.repository';
+import { CommonService } from './../common/common.service';
+import { UserBlockRepository } from './../user/userBlock.repository';
 
 @Injectable()
 export class FeedService {
