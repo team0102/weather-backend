@@ -33,22 +33,6 @@ export class FeedController {
     private readonly tokenService: TokenService,
   ) {}
 
-  // @Get()
-  // async getFeedList(
-  //   @Headers('Authorization') token: string | undefined,
-  // ): Promise<FeedListResponse> {
-  //   let loginUserId: number | null = null;
-  //   if (token) {
-  //     loginUserId = this.tokenService.audienceFromToken(token);
-  //   }
-  //   const feedDatas = await this.feedService.getFeedList(loginUserId);
-  //   return {
-  //     status: 200,
-  //     message: 'Successed to get feedList',
-  //     data: feedDatas,
-  //   };
-  // }
-
   @Get()
   async getFeedList(
     @Headers('Authorization') token: string | undefined,

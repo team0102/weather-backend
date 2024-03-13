@@ -17,20 +17,16 @@ import {
 import * as fs from 'fs';
 import { join } from 'path';
 import { PaginateFeedDto } from './dto/paginate-feed.dto';
-import { CommonService } from './../common/common.service';
-import { UserBlockRepository } from './../user/userBlock.repository';
 
 @Injectable()
 export class FeedService {
   constructor(
     private readonly feedRepository: FeedRepository,
-    private readonly commonService: CommonService,
     private readonly tagRepository: TagRepository,
     private readonly feedTagRepository: FeedTagRepository,
     private readonly feedCommentRepository: FeedCommentRepository,
     private readonly feedLikeRepository: FeedLikeRepository,
     private readonly bookmarkRepository: BookmarkRepository,
-    private readonly userBlockRepository: UserBlockRepository,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -200,12 +196,6 @@ export class FeedService {
             profileImage: comment.user.profileImage,
           }
         : null,
-
-      // author: {
-      //   id: comment.user.id,
-      //   nickname: comment.user.nickname,
-      //   profileImage: comment.user.profileImage,
-      // },
     }));
 
     const processedFeed = {
