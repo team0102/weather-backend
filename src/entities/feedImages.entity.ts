@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { FeedEntity } from './feeds.entity';
 import { Transform } from 'class-transformer';
-import { FEED_PUBLIC_IMAGE_PATH } from 'src/common/const/path.const';
+import { FEED_PUBLIC_IMAGE_PATH } from './../common/const/path.const';
 import { join } from 'path';
 
 @Entity({
