@@ -5,7 +5,7 @@ export class PaginateFeedDto extends BasePaginationDto {
 
     @IsNumber()
     @IsOptional()
-    wheatherConditonId?: number;
+    weatherConditonId?: number;
   
     @IsBoolean()
     @IsOptional()

@@ -103,11 +103,11 @@ export class FeedRepository {
     }
 
     // 날씨 필터링
-    if (dto.wheatherConditonId) {
-      const wheatherConditonWhere: FindOptionsWhere<WeatherConditionEntity> = {
-        id: Equal(dto.wheatherConditonId),
+    if (dto.weatherConditonId) {
+      const weatherConditonWhere: FindOptionsWhere<WeatherConditionEntity> = {
+        id: Equal(dto.weatherConditonId),
       };
-      where.weatherCondition = wheatherConditonWhere;
+      where.weatherCondition = weatherConditonWhere;
     }
 
     // 페이지네이션
