@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BookmarkEntity } from 'src/entities/bookmarks.entity';
+import { BookmarkEntity } from './../entities/bookmarks.entity';
 import { FeedEntity } from 'src/entities/feeds.entity';
 import { UserEntity } from 'src/entities/users.entity';
 import { UserBlockRepository } from 'src/user/userBlock.repository';
 import { FindOptionsWhere, In, Not, Repository } from 'typeorm';
+
 
 @Injectable()
 export class BookmarkRepository {

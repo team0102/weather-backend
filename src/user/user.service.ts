@@ -16,14 +16,14 @@ import {
   UserFollowDto,
   UserInfoDto,
 } from './dto/user.dto';
-import { UserEntity } from 'src/entities/users.entity';
+import { UserEntity } from './../entities/users.entity';
 import { UserRepository } from './user.repository';
-import { UserFollowEntity } from 'src/entities/userFollows.entity';
+import { UserFollowEntity } from './../entities/userFollows.entity';
 import { UserFollowRepository } from './userFollow.repository';
 import { CityRepository } from './city.repository';
 import { ConfigService } from '@nestjs/config';
 import { UserBlockRepository } from './userBlock.repository';
-import { UserBlockEntity } from 'src/entities/userBlocks.entity';
+import { UserBlockEntity } from './../entities/userBlocks.entity';
 import { RedisUserService } from './redis/redis.user.service';
 
 @Injectable()

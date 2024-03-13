@@ -1,4 +1,4 @@
-import { SocialAccountProviderEntity } from 'src/entities/socialAccountProviders.entity';
+import { SocialAccountProviderEntity } from './../../entities/socialAccountProviders.entity';
 
 export type GetCheckNicknameOverlapDto = {
   nickname?: string;

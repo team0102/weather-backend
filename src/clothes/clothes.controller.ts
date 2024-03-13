@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { WeatherDto } from './dto/get-temperature.dto';
 import { ClothesService } from './clothes.service';
-import { TokenService } from 'src/utils/verifyToken';
+import { TokenService } from '../utils/verifyToken';
 import { ClothesResponseDto } from './dto/cloth-response.dto';
 
 @Controller('clothes')

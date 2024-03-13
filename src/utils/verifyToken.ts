@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-// import { RedisUserService } from 'src/user/redis/redis.user.service';
+// import { RedisUserService } from './../user/redis/redis.user.service';
 
 @Injectable()
 export class TokenService {
