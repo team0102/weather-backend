@@ -1,8 +1,8 @@
 import { ClothEntity } from './../../entities/clothes.entity';
-import { ClothCoatEntity } from 'src/entities/clothesCoat.entity';
+import { ClothCoatEntity } from './../../entities/clothesCoat.entity';
 import { ClothBottomEntity } from './../../entities/clothesBottom.entity';
 import { ClothTopEntity } from './../../entities/clothesTop.entity';
-import { ClothAccessoryEntity } from 'src/entities/clothesAccessory.entity';
+import { ClothAccessoryEntity } from './../..//entities/clothesAccessory.entity';
 
 export class ClothesTopDto {
   readonly id: number;

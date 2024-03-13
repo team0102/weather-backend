@@ -30,10 +30,10 @@ import {
   UserBlockDto,
 } from './dto/user.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { TokenService } from 'src/utils/verifyToken';
-import { UserFollowEntity } from 'src/entities/userFollows.entity';
-import { UserEntity } from 'src/entities/users.entity';
-import { UserBlockEntity } from 'src/entities/userBlocks.entity';
+import { TokenService } from './../utils/verifyToken';
+import { UserFollowEntity } from './../entities/userFollows.entity';
+import { UserEntity } from './../entities/users.entity';
+import { UserBlockEntity } from './../entities/userBlocks.entity';
 
 // 회원가입 : 회원가입 상세, 로그아웃(O), 회원탈퇴(O), 회원 정보 수정(O), 닉네임 중복 체크(O)
 // 유저 팔로우 : 목록(O), 생성(O), 삭제(O)

@@ -16,7 +16,7 @@ import { FeedTagEntity } from './feedTags.entity';
 import { FeedLikeEntity } from './feedLikes.entity';
 import { BookmarkEntity } from './bookmarks.entity';
 import { WeatherConditionEntity } from './weatherCondition.entity';
-import { BaseModel } from 'src/common/entities/base.entity';
+import { BaseModel } from '../common/entities/base.entity';
 
 @Entity({
   name: 'feeds',

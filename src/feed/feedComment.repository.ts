@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { FeedCommentEntity } from 'src/entities/feedComments.entity';
+import { FeedCommentEntity } from './../entities/feedComments.entity';
 
 @Injectable()
 export class FeedCommentRepository {

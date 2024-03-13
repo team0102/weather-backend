@@ -11,13 +11,13 @@ import {
   Equal,
 } from 'typeorm';
 import { CreateFeedDTO } from './dto/create-feed.dto';
-import { FeedImageEntity } from 'src/entities/feedImages.entity';
+import { FeedImageEntity } from './../entities/feedImages.entity';
 import { UpdateFeedDTO } from './dto/update-feed.dto';
 import { PaginateFeedDto } from './dto/paginate-feed.dto';
-import { UserBlockRepository } from 'src/user/userBlock.repository';
-import { UserEntity } from 'src/entities/users.entity';
-import { WeatherConditionEntity } from 'src/entities/weatherCondition.entity';
-import { UserFollowRepository } from 'src/user/userFollow.repository';
+import { UserBlockRepository } from './../user/userBlock.repository';
+import { UserEntity } from './../entities/users.entity';
+import { WeatherConditionEntity } from './../entities/weatherCondition.entity';
+import { UserFollowRepository } from './../user/userFollow.repository';
 
 @Injectable()
 export class FeedRepository {

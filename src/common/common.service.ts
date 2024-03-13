@@ -6,7 +6,7 @@ import {
   FindOptionsWhere,
   Repository,
 } from 'typeorm';
-import HttpError from 'src/utils/httpError';
+import HttpError from './../utils/httpError';
 import { FILTER_MAPPER } from './const/filter-mapper.const';
 import { BaseModel } from './entities/base.entity';
 
